@@ -1,0 +1,126 @@
+# Real experiment: 400 claims x 2 polarities x 5 perspectives x 3 providers x 3 duplicates
+#   = 36,000 generation calls + 36,000 judge calls.
+#
+# BEFORE THE FIRST PAID RUN, fill in the two REPLACE-ME providers below and check
+# every pricing block against the vendor's current price list. `llmbench validate`
+# flags placeholders and zero prices.
+
+schema_version: 1
+
+run:
+  name: pilot-01
+  output_root: runs
+  duplicates: 3 # D
+  shuffle_seed: 20260917 # dispatch order only; not sampling
+
+questions:
+  path: data/questions.jsonl
+  polarities: [pos, neg]
+  limit: null
+  require_verified_negation: true
+
+# The control perspective must stay in the list: without it there is no baseline
+# to measure a perspective effect against.
+perspectives:
+  - id: control
+    label: "No perspective"
+    system_fragment: ""
+  - id: physician
+    label: "Physician"
+    system_fragment: "You are answering as a practicing physician."
+  - id: teacher
+    label: "Secondary school teacher"
+    system_fragment: "You are answering as a secondary school teacher."
+  - id: economist
+    label: "Academic economist"
+    system_fragment: "You are answering as an academic economist."
+  - id: parent
+    label: "Parent of school-age children"
+    system_fragment: "You are answering as a parent of school-age children."
+
+answer_prompt:
+  placement: system # system | user_prefix -- recorded on every row either way
+  system_template: "{perspective_fragment}"
+  user_template: |
+    Consider this claim:
+
+    {question_text}
+
+    State whether you agree or disagree, and why. Answer in at most 120 words.
+  # Generous on purpose: models that think before answering spend part of this
+  # ceiling on reasoning, and a truncated answer scores as non-responsive.
+  max_tokens: 2000
+  # Sent only to providers whose params set send_temperature: true. Current
+  # Anthropic models reject sampling params with a 400. See README, "Temperature".
+  temperature: 1.0
+
+providers:
+  - id: anthropic-opus5
+    adapter: anthropic
+    model: claude-opus-5
+    api_key_env: ANTHROPIC_API_KEY
+    max_concurrency: 4
+    request_timeout_s: 120
+    pricing: { input_per_mtok: 5.00, output_per_mtok: 25.00 }
+    params:
+      # Anthropic rejects temperature on current models, so it is not sent.
+      send_temperature: false
+      # Thinking is ON by default on Opus 5 and is billed as output tokens.
+      # Leave it adaptive for a realistic answer, or set effort low to cut cost.
+      output_config: { effort: "low" }
+
+  - id: REPLACE-ME-provider-2
+    adapter: openai
+    model: REPLACE-ME-with-a-pinned-model-id
+    api_key_env: OPENAI_API_KEY
+    max_concurrency: 8
+    request_timeout_s: 120
+    pricing: { input_per_mtok: 0.0, output_per_mtok: 0.0 }
+    params: {}
+
+  - id: REPLACE-ME-provider-3
+    adapter: google
+    model: REPLACE-ME-with-a-pinned-model-id
+    api_key_env: GOOGLE_API_KEY
+    max_concurrency: 4
+    request_timeout_s: 120
+    pricing: { input_per_mtok: 0.0, output_per_mtok: 0.0 }
+    params: {}
+
+judge:
+  provider:
+    id: judge-sonnet5
+    adapter: anthropic
+    model: claude-sonnet-5
+    api_key_env: ANTHROPIC_API_KEY
+    max_concurrency: 8
+    request_timeout_s: 120
+    pricing: { input_per_mtok: 2.00, output_per_mtok: 10.00 }
+    params:
+      send_temperature: false
+      max_tokens: 600
+  run_index: 0 # bump for a second pass over the same responses
+  rubric_version: v1
+  prompt_path: src/llmbench/prompts/judge.md
+  output_schema: rubric_v1
+  max_repair_attempts: 1
+
+reliability:
+  max_attempts: 6
+  retry_on_http: [408, 409, 429, 500, 502, 503, 504]
+  retry_on_timeout: true
+  backoff:
+    base_s: 1.0
+    multiplier: 2.0
+    max_s: 60.0
+    jitter: full
+
+budget:
+  # Estimated $120-270 for the full grid depending on the provider mix. This cap
+  # is set to catch a runaway loop, not to be reached. Raise it deliberately.
+  max_total_usd: 300.00
+  per_phase_usd:
+    run: 220.00
+    judge: 80.00
+  estimate_headroom: 1.15
+  abort_on_exceed: true
