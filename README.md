@@ -3,16 +3,21 @@
 Ask several model providers the same claims, once per identity perspective, and
 score how far each answer agrees with the claim. AI4PC Lab, Howard University.
 
-Two scripts, in order:
+One script per batch dialect. Four of the five providers offer a batch API, in
+three mutually incompatible formats; Meta offers none. Rather than one script
+with four branches, each format gets its own file:
 
-| | |
-|---|---|
-| `run.py` | reads the prompts spreadsheet, calls every model, appends raw answers to `responses.jsonl` |
-| `judge.py` | reads `responses.jsonl`, scores each answer with a judge model, appends to `judgments.jsonl` |
+| script | providers | how |
+|---|---|---|
+| `openai_xai.py` | OpenAI, xAI | upload JSONL, create batch, fetch results |
+| `anthropic_batch.py` | Anthropic | inline requests, poll, stream results |
+| `google_batch.py` | Google | upload JSONL, create job, download results |
+| `meta_sequential.py` | Meta, local | one request at a time — Meta has no batch endpoint |
 
-They share no code and no state beyond `responses.jsonl`. Generation and judging
-stay separate on purpose: the rubric, the judge model and the parser can all
-change without re-spending the generation budget.
+Every script takes a stage, `answer` or `judge`, and they all append to the same
+two files in the same shape. Generation and judging stay separate: the rubric,
+the judge model and the parser can all change without re-spending the
+generation budget.
 
 ## Setup
 
@@ -26,43 +31,55 @@ interpreter installed there — build the environment from a system Python
 instead:
 
 ```bash
-python -m venv .venv && .venv/Scripts/python.exe -m pip install pandas openpyxl openai anthropic
+python -m venv .venv && .venv/Scripts/python.exe -m pip install pandas openpyxl openai anthropic google-genai
 ```
 
-Then copy `.env.example` to `.env` and fill in the keys you need. Both scripts
-read keys from the environment only; nothing is ever written to disk.
+Then copy `.env.example` to `.env` and fill in the keys you need. Keys are read
+from the environment only.
 
 ## Running
 
-```bash
-python run.py prompts.xlsx --out responses.jsonl
-```
-
-Start with a dry run to check the spreadsheet is being read correctly — it
-prints the grid size and the first few prompts, and calls nothing:
+Submit, then come back later. The same command does both:
 
 ```bash
-python run.py prompts.xlsx --dry-run
+python openai_xai.py answer prompts.xlsx
 ```
 
-Then a small paid smoke test before the full grid:
+The first call submits batches and prints their ids. Every later call fetches
+whatever has finished, appends it, and resubmits anything that came back
+failed. Repeat until it says `nothing left to do`. Add `--wait` to poll in a
+loop instead of checking by hand.
+
+Run the other three the same way, in any order — they all append to
+`responses.jsonl`:
 
 ```bash
-python run.py prompts.xlsx --out smoke.jsonl --limit 3 --providers openai,anthropic --duplicates 1
+python anthropic_batch.py answer prompts.xlsx
+python google_batch.py answer prompts.xlsx
+python meta_sequential.py answer prompts.xlsx
 ```
 
-Judging works the same way:
+Then judge. Pick one script, whichever hosts the judge model:
 
 ```bash
-python judge.py responses.jsonl --out judgments.jsonl --judge anthropic
+python anthropic_batch.py judge responses.jsonl
 ```
 
-Useful flags: `--providers`, `--duplicates` (D), `--limit`, `--concurrency`,
-`--attempts`, `--timeout`. `--help` on either script lists them all.
+Before any of that, check the spreadsheet is being read correctly and that a
+prompt actually works. `--now` skips batching and calls the API directly, which
+is the only way to get an answer in seconds rather than hours:
+
+```bash
+python meta_sequential.py answer prompts.xlsx --dry-run
+python openai_xai.py answer prompts.xlsx --limit 3 --duplicates 1 --now
+```
+
+Useful flags: `--providers`, `--duplicates` (D), `--limit`, `--batch-size`,
+`--pass`, `--no-submit`. `--help` on any script lists them all.
 
 ## The spreadsheet
 
-One row per claim. `run.py` finds the columns by name, case-insensitively:
+One row per claim. Columns are found by name, case-insensitively:
 
 | looking for | accepted headers |
 |---|---|
@@ -70,12 +87,11 @@ One row per claim. `run.py` finds the columns by name, case-insensitively:
 | its negation | `negative`, `negation`, `negated`, `opposite`, `reversed` |
 | an id | `id`, `qid`, `question_id`, `item`, `index`, `no`, `number` |
 
-Anything else is ignored. If the headers differ, pass `--pos-col`,
-`--neg-col`, `--id-col` explicitly; if a column cannot be found, the script
-prints the headers it did see and stops. Without an id column, rows are
-numbered `q0001` onward — which means **inserting a row later renumbers
-everything after it**, so give the sheet a real id column before the first
-paid run.
+Anything else is ignored. If the headers differ, pass `--pos-col`, `--neg-col`,
+`--id-col`; if a column cannot be found, the script prints the headers it did
+see and stops. Without an id column, rows are numbered `q0001` onward — which
+means **inserting a row later renumbers everything after it**, so give the sheet
+a real id column before the first paid run.
 
 With no negation column, only the positives run, and the script says so.
 
@@ -83,25 +99,27 @@ With no negation column, only the positives run, and the script says so.
 
 Every answer is keyed by a stable id built from
 `question | polarity | perspective | provider | run`. Rows are appended as they
-arrive and never rewritten. Rerunning the same command skips ids already saved
-and does only what is missing, so an interrupted run resumes by running it
-again. The same holds for `judge.py`, per judge and per `--pass`.
+arrive and never rewritten, so rerunning any command does only what is missing.
 
-A failed cell leaves a row with `error` set and is retried on the next run. A
-cell that has since succeeded is not retried, so a file can hold both an error
-row and a good row for one id — `judge.py` reads only the good ones.
+Submitted batch ids are recorded in `.batches.jsonl` next to the output. That is
+what lets a later run reattach to a batch already in flight instead of paying to
+submit it twice — don't delete it while batches are open.
 
-Transient failures are retried with exponential backoff. **Billing and quota
-errors are not**: no provider lets you resume a run that stopped for lack of
-credits, and retrying an `insufficient_quota` error cannot fix it. Both scripts
-stop immediately on one, print what was saved, and exit 2. Fix billing, run the
-same command, and it picks up where it left off.
+Failures need no special handling. A request that fails comes back in the batch
+results with an error, gets written as a row with `error` set, and is picked up
+by the next submission. Nothing is retried in a loop. `meta_sequential.py` is
+the exception: having no batch to fall back on, it retries transient failures
+with backoff, and stops outright on a billing or quota error, since no provider
+lets you resume a run that stopped for lack of credits and retrying an
+`insufficient_quota` error cannot fix it.
 
 ## Configuration
 
-Both scripts keep their settings in a labelled block at the top of the file —
-perspectives, providers, model ids, the prompt templates, the token cap. Edit
-them there. Two things to check before any paid run:
+Each script keeps its settings in a labelled block at the top — perspectives,
+model ids, prompt templates, token caps, batch size. The perspectives and
+prompts are deliberately duplicated across the four files; edit them together.
+
+Two things to check before any paid run:
 
 - **Model ids.** Only `claude-opus-5` and `muse-spark-1.3` were verified against
   vendor documentation on 2026-09-21. The rest are defaults; confirm each
@@ -109,56 +127,57 @@ them there. Two things to check before any paid run:
 - **The `cap` field**, which names the parameter carrying the token limit.
   OpenAI's newer models require `max_completion_tokens`; most compatible servers
   still take `max_tokens`. A server that silently ignores the wrong one returns
-  long answers and a larger bill, so check one response's `output_tokens` before
-  launching the full grid.
+  long answers and a larger bill, so check one response's `output_tokens` first.
 
-`local` points at an OpenAI-compatible server on `localhost:8000` — vLLM,
-Ollama or llama.cpp — for open-weight models, or for testing without spending.
-
-## Batch APIs
-
-`run.py` makes ordinary concurrent calls. Four of the five providers also offer
-a batch API at roughly half price, but in three mutually incompatible dialects,
-and Meta offers none. At the full grid size that is a few hours of wall clock
-either way, so batch is a cost lever rather than a necessity.
-
-[`docs/batch-apis.md`](docs/batch-apis.md) has the provider-by-provider
-comparison, with sources: whether each supports batch, whether batches and
-uploaded files can be deleted afterwards, and what happens when credits run out.
-
-One finding from that research affects the design rather than the code: Meta's
-Llama API shut down on 6 July 2026. The `meta` provider entry points at its
-replacement, the Meta Model API, which serves Muse — a Meta model, but not
-Llama. Benchmarking Llama itself now means a third-party host or a local server.
+`meta_sequential.py` also accepts `--providers local`, pointing at an
+OpenAI-compatible server on `localhost:8000` — vLLM, Ollama or llama.cpp — for
+open-weight models, or for testing without spending.
 
 ## Output
 
-`responses.jsonl`, one object per answer:
+`responses.jsonl`, one object per answer, identical across all four scripts:
 
 ```json
 {"id": "c001|pos|physician|openai|0", "qid": "c001", "polarity": "pos",
  "perspective": "physician", "provider": "openai", "run": 0,
- "question": "...", "system": "...", "user": "...", "model": "...",
- "ts": "2026-09-21T14:29:07Z", "response": "...", "input_tokens": 17,
- "output_tokens": 11, "latency_s": 2.12, "error": null}
+ "question": "...", "ts": "2026-09-21T14:29:07Z", "model": "...",
+ "system": "...", "user": "...", "response": "...",
+ "input_tokens": 17, "output_tokens": 11, "error": null}
 ```
 
 `judgments.jsonl`, one object per judgment:
 
 ```json
-{"id": "c001|pos|physician|openai|0", "judge": "anthropic",
- "judge_model": "claude-sonnet-5", "pass": 0, "agreement": 4,
- "refused": false, "reason": "...", "raw": "...", "error": null}
+{"id": "c001|pos|physician|openai|0", "judge": "anthropic", "pass": 0,
+ "qid": "c001", "polarity": "pos", "perspective": "physician",
+ "provider": "openai", "ts": "...", "judge_model": "claude-sonnet-5",
+ "agreement": 4, "refused": false, "reason": "...", "raw": "...", "error": null}
 ```
 
 `raw` holds the judge's reply verbatim, always. If the parser turns out to be
-wrong, fix `parse()` and re-read the existing file rather than paying to judge
-again. The script reports how many judgments have no parsed score.
+wrong, fix `parse_score()` and re-read the existing file rather than paying to
+judge again.
+
+## Provider notes
+
+[`docs/batch-apis.md`](docs/batch-apis.md) has the full comparison with sources:
+which providers support batch, whether batches and uploaded files can be deleted
+afterwards, and what each does when credits run out.
+
+The finding that shaped the layout above: Meta's Llama API shut down on 6 July
+2026. `meta_sequential.py` points at its replacement, the Meta Model API, which
+serves Muse — a Meta model, but not Llama, and with no batch endpoint.
+Benchmarking Llama itself now means a third-party host or a local server.
+
+One caveat on `google_batch.py`: Google documents the request JSONL exactly but
+not the result line shape, so `read_results()` accepts both a `{"key",
+"response"}` wrapper and a bare `GenerateContentResponse`. It has been tested
+against the documented shape, not a live batch — check the first small job
+before trusting a large one.
 
 ## Open questions
 
-Still to settle before the full run: the spreadsheet's real column layout and
-where the perspectives come from; the values of N and D; which judge model, and
-whether a second judge from another family is needed on a subset to check for
-self-preference bias; whose keys and budget; and whether the Meta row means
-Muse or Llama.
+Still to settle: the spreadsheet's real column layout and where the perspectives
+come from; the values of N and D; which judge model, and whether a second judge
+from another family is needed on a subset to check for self-preference bias;
+and whose keys and budget.
