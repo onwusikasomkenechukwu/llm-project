@@ -9,7 +9,9 @@ Each run fetches any batch that has finished, submits whatever is still
 missing, then reports. The same command submits the work, checks on it, and
 picks up failures on the next pass. Add --wait to poll in a loop.
 
-Batch ids live in .batches.jsonl next to the output.
+Writes to responses-anthropic_batch.jsonl, not the shared file, so all four
+scripts can run at once without racing each other. Run merge.py when they are
+done. Batch ids live in .batches-anthropic_batch.jsonl.
 """
 
 import argparse
@@ -285,8 +287,8 @@ def main():
     p.add_argument("stage", choices=["answer", "judge"])
     p.add_argument("input", help="prompts .xlsx for answer, responses.jsonl for judge")
     p.add_argument("--providers", default="anthropic")
-    p.add_argument("--out", help="default: responses.jsonl / judgments.jsonl")
-    p.add_argument("--state", default=".batches.jsonl")
+    p.add_argument("--out", help="default: responses-<script>.jsonl, merged later by merge.py")
+    p.add_argument("--state", help="default: .batches-<script>.jsonl")
     p.add_argument("--duplicates", type=int, default=3, help="D, runs per cell")
     p.add_argument("--pass", dest="pass_", type=int, default=0, help="judge pass number")
     p.add_argument("--limit", type=int)
@@ -306,7 +308,10 @@ def main():
     if unknown:
         sys.exit(f"Unknown provider(s): {unknown}. This script covers {list(PROVIDERS)}.")
 
-    args.out = args.out or ("responses.jsonl" if args.stage == "answer" else "judgments.jsonl")
+    stem = os.path.splitext(os.path.basename(__file__))[0]
+    base = "responses" if args.stage == "answer" else "judgments"
+    args.out = args.out or f"{base}-{stem}.jsonl"
+    args.state = args.state or f".batches-{stem}.jsonl"
     args.sheet = int(args.sheet) if str(args.sheet).isdigit() else args.sheet
     tokens = ANSWER_TOKENS if args.stage == "answer" else JUDGE_TOKENS
 

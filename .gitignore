@@ -1,11 +1,14 @@
 .env
 .venv/
+.venv-test/
 __pycache__/
 *.pyc
 
 # Run outputs: append-only and large. Keep them, but out of git.
 responses.jsonl
 judgments.jsonl
+responses-*.jsonl
+judgments-*.jsonl
 
 # batch ids for in-flight jobs
-.batches.jsonl
+.batches-*.jsonl

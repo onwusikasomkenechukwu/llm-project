@@ -13,11 +13,14 @@ with four branches, each format gets its own file:
 | `anthropic_batch.py` | Anthropic | inline requests, poll, stream results |
 | `google_batch.py` | Google | upload JSONL, create job, download results |
 | `meta_sequential.py` | Meta, local | one request at a time — Meta has no batch endpoint |
+| `merge.py` | — | folds the per-script files into one |
 
-Every script takes a stage, `answer` or `judge`, and they all append to the same
-two files in the same shape. Generation and judging stay separate: the rubric,
-the judge model and the parser can all change without re-spending the
-generation budget.
+Every script takes a stage, `answer` or `judge`, and writes rows in the same
+shape — but to **its own file**, so all four can run at the same time without
+racing each other for one handle. `merge.py` puts them back together.
+
+Generation and judging stay separate: the rubric, the judge model and the parser
+can all change without re-spending the generation budget.
 
 ## Setup
 
@@ -50,8 +53,8 @@ whatever has finished, appends it, and resubmits anything that came back
 failed. Repeat until it says `nothing left to do`. Add `--wait` to poll in a
 loop instead of checking by hand.
 
-Run the other three the same way, in any order — they all append to
-`responses.jsonl`:
+Run the other three the same way. They can all run at once, in separate
+terminals, because each writes to its own file:
 
 ```bash
 python anthropic_batch.py answer prompts.xlsx
@@ -59,11 +62,23 @@ python google_batch.py answer prompts.xlsx
 python meta_sequential.py answer prompts.xlsx
 ```
 
-Then judge. Pick one script, whichever hosts the judge model:
+When every script says `nothing left to do`, fold the four files into one:
+
+```bash
+python merge.py responses
+```
+
+Then judge the merged file. Pick whichever script hosts the judge model, and
+merge again afterwards:
 
 ```bash
 python anthropic_batch.py judge responses.jsonl
+python merge.py judgments
 ```
+
+A second judge from a different family is just a second script over the same
+input — it writes its own file, so it can run alongside the first, and the merge
+keys judgments by `(id, judge, pass)` rather than overwriting.
 
 Before any of that, check the spreadsheet is being read correctly and that a
 prompt actually works. `--now` skips batching and calls the API directly, which
@@ -101,9 +116,15 @@ Every answer is keyed by a stable id built from
 `question | polarity | perspective | provider | run`. Rows are appended as they
 arrive and never rewritten, so rerunning any command does only what is missing.
 
-Submitted batch ids are recorded in `.batches.jsonl` next to the output. That is
-what lets a later run reattach to a batch already in flight instead of paying to
-submit it twice — don't delete it while batches are open.
+Submitted batch ids are recorded in `.batches-<script>.jsonl`. That is what lets
+a later run reattach to a batch already in flight instead of paying to submit it
+twice — don't delete it while batches are open.
+
+`merge.py` resolves duplicates rather than concatenating. A cell that failed and
+was retried has both rows on disk; the successful one wins, and among several
+successes the latest timestamp wins. It never folds a previous merge back into
+itself, so it is safe to rerun at any point, including while jobs are still in
+flight — it just reports less coverage.
 
 Failures need no special handling. A request that fails comes back in the batch
 results with an error, gets written as a row with `error` set, and is picked up
@@ -135,7 +156,11 @@ open-weight models, or for testing without spending.
 
 ## Output
 
-`responses.jsonl`, one object per answer, identical across all four scripts:
+Each script writes `responses-<script>.jsonl` or `judgments-<script>.jsonl`;
+`merge.py` produces `responses.jsonl` and `judgments.jsonl`. Every row has the
+same shape whichever script wrote it.
+
+One object per answer:
 
 ```json
 {"id": "c001|pos|physician|openai|0", "qid": "c001", "polarity": "pos",
@@ -145,7 +170,7 @@ open-weight models, or for testing without spending.
  "input_tokens": 17, "output_tokens": 11, "error": null}
 ```
 
-`judgments.jsonl`, one object per judgment:
+One object per judgment:
 
 ```json
 {"id": "c001|pos|physician|openai|0", "judge": "anthropic", "pass": 0,

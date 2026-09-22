@@ -9,6 +9,10 @@ Meta's Llama API shut down on 2026-07-06. This points at its replacement, the
 Meta Model API, which serves Muse -- a Meta model, but not Llama. For Llama
 itself, point --providers at `local` and run vLLM or Ollama.
 
+Writes to responses-meta_sequential.jsonl, not the shared file, so all four
+scripts can run at once without racing each other. Run merge.py when they are
+done.
+
 Rerunning skips ids already saved, so an interrupted run resumes by running the
 same command again. Transient failures are retried with backoff; billing and
 quota errors stop the run, because retrying cannot fix them.
@@ -255,7 +259,7 @@ def main():
     p.add_argument("stage", choices=["answer", "judge"])
     p.add_argument("input", help="prompts .xlsx for answer, responses.jsonl for judge")
     p.add_argument("--providers", default="meta")
-    p.add_argument("--out", help="default: responses.jsonl / judgments.jsonl")
+    p.add_argument("--out", help="default: responses-<script>.jsonl, merged later by merge.py")
     p.add_argument("--duplicates", type=int, default=3, help="D, runs per cell")
     p.add_argument("--pass", dest="pass_", type=int, default=0, help="judge pass number")
     p.add_argument("--limit", type=int)
@@ -274,7 +278,9 @@ def main():
     if unknown:
         sys.exit(f"Unknown provider(s): {unknown}. This script covers {list(PROVIDERS)}.")
 
-    args.out = args.out or ("responses.jsonl" if args.stage == "answer" else "judgments.jsonl")
+    stem = os.path.splitext(os.path.basename(__file__))[0]
+    base = "responses" if args.stage == "answer" else "judgments"
+    args.out = args.out or f"{base}-{stem}.jsonl"
     args.sheet = int(args.sheet) if str(args.sheet).isdigit() else args.sheet
     tokens = ANSWER_TOKENS if args.stage == "answer" else JUDGE_TOKENS
 
