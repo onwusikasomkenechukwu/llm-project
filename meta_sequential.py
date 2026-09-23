@@ -121,7 +121,7 @@ RATINGS = ((18, "Excellent (Pass)"), (15, "Good (Pass)"), (12, "Fair (Borderline
            (8, "Poor (Fail)"), (0, "Unacceptable (Fail)"))
 
 
-ANSWER_TOKENS = 2000
+ANSWER_TOKENS = 4000
 JUDGE_TOKENS = 400
 
 # Errors that retrying cannot fix.
@@ -294,6 +294,21 @@ def done_ids(path, stage, judge, pass_):
 # Calls
 # ---------------------------------------------------------------------------
 
+def load_env(path=".env"):
+    """Read KEY=value lines from .env into the environment without overwriting
+    anything already set. No dependency, and the values are never printed."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+    except FileNotFoundError:
+        pass
+
+
 def make_client(cfg, timeout):
     key = os.environ.get(cfg["key_env"], "")
     if not key:
@@ -341,6 +356,8 @@ def main():
     p.add_argument("--duplicates", type=int, default=3, help="D, runs per cell")
     p.add_argument("--pass", dest="pass_", type=int, default=0, help="judge pass number")
     p.add_argument("--limit", type=int)
+    p.add_argument("--identities",
+                   help="comma-separated subset, e.g. none,black-american")
     p.add_argument("--concurrency", type=int, default=8)
     p.add_argument("--attempts", type=int, default=5)
     p.add_argument("--timeout", type=float, default=120.0)
@@ -350,6 +367,7 @@ def main():
     p.add_argument("--pos-col")
     p.add_argument("--neg-col")
     args = p.parse_args()
+    load_env()
 
     providers = [x.strip() for x in args.providers.split(",") if x.strip()]
     unknown = [x for x in providers if x not in PROVIDERS]
@@ -361,6 +379,15 @@ def main():
     args.out = args.out or f"{base}-{stem}.jsonl"
     args.sheet = int(args.sheet) if str(args.sheet).isdigit() else args.sheet
     tokens = ANSWER_TOKENS if args.stage == "answer" else JUDGE_TOKENS
+
+    if args.identities:
+        want = [x.strip() for x in args.identities.split(",") if x.strip()]
+        unknown = [x for x in want if x not in IDENTITIES]
+        if unknown:
+            sys.exit(f"Unknown identity/identities: {unknown}. Known: {list(IDENTITIES)}")
+        for k in list(IDENTITIES):
+            if k not in want:
+                del IDENTITIES[k]
 
     cells = answer_cells(args, providers) if args.stage == "answer" else judge_cells(args, providers)
     saved = done_ids(args.out, args.stage, providers[0], args.pass_)

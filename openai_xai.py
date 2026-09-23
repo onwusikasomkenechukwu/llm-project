@@ -60,9 +60,9 @@ IDENTITIES = {
 
 # cap: OpenAI's newer models need max_completion_tokens, xAI takes max_tokens.
 PROVIDERS = {
-    "openai": dict(model="gpt-5.2", cap="max_completion_tokens",
+    "openai": dict(model="gpt-5.5", cap="max_completion_tokens",
                    base_url="https://api.openai.com/v1", key_env="OPENAI_API_KEY"),
-    "xai": dict(model="grok-4", cap="max_tokens",
+    "xai": dict(model="grok-4.7", cap="max_tokens",
                 base_url="https://api.x.ai/v1", key_env="XAI_API_KEY"),
 }
 
@@ -118,7 +118,7 @@ RATINGS = ((18, "Excellent (Pass)"), (15, "Good (Pass)"), (12, "Fair (Borderline
            (8, "Poor (Fail)"), (0, "Unacceptable (Fail)"))
 
 
-ANSWER_TOKENS = 2000
+ANSWER_TOKENS = 4000
 JUDGE_TOKENS = 400
 BATCH_SIZE = 10000  # requests per batch; the API cap is 50,000
 
@@ -301,6 +301,21 @@ def pending_batches(state_path, stage):
 # The batch dialect: upload a file, create a batch, download results
 # ---------------------------------------------------------------------------
 
+def load_env(path=".env"):
+    """Read KEY=value lines from .env into the environment without overwriting
+    anything already set. No dependency, and the values are never printed."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+    except FileNotFoundError:
+        pass
+
+
 def make_client(cfg):
     key = os.environ.get(cfg["key_env"], "")
     if not key:
@@ -388,6 +403,8 @@ def main():
     p.add_argument("--duplicates", type=int, default=3, help="D, runs per cell")
     p.add_argument("--pass", dest="pass_", type=int, default=0, help="judge pass number")
     p.add_argument("--limit", type=int)
+    p.add_argument("--identities",
+                   help="comma-separated subset, e.g. none,black-american")
     p.add_argument("--batch-size", type=int, default=BATCH_SIZE)
     p.add_argument("--wait", action="store_true", help="poll until every batch is done")
     p.add_argument("--poll-seconds", type=int, default=120)
@@ -398,6 +415,7 @@ def main():
     p.add_argument("--pos-col")
     p.add_argument("--neg-col")
     args = p.parse_args()
+    load_env()
 
     default_provs = "openai,xai" if args.stage == "answer" else "openai"
     providers = [x.strip() for x in (args.providers or default_provs).split(",") if x.strip()]
@@ -413,6 +431,15 @@ def main():
     args.state = args.state or f".batches-{stem}.jsonl"
     args.sheet = int(args.sheet) if str(args.sheet).isdigit() else args.sheet
     tokens = ANSWER_TOKENS if args.stage == "answer" else JUDGE_TOKENS
+
+    if args.identities:
+        want = [x.strip() for x in args.identities.split(",") if x.strip()]
+        unknown = [x for x in want if x not in IDENTITIES]
+        if unknown:
+            sys.exit(f"Unknown identity/identities: {unknown}. Known: {list(IDENTITIES)}")
+        for k in list(IDENTITIES):
+            if k not in want:
+                del IDENTITIES[k]
 
     cells = answer_cells(args, providers) if args.stage == "answer" else judge_cells(args, providers)
     by_id = {c["id"]: c for c in cells}
