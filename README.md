@@ -257,7 +257,7 @@ which providers support batch, whether batches and uploaded files can be deleted
 afterwards, and what each does when credits run out.
 
 The finding that shaped the layout above: Meta's Llama API shut down on 6 July
-2026. `meta_sequential.py` points at its replacement, the Meta Model API, which
+2026. `sequential.py` points at its replacement, the Meta Model API, which
 serves Muse — a Meta model, but not Llama, and with no batch endpoint.
 Benchmarking Llama itself now means a third-party host or a local server.
 
