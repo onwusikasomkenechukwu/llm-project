@@ -12,11 +12,17 @@ with four branches, each format gets its own file:
 
 | script | providers | how |
 |---|---|---|
-| `openai_xai.py` | OpenAI, xAI | upload JSONL, create batch, fetch results |
+| `openai_batch.py` | OpenAI | upload JSONL, create batch, fetch results |
 | `anthropic_batch.py` | Anthropic | inline requests, poll, stream results |
 | `google_batch.py` | Google | upload JSONL, create job, download results |
-| `meta_sequential.py` | Meta, local | one request at a time — Meta has no batch endpoint |
+| `sequential.py` | xAI, Meta, local | one request at a time |
 | `merge.py` | — | folds the per-script files into one |
+
+Two providers cannot be batched. Meta has no batch endpoint at all. xAI has
+one, but in its own dialect *and* it rejects every current model — `grok-4.5`,
+`4.6` and `4.7` all return "not supported for batch processing", leaving only
+`grok-4.3` and the `4.20` line. Benchmarking an older Grok against everyone
+else's flagship is not worth half price, so xAI runs live.
 
 Every script takes a stage, `answer` or `judge`, and writes rows in the same
 shape — but to **its own file**, so all four can run at the same time without
@@ -48,7 +54,7 @@ from the environment only.
 Submit, then come back later. The same command does both:
 
 ```bash
-python openai_xai.py answer prompts.xlsx
+python openai_batch.py answer prompts.xlsx
 ```
 
 The first call submits batches and prints their ids. Every later call fetches
@@ -62,7 +68,7 @@ terminals, because each writes to its own file:
 ```bash
 python anthropic_batch.py answer prompts.xlsx
 python google_batch.py answer prompts.xlsx
-python meta_sequential.py answer prompts.xlsx
+python sequential.py answer prompts.xlsx --providers xai,meta
 ```
 
 When every script says `nothing left to do`, fold the four files into one:
@@ -88,8 +94,8 @@ prompt actually works. `--now` skips batching and calls the API directly, which
 is the only way to get an answer in seconds rather than hours:
 
 ```bash
-python meta_sequential.py answer samples/flask10.xlsx --dry-run
-python openai_xai.py answer samples/flask10.xlsx --limit 3 --duplicates 1 --now
+python sequential.py answer samples/flask10.xlsx --providers xai --dry-run
+python openai_batch.py answer samples/flask10.xlsx --limit 3 --duplicates 1 --now
 ```
 
 `samples/flask10.xlsx` is 10 humanities and social-science rows sampled from
@@ -98,8 +104,9 @@ the real prompts arrive. It tests the plumbing, not the research question — th
 FLASK instructions are generic tasks, so they will not surface anything about
 identity tailoring or premise handling.
 
-Useful flags: `--providers`, `--duplicates` (D), `--limit`, `--batch-size`,
-`--pass`, `--no-submit`. `--help` on any script lists them all.
+Useful flags: `--providers`, `--identities`, `--duplicates` (D), `--limit`,
+`--batch-size`, `--pass`, `--no-submit`. `--identities` takes a subset and is
+the main cost control. `--help` on any script lists them all.
 
 ## The rubric
 
@@ -186,7 +193,7 @@ flight — it just reports less coverage.
 
 Failures need no special handling. A request that fails comes back in the batch
 results with an error, gets written as a row with `error` set, and is picked up
-by the next submission. Nothing is retried in a loop. `meta_sequential.py` is
+by the next submission. Nothing is retried in a loop. `sequential.py` is
 the exception: having no batch to fall back on, it retries transient failures
 with backoff, and stops outright on a billing or quota error, since no provider
 lets you resume a run that stopped for lack of credits and retrying an
@@ -208,7 +215,7 @@ Two things to check before any paid run:
   still take `max_tokens`. A server that silently ignores the wrong one returns
   long answers and a larger bill, so check one response's `output_tokens` first.
 
-`meta_sequential.py` also accepts `--providers local`, pointing at an
+`sequential.py` also accepts `--providers local`, pointing at an
 OpenAI-compatible server on `localhost:8000` — vLLM, Ollama or llama.cpp — for
 open-weight models, or for testing without spending.
 
