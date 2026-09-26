@@ -176,8 +176,12 @@ the choice belongs to the study rather than to this harness:
 **Mind the grid size.** 18 identities multiply everything: 400 prompts × 2
 polarities × 18 × 5 providers × 3 runs is 216,000 generation calls and as many
 judge calls. `--identities none,black-american,white-american` is the main cost
-control; `--limit` and `--duplicates 1` are the others. A 10-prompt, 3-identity,
-4-provider pilot costs a few dollars, which is the right size for a first pass.
+control; `--limit` and `--duplicates 1` are the others.
+
+Priced from the pilot's invoices, that full grid is about **$1,900** at Q=400 or
+**$3,800** with polarity — so money is not the constraint the grid size
+suggests. [`docs/cost-model.md`](docs/cost-model.md) has the derivation, what each
+budget buys, and why the judge model is the biggest single lever.
 
 ## The spreadsheet
 
@@ -297,6 +301,9 @@ as unfinished, so the next run grades it again rather than dropping it from the
 analysis.
 
 ## Provider notes
+
+[`docs/cost-model.md`](docs/cost-model.md) turns the pilot's invoices into a
+cost per cell and solves the budget equation for the number of identities.
 
 [`docs/batch-apis.md`](docs/batch-apis.md) has the full comparison with sources:
 which providers support batch, whether batches and uploaded files can be deleted
