@@ -281,7 +281,8 @@ One object per judgment:
  "provider": "openai", "ts": "...", "judge_model": "claude-opus-5",
  "accuracy": 4, "quality": 5, "objectivity": 4, "sourcing": 3,
  "total": 16, "rating": "Good (Pass)", "premise_handling": null,
- "hard_fail": false, "justification": "...", "raw": "...", "error": null}
+ "hard_fail": false, "justification": "...", "input_tokens": 1102,
+ "output_tokens": 486, "raw": "...", "error": null}
 ```
 
 `raw` holds the judge's reply verbatim, always. If the parser turns out to be
@@ -332,6 +333,12 @@ mean total /20                subscores   acc  qual  obj  src
   xai        16.83              xai       4.70 4.13 4.70 3.30
   google     15.87              google    4.13 4.33 4.10 3.30
 ```
+
+It cost about **$1.80**: $0.85 of answers (exact, from recorded tokens) and
+roughly $0.95 of judging. Judging is an estimate rather than a figure because
+that stage did not record token counts at the time — it does now. Note also
+that 149 judge calls were billed, not 120: 29 rows had to be graded twice after
+the truncation problem below.
 
 These numbers are about plumbing, not about the research question. FLASK
 prompts are generic tasks, so nothing in the sample carries a loaded premise:

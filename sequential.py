@@ -285,7 +285,8 @@ def make_row(stage, cell, cfg, text, tin, tout, err):
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
                    input_tokens=tin, output_tokens=tout, error=err)
     else:
-        row.update(judge_model=cfg["model"], **parse_score(text), raw=text, error=err)
+        row.update(judge_model=cfg["model"], **parse_score(text),
+                   input_tokens=tin, output_tokens=tout, raw=text, error=err)
     return row
 
 
