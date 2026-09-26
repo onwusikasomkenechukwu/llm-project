@@ -259,14 +259,20 @@ def parse_score(raw):
         out["rating"] = next(label for lo, label in RATINGS if out["total"] >= lo)
     return out
 
-def make_row(stage, cell, cfg, text, tin, tout, err):
+def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
+    """output_tokens is what the provider bills for, reasoning included. Some
+    providers report reasoning outside their completion count, so it is folded
+    in upstream and kept here as its own field. None means the provider does not
+    report it separately -- Anthropic bills thinking as output and does not
+    break it out."""
     row = {"id": cell["id"], **cell["row"], "ts": datetime.now(timezone.utc).isoformat()}
     if stage == "answer":
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
-                   input_tokens=tin, output_tokens=tout, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning, error=err)
     else:
         row.update(judge_model=cfg["model"], **parse_score(text),
-                   input_tokens=tin, output_tokens=tout, raw=text, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
+                   raw=text, error=err)
     return row
 
 
@@ -385,11 +391,15 @@ def fetch(client, batch_id):
             if resp and resp.get("status_code") == 200:
                 body = resp["body"]
                 u = body.get("usage") or {}
+                # OpenAI counts reasoning inside completion_tokens already, so
+                # this is recorded for visibility, not added on
+                d = u.get("completion_tokens_details") or {}
                 out[key] = (body["choices"][0]["message"].get("content") or "",
-                            u.get("prompt_tokens"), u.get("completion_tokens"), None)
+                            u.get("prompt_tokens"), u.get("completion_tokens"), None,
+                            d.get("reasoning_tokens") or 0)
             else:
                 detail = err or (resp or {}).get("body")
-                out[key] = (None, None, None, json.dumps(detail)[:500])
+                out[key] = (None, None, None, json.dumps(detail)[:500], 0)
     return batch.status, out
 
 
@@ -401,10 +411,12 @@ def call_now(client, cfg, cell, tokens):
         r = client.chat.completions.create(model=cfg["model"], messages=messages,
                                            **{cfg["cap"]: tokens})
         u = r.usage
+        d = getattr(u, "completion_tokens_details", None)
         return (r.choices[0].message.content or "",
-                getattr(u, "prompt_tokens", None), getattr(u, "completion_tokens", None), None)
+                getattr(u, "prompt_tokens", None), getattr(u, "completion_tokens", None), None,
+                getattr(d, "reasoning_tokens", None) or 0)
     except Exception as e:  # noqa: BLE001
-        return None, None, None, f"{type(e).__name__}: {e}"
+        return None, None, None, f"{type(e).__name__}: {e}", 0
 
 
 # ---------------------------------------------------------------------------
@@ -475,10 +487,10 @@ def main():
                 print(f"  {rec['batch_id']} {status} ({rec['n']} requests)")
                 continue
             rows = []
-            for key, (text, tin, tout, err) in results.items():
+            for key, vals in results.items():
                 cell = by_id.get(rec["ids"][int(key[1:])])
                 if cell:
-                    rows.append(make_row(args.stage, cell, cfg, text, tin, tout, err))
+                    rows.append(make_row(args.stage, cell, cfg, *vals))
             append_jsonl(args.out, rows)
             append_jsonl(args.state, [{"batch_id": rec["batch_id"], "fetched": True,
                                        "ts": datetime.now(timezone.utc).isoformat()}])

@@ -334,11 +334,23 @@ mean total /20                subscores   acc  qual  obj  src
   google     15.87              google    4.13 4.33 4.10 3.30
 ```
 
-It cost about **$1.80**: $0.85 of answers (exact, from recorded tokens) and
-roughly $0.95 of judging. Judging is an estimate rather than a figure because
-that stage did not record token counts at the time — it does now. Note also
-that 149 judge calls were billed, not 120: 29 rows had to be graded twice after
-the truncation problem below.
+It cost **$2.13**, billed as: Anthropic $1.33 (answers plus all the judging),
+Google $0.32, OpenAI $0.31, xAI $0.17. Note that 149 judge calls were billed,
+not 120 — 29 rows had to be graded twice after the truncation problem below.
+
+Reconciling those against the tokens on disk found a costing bug worth keeping
+in mind. **Google and xAI both report reasoning tokens outside their output
+count, and both bill for them.** Gemini keeps them in `thoughtsTokenCount`
+rather than `candidatesTokenCount`; xAI in `completion_tokens_details.
+reasoning_tokens` rather than `completion_tokens`. Counting only the visible
+figure under-reported Google by 3.3x and xAI by 3.1x — about 53,000 invisible
+thinking tokens between them on a 120-answer run. OpenAI and Anthropic both
+include reasoning in their output counts, and their predicted cost matched the
+bill to the cent and to 5% respectively.
+
+`output_tokens` is now the billable figure with reasoning folded in, and
+`reasoning_tokens` records the breakdown, so a projection from these files is
+no longer a third of the real number.
 
 These numbers are about plumbing, not about the research question. FLASK
 prompts are generic tasks, so nothing in the sample carries a loaded premise:

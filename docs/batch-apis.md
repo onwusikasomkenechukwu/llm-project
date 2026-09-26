@@ -31,19 +31,29 @@ And xAI's batch endpoint refuses every current Grok, so the flagship has to run
 live regardless. That leaves OpenAI, Anthropic and Google on batch — one script
 each — with xAI and Meta on the sequential script.
 
-**3. Read the docs, then try them.** Every error above was found by calling the
+**3. Two providers hide the tokens they bill you for.** Reconciling the first
+pilot against the actual invoices: Google reports reasoning in
+`thoughtsTokenCount`, *outside* `candidatesTokenCount`, and xAI in
+`completion_tokens_details.reasoning_tokens`, *outside* `completion_tokens`.
+Both bill for them. Counting only the obvious field under-reported Google 3.3x
+($0.10 predicted against $0.32 billed) and xAI 3.1x ($0.07 against $0.17).
+OpenAI and Anthropic include reasoning in their output counts and reconciled to
+the cent. Any cost projection has to fold reasoning in per provider, or it will
+be out by a factor of three on the thinking models.
+
+**4. Read the docs, then try them.** Every error above was found by calling the
 API, not by reading. The docs describe an xAI file-upload flow that the API
 rejects, and say nothing about which models batch. Budget an hour of probing per
 provider before trusting a dialect.
 
-**4. The grid is the cost, not the transport.**
+**5. The grid is the cost, not the transport.**
 At the law school's 17 identities plus a control: 400 prompts x 2 polarities x
 18 x 5 providers x 3 runs = **216,000 generation calls**, and as many judge
 calls. Batch halves the token price on the three providers that support it,
 which matters, but the multiplier that actually decides the bill is the identity
 count. Trim that before trimming anything else.
 
-**5. "Continue if credits run out" is not a provider feature anywhere.**
+**6. "Continue if credits run out" is not a provider feature anywhere.**
 No provider documents resuming a run after a billing stop. The property that
 actually saves the run is ours: a stable id per cell, appended to disk as each
 answer arrives, and a rerun that skips ids already present. `sequential.py`

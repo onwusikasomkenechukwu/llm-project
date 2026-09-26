@@ -68,7 +68,9 @@ IDENTITIES = {
 
 PROVIDERS = {
     # xAI's flagship. Batch-capable models are all older, so this runs live.
-    "xai": dict(model="grok-4.7", cap="max_tokens",
+    # reasoning_tokens sits OUTSIDE completion_tokens on xAI but is billed, so
+    # it has to be added in. OpenAI-style servers usually include it already.
+    "xai": dict(model="grok-4.7", cap="max_tokens", reasoning_extra=True,
                 base_url="https://api.x.ai/v1", key_env="XAI_API_KEY"),
     "meta": dict(model="muse-spark-1.3", cap="max_tokens",
                  base_url="https://api.meta.ai/v1", key_env="MODEL_API_KEY"),
@@ -279,14 +281,20 @@ def parse_score(raw):
         out["rating"] = next(label for lo, label in RATINGS if out["total"] >= lo)
     return out
 
-def make_row(stage, cell, cfg, text, tin, tout, err):
+def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
+    """output_tokens is what the provider bills for, reasoning included. Some
+    providers report reasoning outside their completion count, so it is folded
+    in upstream and kept here as its own field. None means the provider does not
+    report it separately -- Anthropic bills thinking as output and does not
+    break it out."""
     row = {"id": cell["id"], **cell["row"], "ts": datetime.now(timezone.utc).isoformat()}
     if stage == "answer":
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
-                   input_tokens=tin, output_tokens=tout, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning, error=err)
     else:
         row.update(judge_model=cfg["model"], **parse_score(text),
-                   input_tokens=tin, output_tokens=tout, raw=text, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
+                   raw=text, error=err)
     return row
 
 
@@ -352,15 +360,21 @@ def call(client, cfg, cell, tokens):
     r = client.chat.completions.create(model=cfg["model"], messages=messages,
                                        **{cfg["cap"]: tokens})
     u = r.usage
+    d = getattr(u, "completion_tokens_details", None)
+    reasoning = getattr(d, "reasoning_tokens", None) or 0
+    out = getattr(u, "completion_tokens", None) or 0
+    if cfg.get("reasoning_extra"):
+        out += reasoning
     return (r.choices[0].message.content or "",
-            getattr(u, "prompt_tokens", None), getattr(u, "completion_tokens", None))
+            getattr(u, "prompt_tokens", None), out, reasoning)
 
 
 def call_with_retries(client, cfg, cell, tokens, attempts):
     last = ""
     for attempt in range(attempts):
         try:
-            return (*call(client, cfg, cell, tokens), None)
+            text, tin, tout, reasoning = call(client, cfg, cell, tokens)
+            return text, tin, tout, None, reasoning
         except Exception as e:  # noqa: BLE001 -- any failure is just a failed cell
             last = f"{type(e).__name__}: {e}"
             if any(s in last.lower() for s in FATAL_SIGNS):
@@ -368,7 +382,7 @@ def call_with_retries(client, cfg, cell, tokens, attempts):
             if attempt == attempts - 1:
                 break
             time.sleep(min(60.0, 2 ** attempt) * (0.5 + random.random()))
-    return None, None, None, last
+    return None, None, None, last, 0
 
 
 # ---------------------------------------------------------------------------

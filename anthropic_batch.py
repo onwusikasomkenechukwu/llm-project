@@ -253,14 +253,20 @@ def parse_score(raw):
         out["rating"] = next(label for lo, label in RATINGS if out["total"] >= lo)
     return out
 
-def make_row(stage, cell, cfg, text, tin, tout, err):
+def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
+    """output_tokens is what the provider bills for, reasoning included. Some
+    providers report reasoning outside their completion count, so it is folded
+    in upstream and kept here as its own field. None means the provider does not
+    report it separately -- Anthropic bills thinking as output and does not
+    break it out."""
     row = {"id": cell["id"], **cell["row"], "ts": datetime.now(timezone.utc).isoformat()}
     if stage == "answer":
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
-                   input_tokens=tin, output_tokens=tout, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning, error=err)
     else:
         row.update(judge_model=cfg["model"], **parse_score(text),
-                   input_tokens=tin, output_tokens=tout, raw=text, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
+                   raw=text, error=err)
     return row
 
 

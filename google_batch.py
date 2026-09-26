@@ -258,14 +258,20 @@ def parse_score(raw):
         out["rating"] = next(label for lo, label in RATINGS if out["total"] >= lo)
     return out
 
-def make_row(stage, cell, cfg, text, tin, tout, err):
+def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
+    """output_tokens is what the provider bills for, reasoning included. Some
+    providers report reasoning outside their completion count, so it is folded
+    in upstream and kept here as its own field. None means the provider does not
+    report it separately -- Anthropic bills thinking as output and does not
+    break it out."""
     row = {"id": cell["id"], **cell["row"], "ts": datetime.now(timezone.utc).isoformat()}
     if stage == "answer":
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
-                   input_tokens=tin, output_tokens=tout, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning, error=err)
     else:
         row.update(judge_model=cfg["model"], **parse_score(text),
-                   input_tokens=tin, output_tokens=tout, raw=text, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
+                   raw=text, error=err)
     return row
 
 
@@ -375,17 +381,22 @@ def read_results(text):
         obj = json.loads(line)
         key = obj.get("key") or f"r{i}"
         if obj.get("error"):
-            out[key] = (None, None, None, json.dumps(obj["error"])[:500])
+            out[key] = (None, None, None, json.dumps(obj["error"])[:500], 0)
             continue
         resp = obj.get("response", obj)
         try:
             parts = resp["candidates"][0]["content"]["parts"]
             body = "".join(p.get("text", "") for p in parts)
             u = resp.get("usageMetadata") or {}
-            out[key] = (body, u.get("promptTokenCount"), u.get("candidatesTokenCount"), None)
+            # thoughtsTokenCount is billed as output but is NOT included in
+            # candidatesTokenCount. Counting only the latter under-reports cost
+            # roughly threefold on a thinking model.
+            think = u.get("thoughtsTokenCount") or 0
+            billed = (u.get("candidatesTokenCount") or 0) + think
+            out[key] = (body, u.get("promptTokenCount"), billed, None, think)
         except (KeyError, IndexError, TypeError):
             # no candidates usually means the answer was blocked by a filter
-            out[key] = (None, None, None, json.dumps(resp)[:500])
+            out[key] = (None, None, None, json.dumps(resp)[:500], 0)
     return out
 
 
@@ -412,11 +423,12 @@ def call_now(client, cfg, cell, tokens):
             model=cfg["model"], contents=cell["user"],
             config=types.GenerateContentConfig(**cfg_kwargs))
         u = getattr(r, "usage_metadata", None)
+        think = getattr(u, "thoughts_token_count", None) or 0
         return (r.text or "",
                 getattr(u, "prompt_token_count", None),
-                getattr(u, "candidates_token_count", None), None)
+                (getattr(u, "candidates_token_count", None) or 0) + think, None, think)
     except Exception as e:  # noqa: BLE001
-        return None, None, None, f"{type(e).__name__}: {e}"
+        return None, None, None, f"{type(e).__name__}: {e}", 0
 
 
 # ---------------------------------------------------------------------------
@@ -485,10 +497,10 @@ def main():
                 print(f"  {rec['batch_id']} {state} ({rec['n']} requests)")
                 continue
             rows = []
-            for key, (text, tin, tout, err) in results.items():
+            for key, vals in results.items():
                 cell = by_id.get(rec["ids"][int(key[1:])])
                 if cell:
-                    rows.append(make_row(args.stage, cell, cfg, text, tin, tout, err))
+                    rows.append(make_row(args.stage, cell, cfg, *vals))
             append_jsonl(args.out, rows)
             append_jsonl(args.state, [{"batch_id": rec["batch_id"], "fetched": True,
                                        "ts": datetime.now(timezone.utc).isoformat()}])
