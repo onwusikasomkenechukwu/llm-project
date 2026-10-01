@@ -71,14 +71,14 @@ PROVIDERS = {
     # Meta Model API, serving Muse. Not Llama -- see Provider notes. No batch
     # endpoint, so it runs live here.
     #
-    # judge_extra: grading only. Left to itself Muse reasons until it hits the
-    # token ceiling and returns nothing -- 77 of 90 grades came back empty at
-    # 1500 tokens and 15 still did at 3000. reasoning_effort="low" fixes that
-    # and roughly halves its reasoning. Deliberately NOT applied to the answer
-    # stage: the answers are what the benchmark measures, so they stay at the
-    # model's own default.
-    "muse": dict(model="muse-spark-1.3", cap="max_tokens",
-                 judge_extra={"reasoning_effort": "low"},
+    # Muse reasons far longer than the others before answering: 2,200 output
+    # tokens per grade against OpenAI's 375. At a 1500-token ceiling 77 of 90
+    # grades came back empty and 15 still did at 3000 -- the reasoning used the
+    # whole allowance and left nothing for the JSON. Capping it with
+    # reasoning_effort would fix that, but it would also make Muse the only
+    # grader deliberating less than the rest, so the ceiling is raised instead
+    # and every model grades under the same conditions.
+    "muse": dict(model="muse-spark-1.3", cap="max_tokens", judge_tokens=6000,
                  base_url="https://api.meta.ai/v1", key_env="MUSE_API_KEY"),
     # vLLM / Ollama / llama.cpp. The server usually ignores the key.
     "local": dict(model="llama-3.3-70b-instruct", cap="max_tokens",
@@ -563,9 +563,11 @@ def main():
             return
         cfg = PROVIDERS[cell["provider"]]
         try:
-            extra = cfg.get("judge_extra") if args.stage == "judge" else None
-            result = call_with_retries(clients[cell["provider"]], cfg, cell, tokens,
-                                       args.attempts, extra)
+            # a model that reasons at length needs a higher grading ceiling, or
+            # the reasoning crowds out the answer entirely
+            cap = cfg.get("judge_tokens", tokens) if args.stage == "judge" else tokens
+            result = call_with_retries(clients[cell["provider"]], cfg, cell, cap,
+                                       args.attempts)
         except OutOfCredits as e:
             stop.set()
             print(f"\nSTOPPED -- billing/quota error on {cell['provider']}: {e}", file=sys.stderr)

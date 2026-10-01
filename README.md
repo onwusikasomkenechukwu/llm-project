@@ -23,7 +23,7 @@ is costed below and brings this down substantially.
 | Repeats of each question | 3 |
 | Answers collected | 108,000 |
 | Grades produced | 540,000 |
-| **Cost** | **$6,750**, or $13,500 if each question is also negated |
+| **Cost** | **$7,577**, or $15,154 if each question is also negated |
 
 That costing is measured rather than estimated, and checked against the
 invoices — see [Costs](#costs) below.
@@ -64,14 +64,15 @@ below so the arithmetic can be checked independently.
 
 | | point | 99% ceiling | inside $15,000? |
 |---|---|---|---|
-| 400 questions | **$6,750** | $7,750 | yes, with room for a full rerun |
-| 800, each question also negated | **$13,500** | $15,500 | at the point estimate, not at the ceiling |
-| 800 negated, judge panel of four | **$9,052** | ~$10,400 | yes, with room to spare |
+| 400 questions | **$7,577** | $8,593 | yes, with room for a full rerun |
+| 800, each question also negated | **$15,154** | $17,186 | **no, over even at the expected cost** |
+| 800 negated, judge panel of four | **$10,707** | ~$12,100 | yes, with room to spare |
 
-The honest reading: the negated design fits at the expected cost but its 99%
-ceiling is marginally over. Dropping one model from the judge panel brings it
-comfortably inside and leaves a rerun allowance, which is the overrun the
-arithmetic cannot predict.
+The honest reading: **400 questions fits comfortably, and the negated design does
+not** — $15,154 expected against a $15,000 request, before any allowance for a
+rerun. Negations and a five-model judge panel cannot both be had for $15,000.
+Dropping one model from the panel brings the negated design to $10,707 and leaves
+a rerun allowance, which is the overrun the arithmetic cannot predict.
 
 **The design is fixed at 400 questions, 18 identities** — the 17 in the project's
 Identity Matrix plus a no-identity control — **5 providers and 3 replicates, with
@@ -81,10 +82,10 @@ every answer graded by all five models.**
 
 | estimate | total at `R=1` | with negations, `R=2` |
 |---|---|---|
-| **point** | **$6,750** | **$13,500** |
-| 95% interval | $5,876 – $7,538 | $11,752 – $15,076 |
-| 99% interval | $5,584 – $7,750 | $11,168 – $15,500 |
-| min–max across questions | $4,799 – $8,252 | $9,598 – $16,504 |
+| **point** | **$7,577** | **$15,154** |
+| 95% interval | $6,659 – $8,386 | $13,318 – $16,772 |
+| 99% interval | $6,375 – $8,593 | $12,750 – $17,186 |
+| min–max across questions | $5,180 – $9,065 | $10,360 – $18,130 |
 
 ### Per account
 
@@ -94,13 +95,13 @@ despite being the cheapest provider to collect answers from.
 | account | answering | grading | **total** | with negations |
 |---|---|---|---|---|
 | xAI | $121 | $2,224 | **$2,344** | $4,689 |
+| Muse | $244 | $1,699 | **$1,943** | $3,886 |
 | Anthropic | $216 | $1,115 | **$1,331** | $2,662 |
 | OpenAI | $148 | $994 | **$1,142** | $2,284 |
-| Muse | $244 | $872 | **$1,116** | $2,232 |
 | Google | $215 | $602 | **$817** | $1,633 |
-| **total** | **$945** | **$5,805** | **$6,750** | **$13,500** |
+| **total** | **$945** | **$6,632** | **$7,577** | **$15,154** |
 
-**Grading is 86% of the bill.** The answers are nearly incidental.
+**Grading is 88% of the bill.** The answers are nearly incidental.
 
 ### The arithmetic
 
@@ -120,12 +121,12 @@ is `M²`, and
 
 | `C` defined as | value | `T × C` |
 |---|---|---|
-| a graded pair, all-in (answering amortised in) | **$0.01250** | **$6,750** — the total |
-| a grade alone | $0.01075 | $5,805, then add $945 of answering |
+| a graded pair, all-in (answering amortised in) | **$0.01403** | **$7,577** — the total |
+| a grade alone | $0.01228 | $6,632, then add $945 of answering |
 
-One figure that must **not** be used as `C`: **$0.06250**, the cost of one answer
-plus all five of its grades. That is per *answer*, not per pair, so `T × $0.0625`
-comes to $33,750 and counts the grading five times over.
+One figure that must **not** be used as `C`: **$0.07016**, the cost of one answer
+plus all five of its grades. That is per *answer*, not per pair, so `T × $0.07016`
+comes to $37,886 and counts the grading five times over.
 
 ### Three estimates for C
 
@@ -137,21 +138,21 @@ questions themselves.
 
 | estimate | `C` | `R=1` | `R=2` |
 |---|---|---|---|
-| **point** | **$0.01250** | **$6,750** | **$13,500** |
-| 95% | $0.01088 – $0.01396 | $5,876 – $7,538 | $11,752 – $15,076 |
-| 99% | $0.01034 – $0.01435 | $5,584 – $7,750 | $11,168 – $15,500 |
-| min–max by question | $0.00889 – $0.01528 | $4,799 – $8,252 | $9,598 – $16,504 |
+| **point** | **$0.01403** | **$7,577** | **$15,154** |
+| 95% | $0.01233 – $0.01553 | $6,659 – $8,386 | $13,318 – $16,772 |
+| 99% | $0.01181 – $0.01591 | $6,375 – $8,593 | $12,750 – $17,186 |
+| min–max by question | $0.00959 – $0.01679 | $5,180 – $9,065 | $10,360 – $18,130 |
 
 Per-question means, which is where the spread comes from:
 
 | question | type | `C` | total at `R=1` |
 |---|---|---|---|
-| PILOT-01 | Factual | $0.00889 | $4,799 |
-| PILOT-06 | Loaded (False Premise) | $0.01189 | $6,419 |
-| PILOT-02 | Directed | $0.01243 | $6,711 |
-| PILOT-03 | Loaded (False Premise) | $0.01273 | $6,875 |
-| PILOT-04 | Loaded (True Premise) | $0.01377 | $7,435 |
-| PILOT-05 | Open-Ended | $0.01528 | $8,252 |
+| PILOT-01 | Factual | $0.00959 | $5,180 |
+| PILOT-06 | Loaded (False Premise) | $0.01335 | $7,209 |
+| PILOT-02 | Directed | $0.01391 | $7,511 |
+| PILOT-03 | Loaded (False Premise) | $0.01437 | $7,760 |
+| PILOT-04 | Loaded (True Premise) | $0.01546 | $8,348 |
+| PILOT-05 | Open-Ended | $0.01679 | $9,065 |
 
 A factual question runs **42% cheaper** through the grid than an open-ended one,
 because both the answer and all five grades that read it are shorter. So the final
@@ -160,7 +161,7 @@ many there are.
 
 **One caveat on the intervals.** They rest on six questions, and a cluster
 bootstrap over six clusters is known to under-cover, so the true 95% interval is
-probably wider than shown. Use the **99% upper bound — $7,750, or $15,500 with
+probably wider than shown. Use the **99% upper bound — $8,593, or $17,186 with
 negations — as the planning ceiling**, not the 95% figure. Widening the pilot to
 20–30 questions spanning the real type mix would cost about $30 and tighten this
 considerably.
@@ -187,18 +188,18 @@ totals follow.
 | grader | input | output |
 |---|---|---|
 | xAI | 2,643 | **2,838** |
+| Muse | 1,428 | 2,146 |
 | Anthropic | 2,213 | 589 |
 | OpenAI | 1,431 | 375 |
-| Muse | 1,428 | 868 |
 | Google | 1,422 | 691 |
-| **mean** | **1,827** | **1,072** |
+| **mean** | **1,827** | **1,328** |
 
 Two things in there are worth saying out loud.
 
 **Judging input is 6.7× answering input**, because every grade re-reads the
-rubric, the question, the answer and the reference answer. Output is roughly the
-same for both (0.93×). So the common expectation that judging costs more per call
-is right, but it is the *input* that drives it, not longer replies.
+rubric, the question, the answer and the reference answer. Output is 1.15× — so
+the common expectation that judging costs more per call is right, and the input is
+the larger part of why.
 
 **xAI writes far more when grading than anyone else** — 2,838 output tokens
 against OpenAI's 375, a factor of 7.6 — while its answers are mid-range at 801.
@@ -217,8 +218,8 @@ prompt length.
 | | input | output |
 |---|---|---|
 | answering, 108,000 calls | 29.4M | 124.9M |
-| judging, 540,000 calls | 986.7M | 579.0M |
-| **total** | **1.02 billion** | **704 million** |
+| judging, 540,000 calls | 986.7M | 717.1M |
+| **total** | **1.02 billion** | **842 million** |
 
 ### C by role, and the cost lever
 
@@ -228,24 +229,24 @@ lets the answering set and the judge panel move independently.
 | model | `C_answer` | `C_judge` |
 |---|---|---|
 | Google | $0.00996 | **$0.00557** |
-| Muse | $0.01131 | $0.00807 |
 | OpenAI | $0.00686 | $0.00920 |
 | Anthropic | $0.01002 | $0.01032 |
+| Muse | $0.01131 | $0.01573 |
 | xAI | $0.00559 | **$0.02059** |
-| sum | $0.04375 | $0.05374 |
+| sum | $0.04375 | $0.06140 |
 
 Per graded pair, `C(answered, graded) = C_answer/M + C_judge`:
 
 | answered by | Anthropic | Google | Muse | OpenAI | xAI | row mean |
 |---|---|---|---|---|---|---|
-| Muse | $0.01258 | $0.00783 | $0.01033 | $0.01146 | $0.02285 | $0.01301 |
-| Anthropic | $0.01232 | $0.00757 | $0.01007 | $0.01120 | $0.02259 | $0.01275 |
-| Google | $0.01231 | $0.00756 | $0.01006 | $0.01119 | $0.02258 | $0.01274 |
-| OpenAI | $0.01169 | $0.00694 | $0.00944 | $0.01057 | $0.02196 | $0.01212 |
-| xAI | $0.01144 | $0.00669 | $0.00919 | $0.01032 | $0.02171 | $0.01187 |
-| **column mean** | $0.01207 | **$0.00732** | $0.00982 | $0.01095 | **$0.02234** | $0.01250 |
+| Muse | $0.01258 | $0.00783 | $0.01799 | $0.01146 | $0.02285 | $0.01454 |
+| Anthropic | $0.01232 | $0.00757 | $0.01773 | $0.01120 | $0.02259 | $0.01428 |
+| Google | $0.01231 | $0.00756 | $0.01772 | $0.01119 | $0.02258 | $0.01427 |
+| OpenAI | $0.01169 | $0.00694 | $0.01710 | $0.01057 | $0.02196 | $0.01365 |
+| xAI | $0.01144 | $0.00669 | $0.01685 | $0.01032 | $0.02171 | $0.01340 |
+| **column mean** | $0.01207 | **$0.00732** | $0.01748 | $0.01095 | **$0.02234** | $0.01403 |
 
-**`C` varies 3.05× by which model grades and 1.10× by which model answers.** The
+**`C` varies 3.05× by which model grades and 1.09× by which model answers.** The
 variation is almost entirely left-to-right, so **if `C` needs cutting, the lever
 is the judge panel, not the providers under test.**
 
@@ -253,14 +254,15 @@ is the judge panel, not the providers under test.**
 
 | judge panel | `R=1` | `R=2` | vs full |
 |---|---|---|---|
-| all five | **$6,750** | $13,500 | 100% |
-| four — *drops xAI* | **$4,526** | $9,052 | 67% |
-| Google + Muse + OpenAI | **$3,412** | $6,823 | 51% |
-| Google + Muse | **$2,418** | $4,836 | 36% |
-| Google alone | $1,546 | $3,093 | 23% |
+| all five | **$7,577** | $15,154 | 100% |
+| four — *drops xAI* | **$5,353** | $10,707 | 71% |
+| Anthropic + Google + OpenAI | **$3,655** | $7,309 | 48% |
+| Google + OpenAI | **$2,540** | $5,080 | 34% |
+| Google alone | $1,546 | $3,093 | 20% |
 
 Dropping xAI from the panel saves **$2,224**, the largest single economy available
 anywhere in the design, since it grades at $0.02059 against Google's $0.00557.
+Dropping Muse as well saves another $1,699.
 
 A smaller panel costs one specific thing: **self-preference can only be measured
 for a model that grades its own answers**, so the full diagonal needs every model
@@ -269,11 +271,11 @@ whole grid, so running the full panel on a subsample buys it back:
 
 | panel everywhere | full panel on | total | vs full | answers with a self-grade |
 |---|---|---|---|---|
-| Google + Muse | — | $2,418 | 36% | 0 |
-| Google + Muse | **10%** | **$2,851** | **42%** | **2,160 per model** |
-| Google + Muse | 20% | $3,284 | 49% | 4,320 per model |
+| Google + OpenAI | — | $2,540 | 34% | 0 |
+| Google + OpenAI | **10%** | **$3,044** | **40%** | **2,160 per model** |
+| Google + OpenAI | 20% | $3,547 | 47% | 4,320 per model |
 
-**Two cheap graders everywhere plus the full panel on 10% comes to $2,851** — 42%
+**Two cheap graders everywhere plus the full panel on 10% comes to $3,044** — 40%
 of the full price — and still yields 2,160 self-graded answers per model, ample
 for a paired difference of about a point.
 
@@ -281,18 +283,18 @@ The argument that survives for the full panel is not the diagonal but the panel
 mean: five graders average out individual strictness, and the pilot measured a
 full point of spread between the strictest and most lenient. With two graders that
 averaging is weaker; with one it is gone, and every score inherits that grader's
-bias. Whether that is worth $3,899 is a decision for the study.
+bias. Whether that is worth $4,533 is a decision for the study.
 
 ### Unit costs, for pricing changes to the design
 
 | | |
 |---|---|
-| One answer, plus its five grades | $0.0625 |
-| One graded pair | $0.0125 |
-| One question, across the whole grid | **$16.87** |
-| One identity, across the whole grid | **$375** |
-| One replicate (going from D=3 to D=4) | **$2,250** |
-| Adding negations | doubles everything: **+$6,750** |
+| One answer, plus its five grades | $0.0702 |
+| One graded pair | $0.0140 |
+| One question, across the whole grid | **$18.94** |
+| One identity, across the whole grid | **$421** |
+| One replicate (going from D=3 to D=4) | **$2,526** |
+| Adding negations | doubles everything: **+$7,577** |
 
 The question count is the cheap axis to extend and the identity count is the
 expensive one: four more identities costs about what 89 more questions does.
@@ -771,18 +773,25 @@ than the first pilot suggested.
 
 ### One thing Muse needed
 
-Left to itself, **Muse reasons until it hits the token ceiling and returns
-nothing**: 77 of 90 grades came back empty at a 1,500-token ceiling, and 15 still
-did at 3,000. It accepts `reasoning_effort`, so grading now passes
-`reasoning_effort="low"`, which fixed all 90 and brought its grading output from
-1,500-plus tokens down to 868.
+**Muse reasons far longer than the others before answering** — 2,146 output tokens
+per grade against OpenAI's 375. At a 1,500-token grading ceiling, 77 of 90 grades
+came back empty: the reasoning consumed the whole allowance and left nothing for
+the JSON. 15 still failed at 3,000.
 
-That is applied to **grading only**. The answer stage is left at the model's own
-default, because the answers are what the benchmark measures and capping their
-reasoning would change the thing under test. The consequence to note in a write-up
-is that Muse grades with less deliberation than the other four, which is a caveat
-on Muse-as-grader rather than on Muse-as-subject.
+Two ways to fix that, and the choice matters. Capping its reasoning with
+`reasoning_effort="low"` works and is cheap, but it makes Muse the only grader
+deliberating less than the rest — an asymmetry in the instrument that would need
+defending. **Raising its ceiling to 6,000 instead lets every model grade under the
+same conditions**, and a test on the 20 longest grading prompts completed 20 of
+20 with the largest at 3,382 tokens, well clear. `judge_tokens=6000` on the
+provider config does this; a ceiling is not a commitment, so it costs nothing on
+the calls that do not need it.
+
+It cost **$860** at `R=1` to grade this way rather than capped, because Muse's
+grading output went from 868 tokens to 2,146. Worth recording that the capped
+grades and the uncapped ones scored almost identically — every cell of the
+cross-evaluation matrix moved by 0.06 or less. So the cap was never biasing the
+results; it was losing them. The $860 buys comparability, not different numbers.
 
 The same failure appeared on Anthropic at 400 tokens earlier. `JUDGE_TOKENS` is
-now 3,000 and `ANSWER_TOKENS` 4,000 for this reason; a ceiling is not a
-commitment, so raising it costs nothing unused.
+3,000 by default and `ANSWER_TOKENS` 4,000 for this reason.
