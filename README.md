@@ -11,18 +11,19 @@ It answers two questions at scale:
 2. **Does its answer change based on who is asking?** The same question is put
    to each model once per stated identity, and the answers are compared.
 
-Every answer is then graded by **all four models**, against the project's own
-rubric, without the grader being told which model wrote it.
+Every answer is then graded by **all five models**, against the project's own
+rubric, without the grader being told which model wrote it. A smaller judge panel
+is costed below and brings this down substantially.
 
 | | |
 |---|---|
 | Questions | 400, across ten domains |
-| Models answering | 4 — OpenAI, Anthropic, Google, xAI |
+| Models answering | 5 — OpenAI, Anthropic, Google, xAI, Muse |
 | Stated identities | 17, plus a control |
 | Repeats of each question | 3 |
-| Answers collected | 86,400 |
-| Grades produced | 345,600 |
-| **Cost** | **$4,509**, or $9,018 if each question is also negated |
+| Answers collected | 108,000 |
+| Grades produced | 540,000 |
+| **Cost** | **$6,827**, or $13,653 if each question is also negated |
 
 That costing is measured rather than estimated, and checked against the
 invoices — see [Costs](#costs) below.
@@ -252,6 +253,70 @@ is weaker, and with one it is gone — a single-grader score inherits that grade
 bias on every row. Whether that matters more than $2,315 is a decision for the
 study.
 
+### With Muse: five providers
+
+Muse is being added at the law school's request. Its rate has not been measured,
+so **it is assumed to run at the global average** — `C_answer` $0.00811 and
+`C_judge` $0.01102, the means of the four measured providers. Every Muse figure
+below inherits that assumption; the other four are measured.
+
+    T = 5² × 18 × 400 × 1 × 3 = 540,000 graded pairs      (345,600 at four)
+    answers 108,000 at $876;  grading $5,951
+
+| | Q=400 (`R=1`) | Q=800 (`R=2`) |
+|---|---|---|
+| four providers | $4,509 | $9,018 |
+| **five providers, with Muse** | **$6,827** | **$13,653** |
+
+Adding Muse costs **$2,318**, which is 51% more for 25% more models — the jump is
+superlinear because a fifth model both answers and grades, so `T` rises with `M²`.
+
+**`C` per pair falls slightly, to $0.01264.** That is not a saving: the answer
+cost now amortises across five grades instead of four, so each pair is cheaper
+while there are 56% more of them. `C = ΣC_answer/M² + ΣC_judge/M`, and `T × C`
+still reproduces the total.
+
+Per account, these five sum to `C`:
+
+| account | its `C` | `R=1` | `R=2` |
+|---|---|---|---|
+| xAI | $0.00415 | **$2,242** | $4,484 |
+| Muse | $0.00253 | **$1,365** | $2,731 |
+| Anthropic | $0.00243 | **$1,312** | $2,623 |
+| OpenAI | $0.00205 | **$1,106** | $2,212 |
+| Google | $0.00148 | **$802** | $1,603 |
+| **total** | **$0.01264** | **$6,827** | **$13,653** |
+
+On the global-average assumption Muse becomes the second-largest account. If its
+real `C_judge` turns out closer to Grok's than to Gemini's, that figure moves
+most, so it is worth measuring on a small run before committing the budget.
+
+Judge panels, with all five answering:
+
+| judge panel | grading | total | vs full |
+|---|---|---|---|
+| all five | $5,951 | **$6,827** | 100% |
+| four — *drops xAI* | $3,830 | **$4,706** | 69% |
+| Anthropic + Google + OpenAI | $2,640 | **$3,515** | 51% |
+| Google + OpenAI | $1,544 | **$2,420** | 35% |
+| Google alone | $586 | $1,462 | 21% |
+
+And the hybrid, two cheap graders everywhere plus the full panel on a subsample
+to keep the self-preference diagonal:
+
+| | total | vs full | self-graded answers |
+|---|---|---|---|
+| Google + OpenAI, no subsample | $2,420 | 35% | 0 |
+| **+ all five on 10%** | **$2,861** | **42%** | **2,160 per model** |
+| + all five on 20% | $3,302 | 48% | 4,320 per model |
+
+**So the headline figure for five providers is $6,827 at `R=1`, or $13,653 if
+every question is also negated.** Both fit the budget. A reduced panel brings the
+five-provider design in under what the four-provider design costs at full panel —
+$4,706 against $4,509 is near-identical, and $3,515 is well below it — so adding
+Muse and trimming the judge panel together cost less than keeping four providers
+and grading with all of them.
+
 ### Unit costs, for pricing changes to the design
 
 | | |
@@ -437,7 +502,7 @@ own file:
 | `openai_batch.py` | OpenAI | upload JSONL, create batch, fetch results |
 | `anthropic_batch.py` | Anthropic | inline requests, poll, stream results |
 | `google_batch.py` | Google | upload JSONL, create job, download results |
-| `sequential.py` | xAI | one request at a time |
+| `sequential.py` | xAI, Muse | one request at a time |
 | `merge.py` | — | folds the per-script files into one |
 
 xAI cannot be batched. It has a batch endpoint, but it refuses every current
@@ -463,7 +528,7 @@ The other three run the same way, concurrently:
 ```bash
 python anthropic_batch.py answer prompts.xlsx
 python google_batch.py answer prompts.xlsx
-python sequential.py answer prompts.xlsx --providers xai
+python sequential.py answer prompts.xlsx --providers xai,muse
 ```
 
 Then combine:
@@ -626,14 +691,17 @@ unfinished so the next run redoes it.
 sources: batch support, whether uploads can be deleted afterwards, and what each
 does when credits run out.
 
-**Meta was dropped from the benchmark**, and the reason is worth recording since
-the project's earlier results include Llama. Meta's Llama API shut down on
-6 July 2026. Its replacement serves Muse Spark, which is a Meta model but not
-Llama, so it would not have reproduced those results — it would have measured a
-different model under the same label. Reaching Llama itself would have meant
-going through a third-party host, adding a serving stack nobody else in the
-comparison uses. Four providers, each reached directly from its own vendor, is
-the cleaner comparison.
+**Muse is Meta, but it is not Llama**, and that matters because the project's
+earlier results include Llama. Meta's Llama API shut down on 6 July 2026, and its
+replacement serves Muse Spark. So Muse results will not reproduce the earlier
+Llama findings — they measure a different model from the same vendor, and should
+be labelled as Muse throughout rather than as Meta or Llama. Reaching Llama itself
+would mean a third-party host, adding a serving stack no other provider in the
+comparison uses.
+
+Muse also has no batch endpoint, so it runs live through `sequential.py`, and its
+cost is **assumed rather than measured** — see the five-provider costing above.
+Worth measuring on a small run before the budget is committed.
 
 Two things the documentation got wrong, both found by calling the APIs:
 
