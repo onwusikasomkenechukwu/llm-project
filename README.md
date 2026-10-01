@@ -829,5 +829,4 @@ OpenAI's 358, because it reasons at length and reasoning is billed as output.
 Measured against this, the projection in
 [docs/cost-model.md](docs/cost-model.md) ran **23% low**: it assumed 480 output
 tokens per grade where the real figure is 1,076. Revised totals are **$4,509** at
-Q=400 and **$9,018** with negations — still comfortably inside the $30,000
-budget, and now measured per grader rather than modelled.
+Q=400 and **$9,018** with negations.
