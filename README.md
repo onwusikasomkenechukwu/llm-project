@@ -43,14 +43,35 @@ about the models' handling of Black history.
 |---|---|
 | Ready | collection, grading, cross-evaluation, cost accounting |
 | Waiting on | the 400 questions, with reference answers |
+| Not built yet | the analysis and plotting layer that turns `judgments.jsonl` into results |
 | Open | whether each question is also asked in negated form |
+
+**There is no analysis layer yet.** The pipeline produces `judgments.jsonl` and
+every number in this file was computed from it with ad-hoc scripts. Turning that
+into the study's actual outputs — scores by model, by identity, by question type,
+the cross-evaluation matrix, variance across replicates, and the plots — is the
+next piece of work and is not in this repository.
 
 ## Costs
 
 Every figure here is measured: tokens recorded on each row of a live pilot run,
 priced at each provider's own rate. None of it is a list-price estimate. The
 method was checked against the invoices of an earlier run and came within
-**0.05%** of the billed total.
+**0.05%** of the billed total, and the token counts it rests on are published
+below so the arithmetic can be checked independently.
+
+**Against a $15,000 request:**
+
+| | point | 99% ceiling | inside $15,000? |
+|---|---|---|---|
+| 400 questions | **$6,750** | $7,750 | yes, with room for a full rerun |
+| 800, each question also negated | **$13,500** | $15,500 | at the point estimate, not at the ceiling |
+| 800 negated, judge panel of four | **$9,052** | ~$10,400 | yes, with room to spare |
+
+The honest reading: the negated design fits at the expected cost but its 99%
+ceiling is marginally over. Dropping one model from the judge panel brings it
+comfortably inside and leaves a rerun allowance, which is the overrun the
+arithmetic cannot predict.
 
 **The design is fixed at 400 questions, 18 identities** — the 17 in the project's
 Identity Matrix plus a no-identity control — **5 providers and 3 replicates, with
@@ -143,6 +164,61 @@ probably wider than shown. Use the **99% upper bound — $7,750, or $15,500 with
 negations — as the planning ceiling**, not the 95% figure. Widening the pilot to
 20–30 questions spanning the real type mix would cost about $30 and tighten this
 considerably.
+
+### Where the tokens go
+
+Everything above reduces to these counts, so they are the place to check the
+arithmetic independently: multiply by any provider's published rates and the
+totals follow.
+
+**Answering — the initial question and answer:**
+
+| provider | input | output | of which reasoning |
+|---|---|---|---|
+| Muse | 24 | 1,877 | 1,241 |
+| Google | 18 | 1,658 | 988 |
+| Anthropic | 35 | 995 | 0 |
+| xAI | 1,259 | 801 | 548 |
+| OpenAI | 24 | 453 | 102 |
+| **mean** | **272** | **1,157** | |
+
+**Judging — one grade of one answer:**
+
+| grader | input | output |
+|---|---|---|
+| xAI | 2,643 | **2,838** |
+| Anthropic | 2,213 | 589 |
+| OpenAI | 1,431 | 375 |
+| Muse | 1,428 | 868 |
+| Google | 1,422 | 691 |
+| **mean** | **1,827** | **1,072** |
+
+Two things in there are worth saying out loud.
+
+**Judging input is 6.7× answering input**, because every grade re-reads the
+rubric, the question, the answer and the reference answer. Output is roughly the
+same for both (0.93×). So the common expectation that judging costs more per call
+is right, but it is the *input* that drives it, not longer replies.
+
+**xAI writes far more when grading than anyone else** — 2,838 output tokens
+against OpenAI's 375, a factor of 7.6 — while its answers are mid-range at 801.
+That single fact is why xAI is the most expensive account in the project despite
+being the cheapest to collect answers from, and why dropping it from the judge
+panel is the largest available economy.
+
+xAI's answering input looks anomalous at 1,259 tokens for a one-line question
+because `grok-4.7` prepends roughly 1,200 tokens of its own system prompt to
+every call. Most of it returns as a cache hit at a quarter of the input rate, so
+it costs much less than it looks, but it scales with call count rather than with
+prompt length.
+
+**Full grid totals:**
+
+| | input | output |
+|---|---|---|
+| answering, 108,000 calls | 29.4M | 124.9M |
+| judging, 540,000 calls | 986.7M | 579.0M |
+| **total** | **1.02 billion** | **704 million** |
 
 ### C by role, and the cost lever
 
