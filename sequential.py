@@ -71,7 +71,7 @@ PROVIDERS = {
     # Meta Model API, serving Muse. Not Llama -- see Provider notes. No batch
     # endpoint, so it runs live here. Its cost is assumed, not measured.
     "muse": dict(model="muse-spark-1.3", cap="max_tokens",
-                 base_url="https://api.meta.ai/v1", key_env="MODEL_API_KEY"),
+                 base_url="https://api.meta.ai/v1", key_env="MUSE_API_KEY"),
     # vLLM / Ollama / llama.cpp. The server usually ignores the key.
     "local": dict(model="llama-3.3-70b-instruct", cap="max_tokens",
                   base_url="http://localhost:8000/v1", key_env="LOCAL_API_KEY"),

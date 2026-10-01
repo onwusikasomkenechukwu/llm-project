@@ -23,7 +23,7 @@ is costed below and brings this down substantially.
 | Repeats of each question | 3 |
 | Answers collected | 108,000 |
 | Grades produced | 540,000 |
-| **Cost** | **$6,827**, or $13,653 if each question is also negated |
+| **Cost** | **$7,141**, or $14,281 if each question is also negated |
 
 That costing is measured rather than estimated, and checked against the
 invoices — see [Costs](#costs) below.
@@ -47,9 +47,13 @@ about the models' handling of Black history.
 
 ## Costs
 
-Every figure here comes from tokens recorded during a live pilot, priced at each
-provider's own rate. The method was checked against all four invoices and came
-within **0.05%** of the billed total. It is not a list-price estimate.
+Every figure here comes from tokens recorded during live pilots, priced at each
+provider's own rate. The method was checked against all four invoices of the
+earlier four-provider run and came within **0.05%** of the billed total. It is
+not a list-price estimate.
+
+**Identities are fixed at 18** throughout — the 17 in the project's Identity
+Matrix plus a no-identity control.
 
 ### The decided design
 
@@ -170,7 +174,8 @@ graders:
 | OpenAI | $0.01273 |
 | xAI | $0.01242 |
 
-The full matrix, `C(answered, graded) = ANS/M + GRD`:
+The full matrix, `C(answered, graded) = ANS/M + GRD`, at `M = 4` before Muse was
+added — the per-role costs above supersede it, but the shape is unchanged:
 
 | answered by | Anthropic | Google | OpenAI | xAI |
 |---|---|---|---|---|
@@ -253,69 +258,93 @@ is weaker, and with one it is gone — a single-grader score inherits that grade
 bias on every row. Whether that matters more than $2,315 is a decision for the
 study.
 
-### With Muse: five providers
+### With Muse: five providers, all measured
 
-Muse is being added at the law school's request. Its rate has not been measured,
-so **it is assumed to run at the global average** — `C_answer` $0.00811 and
-`C_judge` $0.01102, the means of the four measured providers. Every Muse figure
-below inherits that assumption; the other four are measured.
+Muse was added at the law school's request and has now run. Every rate below is
+measured; nothing is assumed any more.
 
-    T = 5² × 18 × 400 × 1 × 3 = 540,000 graded pairs      (345,600 at four)
-    answers 108,000 at $876;  grading $5,951
+    T = 5² × 18 × 400 × 1 × 3 = 540,000 graded pairs
+    108,000 answers at $945;  540,000 grades at $6,196
 
-| | Q=400 (`R=1`) | Q=800 (`R=2`) |
+| model | `C_answer` | `C_judge` |
 |---|---|---|
-| four providers | $4,509 | $9,018 |
-| **five providers, with Muse** | **$6,827** | **$13,653** |
+| Google | $0.00996 | **$0.00557** |
+| OpenAI | $0.00686 | $0.00920 |
+| Anthropic | $0.01002 | $0.01032 |
+| Muse | $0.01131 | $0.01169 |
+| xAI | $0.00559 | **$0.02059** |
+| sum | $0.04375 | $0.05736 |
 
-Adding Muse costs **$2,318**, which is 51% more for 25% more models — the jump is
-superlinear because a fifth model both answers and grades, so `T` rises with `M²`.
+**The global-average assumption for Muse held.** It was projected at `C_judge`
+$0.01102 and measured $0.01169, 6% out. `C_answer` was projected $0.00811 and
+measured $0.01131, 39% out, but answering is only 15% of the bill, so the total
+moved from the projected $6,827 to **$7,141** — 4.6%.
 
-**`C` per pair falls slightly, to $0.01264.** That is not a saving: the answer
-cost now amortises across five grades instead of four, so each pair is cheaper
-while there are 56% more of them. `C = ΣC_answer/M² + ΣC_judge/M`, and `T × C`
-still reproduces the total.
+### Three estimates for C
 
-Per account, these five sum to `C`:
+`C` is a mean cost per graded pair, and the pairs cluster by question: the same
+question appears once per identity, per provider and per grader. Resampling
+individual pairs would treat 450 correlated observations as independent and give
+an interval far too tight, so the intervals below come from a
+**question-clustered bootstrap** — 20,000 resamples of the questions themselves,
+which is the unit that actually varies.
+
+| estimate | `C` | total at `R=1` | with negations, `R=2` |
+|---|---|---|---|
+| **point** | **$0.01322** | **$7,141** | **$14,281** |
+| 95% CI | $0.01160 – $0.01475 | $6,264 – $7,963 | $12,528 – $15,926 |
+| 99% CI | $0.01101 – $0.01512 | $5,948 – $8,166 | $11,896 – $16,332 |
+| min–max across questions | $0.00957 – $0.01613 | $5,168 – $8,710 | $10,336 – $17,420 |
+
+Per-question means, which is where the spread comes from:
+
+| question | type | `C` | total at `R=1` |
+|---|---|---|---|
+| PILOT-01 | Factual | $0.00957 | $5,168 |
+| PILOT-06 | Loaded (False Premise) | $0.01261 | $6,812 |
+| PILOT-03 | Loaded (False Premise) | $0.01320 | $7,130 |
+| PILOT-02 | Directed | $0.01327 | $7,167 |
+| PILOT-04 | Loaded (True Premise) | $0.01454 | $7,849 |
+| PILOT-05 | Open-Ended | $0.01613 | $8,710 |
+
+A short factual question costs 40% less to run through the grid than an
+open-ended one, because both the answer and every grade that reads it are
+shorter. So the final figure depends on the mix of question types in the real
+400, not only on their number.
+
+**Read the intervals with one caveat.** They rest on six questions, and a cluster
+bootstrap over six clusters is known to under-cover — the true 95% interval is
+probably wider than the one above. Treat the 99% upper bound of **$8,166**, or
+**$16,332** with negations, as the planning ceiling rather than the 95% figure,
+and re-estimate once the real question set arrives. Widening the pilot to 20-30
+questions spanning the real type mix would cost about $25 and would tighten this
+substantially.
+
+### Per account, five providers
 
 | account | its `C` | `R=1` | `R=2` |
 |---|---|---|---|
-| xAI | $0.00415 | **$2,242** | $4,484 |
-| Muse | $0.00253 | **$1,365** | $2,731 |
-| Anthropic | $0.00243 | **$1,312** | $2,623 |
-| OpenAI | $0.00205 | **$1,106** | $2,212 |
-| Google | $0.00148 | **$802** | $1,603 |
-| **total** | **$0.01264** | **$6,827** | **$13,653** |
+| xAI | $0.00434 | **$2,344** | $4,689 |
+| Muse | $0.00279 | **$1,507** | $3,014 |
+| Anthropic | $0.00246 | **$1,331** | $2,662 |
+| OpenAI | $0.00211 | **$1,142** | $2,284 |
+| Google | $0.00151 | **$817** | $1,633 |
+| **total** | **$0.01322** | **$7,141** | **$14,281** |
 
-On the global-average assumption Muse becomes the second-largest account. If its
-real `C_judge` turns out closer to Grok's than to Gemini's, that figure moves
-most, so it is worth measuring on a small run before committing the budget.
+### Judge panels, five providers
 
-Judge panels, with all five answering:
-
-| judge panel | grading | total | vs full |
+| judge panel | `R=1` | `R=2` | vs full |
 |---|---|---|---|
-| all five | $5,951 | **$6,827** | 100% |
-| four — *drops xAI* | $3,830 | **$4,706** | 69% |
-| Anthropic + Google + OpenAI | $2,640 | **$3,515** | 51% |
-| Google + OpenAI | $1,544 | **$2,420** | 35% |
-| Google alone | $586 | $1,462 | 21% |
+| all five | **$7,141** | $14,281 | 100% |
+| four — *drops xAI* | **$4,917** | $9,834 | 69% |
+| Anthropic + Google + OpenAI | **$3,655** | $7,309 | 51% |
+| Google + OpenAI | **$2,540** | $5,080 | 36% |
+| Google alone | $1,546 | $3,093 | 22% |
 
-And the hybrid, two cheap graders everywhere plus the full panel on a subsample
-to keep the self-preference diagonal:
-
-| | total | vs full | self-graded answers |
-|---|---|---|---|
-| Google + OpenAI, no subsample | $2,420 | 35% | 0 |
-| **+ all five on 10%** | **$2,861** | **42%** | **2,160 per model** |
-| + all five on 20% | $3,302 | 48% | 4,320 per model |
-
-**So the headline figure for five providers is $6,827 at `R=1`, or $13,653 if
-every question is also negated.** Both fit the budget. A reduced panel brings the
-five-provider design in under what the four-provider design costs at full panel —
-$4,706 against $4,509 is near-identical, and $3,515 is well below it — so adding
-Muse and trimming the judge panel together cost less than keeping four providers
-and grading with all of them.
+Dropping xAI from the panel saves **$2,224**, still the largest single economy in
+the design. The hybrid still applies: a cheap panel everywhere plus the full panel
+on 10% keeps the self-preference diagonal for all five models at roughly half the
+full price.
 
 ### Unit costs, for pricing changes to the design
 
@@ -699,9 +728,9 @@ be labelled as Muse throughout rather than as Meta or Llama. Reaching Llama itse
 would mean a third-party host, adding a serving stack no other provider in the
 comparison uses.
 
-Muse also has no batch endpoint, so it runs live through `sequential.py`, and its
-cost is **assumed rather than measured** — see the five-provider costing above.
-Worth measuring on a small run before the budget is committed.
+Muse also has no batch endpoint, so it runs live through `sequential.py`. Its
+cost has now been measured on a pilot and came in close to the average of the
+other four — see the five-provider costing above.
 
 Two things the documentation got wrong, both found by calling the APIs:
 
