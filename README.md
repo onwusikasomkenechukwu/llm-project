@@ -382,22 +382,3 @@ quoted. The real prompts have not arrived yet.
 See **The identities** above for the one substantive thing the pilot did
 surface, which affects how the identity axis can be reported.
 
-## Open questions
-
-- **The prompt bank.** The shared workbook is a grading report over ~116 already
-  collected answers, not the question set. Its own README says the source
-  benchmark file holds "many more prompt-design templates than filled-in
-  answers", across sheets that are still empty (Criminal Justice, Education,
-  Economic Opportunity, 14th Amendment, Jim Crow, Reconstruction, Current
-  Events, Pre-Enslavement Africana Heritage). The ~400 prompts are in that
-  source file, which we do not have.
-- **Polarity.** This harness supports a question and its negation. The law
-  school's design instead tags each prompt with a question type — Factual,
-  Directed, Open-ended, Loaded (true/false premise), Normative. Worth deciding
-  whether both axes are wanted, since they are not the same thing.
-- **The judge model**, and whether a second judge from a different family is run
-  over a subset. The workbook's own first recommendation is to grade blind and
-  spot-check with a non-Claude judge, because the previous grading rounds were
-  run by a Claude judge with model identity visible. `--judge` and `--pass` make
-  that a second command, not a rewrite.
-- **D**, and whose keys and budget.
