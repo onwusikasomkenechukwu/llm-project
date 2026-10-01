@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
-"""The providers that cannot be batched, one request at a time.
+"""xAI, one request at a time, because it cannot be batched.
 
     python sequential.py answer prompts.xlsx --providers xai
     python sequential.py judge responses.jsonl --providers xai
 
-Two providers end up here. Meta has no batch endpoint at all. xAI has one, but
-it is a different dialect from OpenAI's and, more to the point, it refuses
-every current model: grok-4.5, 4.6 and 4.7 all return "not supported for batch
-processing", leaving only grok-4.3 and the 4.20 line. Benchmarking a older Grok
-against everyone else's flagship is not a trade worth making for half price.
-
-Meta's Llama API shut down on 2026-07-06. This points at its replacement, the
-Meta Model API, which serves Muse -- a Meta model, but not Llama. For Llama
-itself, point --providers at `local` and run vLLM or Ollama.
+xAI has a batch API, but it is a different dialect from OpenAI's and, more to
+the point, it refuses every current model: grok-4.5, 4.6 and 4.7 all return
+"not supported for batch processing", leaving only grok-4.3 and the 4.20 line.
+Benchmarking an older Grok against everyone else's flagship is not a trade
+worth making for half price.
 
 Writes to responses-sequential.jsonl, not the shared file, so all four
 scripts can run at once without racing each other. Run merge.py when they are
@@ -72,8 +68,6 @@ PROVIDERS = {
     # it has to be added in. OpenAI-style servers usually include it already.
     "xai": dict(model="grok-4.7", cap="max_tokens", reasoning_extra=True,
                 base_url="https://api.x.ai/v1", key_env="XAI_API_KEY"),
-    "meta": dict(model="muse-spark-1.3", cap="max_tokens",
-                 base_url="https://api.meta.ai/v1", key_env="MODEL_API_KEY"),
     # vLLM / Ollama / llama.cpp. The server usually ignores the key.
     "local": dict(model="llama-3.3-70b-instruct", cap="max_tokens",
                   base_url="http://localhost:8000/v1", key_env="LOCAL_API_KEY"),

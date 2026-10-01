@@ -16,17 +16,17 @@ live API won — see the xAI row. Re-check before the paid run.
 
 ## What this means for the study
 
-**1. "Meta = Llama" no longer holds, and it is a design decision, not a detail.**
-The Meta row can be either *Muse Spark via the Meta Model API* (a proprietary
-Meta model, direct from the vendor, no batch) or *a Llama open-weight model
-served by a third party* (still Llama, but the serving stack is no longer
-Meta's). Those support different claims in a write-up, and the project's existing
-Llama results came from the consumer app rather than an API either way.
+**1. Meta was dropped, and this row is why.** "Meta = Llama" stopped being true
+on 6 July 2026. The only direct-from-vendor option left is Muse Spark, a Meta
+model but not Llama, so including it would have measured a different model under
+the label the project's earlier Llama results used. Reaching Llama itself would
+have meant a third-party host, adding a serving stack no other provider in the
+comparison uses. The benchmark runs four providers instead, each reached directly
+from its own vendor.
 
-Self-hosting was ruled out at the 30 September meeting: a local open model is not
+Self-hosting was ruled out for a related reason: a local open model is not
 expected to match the cloud models, so measuring it would spend compute without
-informing the comparison. A third-party host remains available if the study wants
-Llama specifically.
+informing the comparison.
 
 **2. Three of five can actually be batched, in three incompatible dialects.**
 Corrected 2026-09-23 after running against the live APIs: OpenAI and xAI do
@@ -34,7 +34,7 @@ Corrected 2026-09-23 after running against the live APIs: OpenAI and xAI do
 named batch and posts requests into it under a `chat_get_completion` variant.
 And xAI's batch endpoint refuses every current Grok, so the flagship has to run
 live regardless. That leaves OpenAI, Anthropic and Google on batch — one script
-each — with xAI and Meta on the sequential script.
+each — with xAI on the sequential script.
 
 **3. Two providers hide the tokens they bill you for.** Reconciling the first
 pilot against the actual invoices: Google reports reasoning in

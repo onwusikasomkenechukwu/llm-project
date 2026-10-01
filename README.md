@@ -11,18 +11,18 @@ It answers two questions at scale:
 2. **Does its answer change based on who is asking?** The same question is put
    to each model once per stated identity, and the answers are compared.
 
-Every answer is then graded by **all five models**, against the project's own
+Every answer is then graded by **all four models**, against the project's own
 rubric, without the grader being told which model wrote it.
 
 | | |
 |---|---|
 | Questions | 400, across ten domains |
-| Models answering | 5 — OpenAI, Anthropic, Google, xAI, Meta |
+| Models answering | 4 — OpenAI, Anthropic, Google, xAI |
 | Stated identities | 17, plus a control |
 | Repeats of each question | 3 |
-| Answers collected | 108,000 |
-| Grades produced | 540,000 |
-| **Estimated cost** | **~$5,500**, or ~$11,000 if each question is also negated |
+| Answers collected | 86,400 |
+| Grades produced | 345,600 |
+| **Estimated cost** | **~$3,700**, or ~$7,300 if each question is also negated |
 
 Costing is in [docs/cost-model.md](docs/cost-model.md), priced from a real pilot
 run rather than estimated. Against the $30,000 budget there is room for the full
@@ -79,14 +79,14 @@ Premise), Open-Ended.
 
 ## Cross-evaluation
 
-Every answer is graded by all five models, not only by one. Each grade records
-which model produced it, so the results can be read as a five-by-five matrix.
+Every answer is graded by all four models, not only by one. Each grade records
+which model produced it, so the results can be read as a four-by-four matrix.
 
 This is partly a reliability measure and partly a bias measure. A model grading
 its own answer is a conflict of interest, and the gap between a model's
-self-grade and the other four's grade of the same answer measures that bias
-directly. Running only the four other models would be cheaper by about $900 and
-would lose the measurement.
+self-grade and the other three's grade of the same answer measures that bias
+directly. Running only the other three would be cheaper by about $715 and would
+lose the measurement.
 
 The grader is never told which model wrote an answer, and every call is a fresh
 single-turn request, so no conversation history or memory carries between them.
@@ -192,13 +192,13 @@ own file:
 | `openai_batch.py` | OpenAI | upload JSONL, create batch, fetch results |
 | `anthropic_batch.py` | Anthropic | inline requests, poll, stream results |
 | `google_batch.py` | Google | upload JSONL, create job, download results |
-| `sequential.py` | xAI, Meta | one request at a time |
+| `sequential.py` | xAI | one request at a time |
 | `merge.py` | — | folds the per-script files into one |
 
-Two providers cannot be batched. Meta has no batch endpoint. xAI has one, but it
-refuses every current model — `grok-4.5`, `4.6` and `4.7` all return "not
-supported for batch processing" — and benchmarking an older Grok against
-everyone else's current model is not worth the discount.
+xAI cannot be batched. It has a batch endpoint, but it refuses every current
+model — `grok-4.5`, `4.6` and `4.7` all return "not supported for batch
+processing" — and benchmarking an older Grok against everyone else's current
+model is not worth the discount.
 
 Each script writes to **its own file**, so all of them can run at once without
 competing for one handle. `merge.py` combines them.
@@ -218,7 +218,7 @@ The other three run the same way, concurrently:
 ```bash
 python anthropic_batch.py answer prompts.xlsx
 python google_batch.py answer prompts.xlsx
-python sequential.py answer prompts.xlsx --providers xai,meta
+python sequential.py answer prompts.xlsx --providers xai
 ```
 
 Then combine:
@@ -230,7 +230,7 @@ python merge.py responses
 ## Grading
 
 Each script grades with its own provider, so cross-evaluation is these four
-commands plus Meta, run against the merged answers:
+commands run against the merged answers:
 
 ```bash
 python anthropic_batch.py judge responses.jsonl --prompts prompts.xlsx
@@ -316,7 +316,6 @@ confirmed with a live call on 2026-09-23:
 | Anthropic | `claude-opus-5-5` | |
 | xAI | `grok-4.7` | cannot be batched; runs live |
 | Google | `gemini-3.1-pro-preview` | the only version 3 Pro on offer — a preview model in a published benchmark deserves a footnote in the methods |
-| Meta | `muse-spark-1.3` | Muse, not Llama; see Provider notes |
 
 Two earlier identifiers taken from documentation did not exist at all, so check
 rather than assume when these age.
@@ -368,16 +367,18 @@ unfinished so the next run redoes it.
 
 ## Provider notes
 
-[`docs/batch-apis.md`](docs/batch-apis.md) compares all five providers with
+[`docs/batch-apis.md`](docs/batch-apis.md) compares all five providers originally considered, with
 sources: batch support, whether uploads can be deleted afterwards, and what each
 does when credits run out.
 
-**Meta is not Llama any more.** Meta's Llama API shut down on 6 July 2026. Its
-replacement serves Muse Spark — a Meta model, but not Llama — and has no batch
-endpoint. The project's existing Llama results came from the consumer Meta AI
-app rather than an API, so reproducing them through one means either accepting
-that Muse is a different model or going through a third party that hosts Llama.
-This is a study decision, not a software one.
+**Meta was dropped from the benchmark**, and the reason is worth recording since
+the project's earlier results include Llama. Meta's Llama API shut down on
+6 July 2026. Its replacement serves Muse Spark, which is a Meta model but not
+Llama, so it would not have reproduced those results — it would have measured a
+different model under the same label. Reaching Llama itself would have meant
+going through a third-party host, adding a serving stack nobody else in the
+comparison uses. Four providers, each reached directly from its own vendor, is
+the cleaner comparison.
 
 Two things the documentation got wrong, both found by calling the APIs:
 
@@ -387,16 +388,17 @@ Two things the documentation got wrong, both found by calling the APIs:
 - **Google's result format is undocumented.** The parser accepts both plausible
   shapes. A live batch has confirmed which one is real.
 
-Running models locally was considered and ruled out: a self-hosted open model is
-not expected to match the cloud models, so measuring it would spend compute
-without informing the comparison. `sequential.py` still accepts
-`--providers local` against an OpenAI-compatible server, for testing the
+Running models locally was considered and ruled out for the same kind of reason:
+a self-hosted open model is not expected to match the cloud models, so measuring
+it would spend compute without informing the comparison. `sequential.py` still
+accepts `--providers local` against an OpenAI-compatible server, for testing the
 pipeline without spending money.
 
 ## What the pilot showed
 
-Ten placeholder questions from FLASK (cited above), three identities, four
-providers, one run each, $2.13.
+Ten placeholder questions from FLASK (cited above), three identities, all four
+providers, one run each, $2.13. The pilot therefore covered every provider in
+the final design, which is why the cost model needs no assumed figures.
 Every stage worked: submit, poll, collect, resubmit failures, merge, grade, merge.
 120 answers, 120 grades, all parsed.
 
