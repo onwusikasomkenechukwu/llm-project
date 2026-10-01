@@ -63,8 +63,6 @@ all four models: **86,400 answers and 345,600 grades.**
 | Google | $215 | $469 | **$684** | $1,369 |
 | **total** | **$700** | **$3,809** | **$4,509** | **$9,018** |
 
-Against the **$30,000** budget that leaves $25,491 unspent, or $20,982 if every
-question is also asked in negated form.
 
 **Credit is not distributed evenly.** xAI needs 2.7 times Google's budget even
 though it is the cheapest provider to collect answers from, because `grok-4.7`
