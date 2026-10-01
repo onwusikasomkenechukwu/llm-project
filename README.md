@@ -70,6 +70,45 @@ emits about 2,700 output tokens per grade against OpenAI's 358 — it reasons at
 length, and reasoning is billed as output. Grading is 84% of the whole bill and
 xAI is 45% of the grading.
 
+### In T = M²·N·P·R·D form
+
+Writing the grid as `T = M² · N · P · R · D` — models, identities, unique
+prompts, reframings, duplicates — gives the same number:
+
+    T = 4² × 18 × 400 × 1 × 3 = 345,600 graded pairs
+
+`M²` is the two roles each model plays: `M` models answer, and all `M` grade
+every answer. So `T` counts **graded pairs**, which is the grade count above, and
+the 86,400 answer-generation calls sit inside it rather than beside it.
+
+`C` then depends on what it is per. Both readings are consistent; only the first
+can be multiplied by `T` on its own:
+
+| C defined as | value | `T × C` |
+|---|---|---|
+| a graded pair, all-in (answering amortised in) | **$0.01305** | **$4,509** — the total |
+| a grade alone | $0.01102 | $3,809, then add $701 of answering |
+
+One figure that must not be used as `C`: **$0.05219**, the cost of one answer
+plus all four of its grades. That is per *answer*, not per pair, so `T × $0.05219`
+comes to $18,037 and counts the grading four times over.
+
+**`C` is also not uniform.** It depends on which model is grading:
+
+| grading model | per grade | |
+|---|---|---|
+| `gemini-3.1-pro-preview` | $0.00543 | |
+| `gpt-5.5` | $0.00887 | 1.6× |
+| `claude-opus-5-5` | $0.01014 | 1.9× |
+| `grok-4.7` | $0.01964 | **3.6×** |
+
+An averaged `C` is fine for a total, but it hides this, and this is what decides
+how much credit each account needs.
+
+Scaling from the measured figures: **$251 per identity**, **$11.27 per unique
+prompt**, **$1,503 per duplicate**. At `R = 2`, `T = 691,200` and the total is
+$9,018.
+
 ### Unit costs, for pricing changes to the design
 
 | | |
