@@ -505,14 +505,20 @@ but it is a smaller problem than the first pilot suggested.
 
 ### Cost
 
-Priced from the tokens recorded on every row, this pilot should come to **$3.76**:
+Priced from the tokens recorded on every row, this pilot was predicted to cost
+**$3.76**, and the bills confirm the method:
 
-| account | answering | grading | total |
-|---|---|---|---|
-| xAI | $0.10 | $1.41 | **$1.52** |
-| Anthropic | $0.18 | $0.73 | **$0.91** |
-| OpenAI | $0.12 | $0.64 | **$0.76** |
-| Google | $0.18 | $0.39 | **$0.57** |
+| account | answering | grading | predicted | billed |
+|---|---|---|---|---|
+| xAI | $0.10 | $1.41 | $1.52 | **$1.51** |
+| Anthropic | $0.18 | $0.73 | $0.91 | pending |
+| OpenAI | $0.12 | $0.64 | $0.76 | pending |
+| Google | $0.18 | $0.39 | $0.57 | **$0.58** |
+
+Within 0.2% across the two accounts settled so far, and those are the two that
+were hardest to predict — xAI's figure rests on cached-input pricing, on
+reasoning tokens billed outside `completion_tokens`, and on it having no batch
+discount, all three at once.
 
 **Grading is 84% of that, and xAI alone is 45% of the grading** despite being one
 grader of four. `grok-4.7` emits about 2,700 output tokens per grade against

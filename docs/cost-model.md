@@ -4,8 +4,9 @@ Budget: **$30,000**. This costs the full benchmark against it, using prices
 measured from a real pilot run rather than estimated.
 
 Everything below is arithmetic on two things: the per-call token counts recorded
-in `responses.jsonl` and `judgments.jsonl`, and the four invoices from the pilot.
-Nothing here is a vendor's list-price estimate.
+in `responses.jsonl` and `judgments.jsonl`, and the invoices from the pilot runs.
+Nothing here is a vendor's list-price estimate, and the method has been checked
+against the bills — see the next section.
 
 ## Summary
 
@@ -26,6 +27,32 @@ trimming to fit it.
 **Every figure here is measured.** Meta was dropped from the benchmark, and with
 it the one provider that had no key at pilot time. The pilot ran all four
 remaining providers, so nothing below is an assumed rate.
+
+## Checked against the invoices
+
+The pilot's cost was predicted from recorded tokens before the bills arrived, and
+then compared against them:
+
+| account | predicted | billed | error |
+|---|---|---|---|
+| xAI | $1.515 | **$1.51** | −0.3% |
+| Google | $0.571 | **$0.58** | +1.6% |
+| Anthropic | $0.910 | pending | |
+| OpenAI | $0.762 | pending | |
+| **checked so far** | **$2.086** | **$2.09** | **+0.2%** |
+
+xAI is the useful one. It is the only account whose prediction depends on three
+separate corrections holding at once: cached input billed at $0.50 per million
+rather than $2.00, reasoning tokens billed although they are reported outside
+`completion_tokens`, and no batch discount because its current models refuse
+batch. Landing within a cent means all three are right, and it is the provider
+where getting this wrong would have cost the most, since xAI is 45% of the
+grading bill.
+
+Scaled onto the full grid, the observed +0.2% moves the $4,509 projection to
+about $4,518. Anthropic and OpenAI are still outstanding, so this is not a
+complete reconciliation — but the two accounts that were hardest to model are the
+two that have been confirmed.
 
 ## What one answer costs
 
