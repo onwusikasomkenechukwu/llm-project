@@ -182,6 +182,76 @@ Cheapest pair to the dearest is 3.2×, and the variation is almost entirely
 left-to-right. If `C` ever needs cutting, the lever is which models grade, not
 which models answer.
 
+#### Separating the two costs, and sizing the judge panel
+
+Answering and grading are two different per-unit costs, both measured. Keeping
+them apart lets the answering set and the judge panel move independently:
+
+| model | `C_answer` | `C_judge` | grading / answering |
+|---|---|---|---|
+| Google | $0.00996 | **$0.00543** | 0.55× |
+| OpenAI | $0.00686 | $0.00887 | 1.29× |
+| Anthropic | $0.01002 | $0.01014 | 1.01× |
+| xAI | $0.00560 | **$0.01964** | **3.51×** |
+| sum | $0.03244 | $0.04408 | |
+
+`C_judge` spreads **3.6×** across the four; `C_answer` only 1.8×. And Google is
+the only model that is cheaper to grade with than to answer with.
+
+Generalising `M²` to two independent sets, with `base = N·P·R·D`:
+
+    T      = |M_a| · |M_j| · N · P · R · D
+    total  = base · ( Σ C_answer[m]  +  |M_a| · Σ C_judge[j] )
+                      m ∈ M_a                   j ∈ M_j
+
+All four answering, which is fixed by the study, gives 86,400 answers at $701.
+The panel is then the only variable:
+
+| judge panel | grading | total | vs full |
+|---|---|---|---|
+| all four | $3,809 | **$4,509** | 100% |
+| Anthropic + Google + OpenAI — *drops xAI* | $2,112 | **$2,812** | 62% |
+| Google + xAI | $2,166 | $2,867 | 64% |
+| Anthropic + Google | $1,345 | $2,046 | 45% |
+| Google + OpenAI | $1,236 | **$1,936** | 43% |
+| Anthropic alone | $876 | $1,577 | 35% |
+| Google alone | $469 | **$1,170** | 26% |
+
+**Dropping xAI from the panel alone saves $1,697 — 38% of the entire bill** — and
+leaves three independent graders. It is the single largest economy available
+anywhere in this design.
+
+#### What a smaller panel gives up, and how to keep it anyway
+
+A panel smaller than all four loses one thing specifically: **self-preference can
+only be measured for a model that grades its own answers.** Every model has to
+appear in the panel for the full diagonal, so a three-judge panel measures it for
+three models and a one-judge panel for one.
+
+That measurement does not need the whole grid. It is a within-answer paired
+comparison — the same answer graded by its author and by the others — so it has
+far more statistical power per observation than the across-model comparison the
+benchmark is actually for. Running the full panel on a subsample buys it back:
+
+| panel on everything | full panel on | grading | total | vs full | answers with a self-grade |
+|---|---|---|---|---|---|
+| Google + OpenAI | — | $1,236 | $1,936 | 43% | 0 |
+| Google + OpenAI | 5% | $1,364 | $2,065 | 46% | 1,080 per model |
+| Google + OpenAI | **10%** | $1,493 | **$2,194** | **49%** | **2,160 per model** |
+| Google + OpenAI | 20% | $1,750 | $2,451 | 54% | 4,320 per model |
+| Google alone | 10% | $803 | $1,504 | 33% | 2,160 per model |
+
+**Two cheap graders everywhere plus the full panel on 10% comes to $2,194 — half
+the full price — and still gives 2,160 self-graded answers per model**, which is
+ample for a paired difference of about a point.
+
+The remaining argument for the full panel is not the diagonal but the panel mean:
+four graders average out individual strictness, and the pilot found a full point
+of spread between the strictest and most lenient. With two graders that averaging
+is weaker, and with one it is gone — a single-grader score inherits that grader's
+bias on every row. Whether that matters more than $2,315 is a decision for the
+study.
+
 ### Unit costs, for pricing changes to the design
 
 | | |
@@ -194,19 +264,6 @@ which models answer.
 
 So the question count is cheap to extend and the identity count is the expensive
 axis — adding four more identities costs about as much as adding 90 questions.
-
-### If fewer graders were acceptable
-
-| | Q=400 | Q=800 |
-|---|---|---|
-| One grader | $1,653 | $3,306 |
-| Three, each model graded by the others | $3,557 | $7,114 |
-| **All four, every model grades every answer** | **$4,509** | **$9,018** |
-
-The full matrix costs $952 more than excluding self-grades, and that is what buys
-the self-preference measurement — see [What the pilot
-showed](#what-the-pilot-showed), where it found Google grading its own answers
-1.07 points above what the other three give them.
 
 ### What these figures do not include
 
