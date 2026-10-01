@@ -124,6 +124,64 @@ Scaling from the measured figures: **$251 per identity**, **$11.27 per unique
 prompt**, **$1,503 per duplicate**. At `R = 2`, `T = 691,200` and the total is
 $9,018.
 
+#### C per API
+
+`C` involves two providers per pair — one answered, one graded — so it decomposes
+three ways. All three are exact and all three reduce to $0.01305.
+
+**By which account is billed.** These four sum to `C`, so each one multiplied by
+`T` gives that account's bill. This is the decomposition to use when loading
+credit.
+
+| account | answering | grading | its `C` | share | `R=1` | `R=2` |
+|---|---|---|---|---|---|---|
+| xAI | $0.00035 | $0.00491 | **$0.00526** | 40% | $1,818 | $3,636 |
+| Anthropic | $0.00063 | $0.00253 | **$0.00316** | 24% | $1,093 | $2,185 |
+| OpenAI | $0.00043 | $0.00222 | **$0.00265** | 20% | $915 | $1,829 |
+| Google | $0.00062 | $0.00136 | **$0.00198** | 15% | $684 | $1,369 |
+| **total** | $0.00203 | $0.01102 | **$0.01305** | 100% | **$4,509** | **$9,018** |
+
+An account bills for the `T/M²` answers it wrote and the `T/M` grades it gave,
+so its share is `ANS/M² + GRD/M`. Grading is 84% of `C` and answering 16%, which
+is why xAI costs the most despite being the cheapest provider to collect answers
+from.
+
+At the planning `C` of $0.014, scale each by 1.073: xAI $0.00564, Anthropic
+$0.00339, OpenAI $0.00284, Google $0.00212 — giving $1,951 / $1,172 / $981 / $734
+at `R=1`.
+
+**By who graded the pair**, which is what actually drives `C`:
+
+| grading model | `C` contribution | |
+|---|---|---|
+| `gemini-3.1-pro-preview` | $0.00746 | |
+| `gpt-5.5` | $0.01090 | 1.5× |
+| `claude-opus-5-5` | $0.01217 | 1.6× |
+| `grok-4.7` | $0.02167 | **2.9×** |
+
+**By who answered it**, which barely matters — a 9% spread, against 190% across
+graders:
+
+| answering model | `C` contribution |
+|---|---|
+| Anthropic | $0.01353 |
+| Google | $0.01351 |
+| OpenAI | $0.01273 |
+| xAI | $0.01242 |
+
+The full matrix, `C(answered, graded) = ANS/M + GRD`:
+
+| answered by | Anthropic | Google | OpenAI | xAI |
+|---|---|---|---|---|
+| Anthropic | $0.01264 | $0.00793 | $0.01137 | $0.02215 |
+| Google | $0.01263 | $0.00792 | $0.01136 | $0.02213 |
+| OpenAI | $0.01185 | $0.00715 | $0.01058 | $0.02136 |
+| xAI | $0.01154 | $0.00683 | $0.01027 | $0.02104 |
+
+Cheapest pair to the dearest is 3.2×, and the variation is almost entirely
+left-to-right. If `C` ever needs cutting, the lever is which models grade, not
+which models answer.
+
 ### Unit costs, for pricing changes to the design
 
 | | |
