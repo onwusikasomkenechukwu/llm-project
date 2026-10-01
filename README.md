@@ -47,252 +47,79 @@ about the models' handling of Black history.
 
 ## Costs
 
-Every figure here comes from tokens recorded during live pilots, priced at each
-provider's own rate. The method was checked against all four invoices of the
-earlier four-provider run and came within **0.05%** of the billed total. It is
-not a list-price estimate.
+Every figure here is measured: tokens recorded on each row of a live pilot run,
+priced at each provider's own rate. None of it is a list-price estimate. The
+method was checked against the invoices of an earlier run and came within
+**0.05%** of the billed total.
 
-**Identities are fixed at 18** throughout — the 17 in the project's Identity
-Matrix plus a no-identity control.
+**The design is fixed at 400 questions, 18 identities** — the 17 in the project's
+Identity Matrix plus a no-identity control — **5 providers and 3 replicates, with
+every answer graded by all five models.**
 
-### The decided design
+    108,000 answers    540,000 grades
 
-400 questions, 18 identities, 4 providers, 3 replicates, every answer graded by
-all four models: **86,400 answers and 345,600 grades.**
+| estimate | total at `R=1` | with negations, `R=2` |
+|---|---|---|
+| **point** | **$6,750** | **$13,500** |
+| 95% interval | $5,876 – $7,538 | $11,752 – $15,076 |
+| 99% interval | $5,584 – $7,750 | $11,168 – $15,500 |
+| min–max across questions | $4,799 – $8,252 | $9,598 – $16,504 |
+
+### Per account
+
+Credit is not distributed evenly. xAI needs almost three times Google's budget
+despite being the cheapest provider to collect answers from.
 
 | account | answering | grading | **total** | with negations |
 |---|---|---|---|---|
-| xAI | $121 | $1,697 | **$1,818** | $3,636 |
-| Anthropic | $216 | $876 | **$1,093** | $2,185 |
-| OpenAI | $148 | $766 | **$915** | $1,829 |
-| Google | $215 | $469 | **$684** | $1,369 |
-| **total** | **$700** | **$3,809** | **$4,509** | **$9,018** |
+| xAI | $121 | $2,224 | **$2,344** | $4,689 |
+| Anthropic | $216 | $1,115 | **$1,331** | $2,662 |
+| OpenAI | $148 | $994 | **$1,142** | $2,284 |
+| Muse | $244 | $872 | **$1,116** | $2,232 |
+| Google | $215 | $602 | **$817** | $1,633 |
+| **total** | **$945** | **$5,805** | **$6,750** | **$13,500** |
 
+**Grading is 86% of the bill.** The answers are nearly incidental.
 
-**Credit is not distributed evenly.** xAI needs 2.7 times Google's budget even
-though it is the cheapest provider to collect answers from, because `grok-4.7`
-emits about 2,700 output tokens per grade against OpenAI's 358 — it reasons at
-length, and reasoning is billed as output. Grading is 84% of the whole bill and
-xAI is 45% of the grading.
+### The arithmetic
 
-### In T = M²·N·P·R·D form
-
-Writing the grid as `T = M² · N · P · R · D` — models, identities, unique
-prompts, reframings, duplicates — gives the same number:
-
-    T = 4² × 18 × 400 × 1 × 3 = 345,600 graded pairs
-
-`M²` is the two roles each model plays: `M` models answer, and all `M` grade
-every answer. So `T` counts **graded pairs**, which is the grade count above, and
-the 86,400 answer-generation calls sit inside it rather than beside it.
-
-`C` then depends on what it is per. Both readings are consistent; only the first
-can be multiplied by `T` on its own:
-
-| C defined as | value | `T × C` |
-|---|---|---|
-| a graded pair, all-in (answering amortised in) | **$0.01305** | **$4,509** — the total |
-| a grade alone | $0.01102 | $3,809, then add $701 of answering |
-
-One figure that must not be used as `C`: **$0.05219**, the cost of one answer
-plus all four of its grades. That is per *answer*, not per pair, so `T × $0.05219`
-comes to $18,037 and counts the grading four times over.
-
-**For planning, use `C = $0.014`** — the measured figure plus 7%. That gives
-**$4,838** at `R = 1` and **$9,677** at `R = 2`, and it absorbs answers running
-about 40% longer than the pilot's.
-
-`C` is less sensitive to answer length than it looks, because grade *output*
-dominates it: 4,304 tokens per answer across the four grades, which do not grow
-when the answer does. Doubling answer length raises `C` only 17%, to $0.0153.
-
-| answers vs the pilot | C | total at R=1 |
-|---|---|---|
-| as measured | $0.01305 | $4,510 |
-| 1.5× longer | $0.01415 | $4,891 |
-| 2× longer | $0.01525 | $5,272 |
-| 3× longer | $0.01746 | $6,034 |
-
-**`C` is also not uniform.** It depends on which model is grading:
-
-| grading model | per grade | |
-|---|---|---|
-| `gemini-3.1-pro-preview` | $0.00543 | |
-| `gpt-5.5` | $0.00887 | 1.6× |
-| `claude-opus-5-5` | $0.01014 | 1.9× |
-| `grok-4.7` | $0.01964 | **3.6×** |
-
-An averaged `C` is fine for a total, but it hides this, and this is what decides
-how much credit each account needs.
-
-Scaling from the measured figures: **$251 per identity**, **$11.27 per unique
-prompt**, **$1,503 per duplicate**. At `R = 2`, `T = 691,200` and the total is
-$9,018.
-
-#### C per API
-
-`C` involves two providers per pair — one answered, one graded — so it decomposes
-three ways. All three are exact and all three reduce to $0.01305.
-
-**By which account is billed.** These four sum to `C`, so each one multiplied by
-`T` gives that account's bill. This is the decomposition to use when loading
-credit.
-
-| account | answering | grading | its `C` | share | `R=1` | `R=2` |
-|---|---|---|---|---|---|---|
-| xAI | $0.00035 | $0.00491 | **$0.00526** | 40% | $1,818 | $3,636 |
-| Anthropic | $0.00063 | $0.00253 | **$0.00316** | 24% | $1,093 | $2,185 |
-| OpenAI | $0.00043 | $0.00222 | **$0.00265** | 20% | $915 | $1,829 |
-| Google | $0.00062 | $0.00136 | **$0.00198** | 15% | $684 | $1,369 |
-| **total** | $0.00203 | $0.01102 | **$0.01305** | 100% | **$4,509** | **$9,018** |
-
-An account bills for the `T/M²` answers it wrote and the `T/M` grades it gave,
-so its share is `ANS/M² + GRD/M`. Grading is 84% of `C` and answering 16%, which
-is why xAI costs the most despite being the cheapest provider to collect answers
-from.
-
-At the planning `C` of $0.014, scale each by 1.073: xAI $0.00564, Anthropic
-$0.00339, OpenAI $0.00284, Google $0.00212 — giving $1,951 / $1,172 / $981 / $734
-at `R=1`.
-
-**By who graded the pair**, which is what actually drives `C`:
-
-| grading model | `C` contribution | |
-|---|---|---|
-| `gemini-3.1-pro-preview` | $0.00746 | |
-| `gpt-5.5` | $0.01090 | 1.5× |
-| `claude-opus-5-5` | $0.01217 | 1.6× |
-| `grok-4.7` | $0.02167 | **2.9×** |
-
-**By who answered it**, which barely matters — a 9% spread, against 190% across
-graders:
-
-| answering model | `C` contribution |
-|---|---|
-| Anthropic | $0.01353 |
-| Google | $0.01351 |
-| OpenAI | $0.01273 |
-| xAI | $0.01242 |
-
-The full matrix, `C(answered, graded) = ANS/M + GRD`, at `M = 4` before Muse was
-added — the per-role costs above supersede it, but the shape is unchanged:
-
-| answered by | Anthropic | Google | OpenAI | xAI |
-|---|---|---|---|---|
-| Anthropic | $0.01264 | $0.00793 | $0.01137 | $0.02215 |
-| Google | $0.01263 | $0.00792 | $0.01136 | $0.02213 |
-| OpenAI | $0.01185 | $0.00715 | $0.01058 | $0.02136 |
-| xAI | $0.01154 | $0.00683 | $0.01027 | $0.02104 |
-
-Cheapest pair to the dearest is 3.2×, and the variation is almost entirely
-left-to-right. If `C` ever needs cutting, the lever is which models grade, not
-which models answer.
-
-#### Separating the two costs, and sizing the judge panel
-
-Answering and grading are two different per-unit costs, both measured. Keeping
-them apart lets the answering set and the judge panel move independently:
-
-| model | `C_answer` | `C_judge` | grading / answering |
-|---|---|---|---|
-| Google | $0.00996 | **$0.00543** | 0.55× |
-| OpenAI | $0.00686 | $0.00887 | 1.29× |
-| Anthropic | $0.01002 | $0.01014 | 1.01× |
-| xAI | $0.00560 | **$0.01964** | **3.51×** |
-| sum | $0.03244 | $0.04408 | |
-
-`C_judge` spreads **3.6×** across the four; `C_answer` only 1.8×. And Google is
-the only model that is cheaper to grade with than to answer with.
-
-Generalising `M²` to two independent sets, with `base = N·P·R·D`:
-
-    T      = |M_a| · |M_j| · N · P · R · D
-    total  = base · ( Σ C_answer[m]  +  |M_a| · Σ C_judge[j] )
+    T      = M_a · M_j · N · P · R · D          graded pairs
+    total  = base · ( Σ C_answer[m]  +  M_a · Σ C_judge[j] )     base = N·P·R·D
                       m ∈ M_a                   j ∈ M_j
 
-All four answering, which is fixed by the study, gives 86,400 answers at $701.
-The panel is then the only variable:
+With one answering set and one judging set of the same five models, `M_a · M_j`
+is `M²`, and
 
-| judge panel | grading | total | vs full |
-|---|---|---|---|
-| all four | $3,809 | **$4,509** | 100% |
-| Anthropic + Google + OpenAI — *drops xAI* | $2,112 | **$2,812** | 62% |
-| Google + xAI | $2,166 | $2,867 | 64% |
-| Anthropic + Google | $1,345 | $2,046 | 45% |
-| Google + OpenAI | $1,236 | **$1,936** | 43% |
-| Anthropic alone | $876 | $1,577 | 35% |
-| Google alone | $469 | **$1,170** | 26% |
+    T = 5² × 18 × 400 × 1 × 3 = 540,000
 
-**Dropping xAI from the panel alone saves $1,697 — 38% of the entire bill** — and
-leaves three independent graders. It is the single largest economy available
-anywhere in this design.
+`M²` is the two roles each model plays, so `T` counts graded pairs and the
+108,000 answer-generation calls sit **inside** it rather than beside it.
 
-#### What a smaller panel gives up, and how to keep it anyway
+#### What C is per
 
-A panel smaller than all four loses one thing specifically: **self-preference can
-only be measured for a model that grades its own answers.** Every model has to
-appear in the panel for the full diagonal, so a three-judge panel measures it for
-three models and a one-judge panel for one.
-
-That measurement does not need the whole grid. It is a within-answer paired
-comparison — the same answer graded by its author and by the others — so it has
-far more statistical power per observation than the across-model comparison the
-benchmark is actually for. Running the full panel on a subsample buys it back:
-
-| panel on everything | full panel on | grading | total | vs full | answers with a self-grade |
-|---|---|---|---|---|---|
-| Google + OpenAI | — | $1,236 | $1,936 | 43% | 0 |
-| Google + OpenAI | 5% | $1,364 | $2,065 | 46% | 1,080 per model |
-| Google + OpenAI | **10%** | $1,493 | **$2,194** | **49%** | **2,160 per model** |
-| Google + OpenAI | 20% | $1,750 | $2,451 | 54% | 4,320 per model |
-| Google alone | 10% | $803 | $1,504 | 33% | 2,160 per model |
-
-**Two cheap graders everywhere plus the full panel on 10% comes to $2,194 — half
-the full price — and still gives 2,160 self-graded answers per model**, which is
-ample for a paired difference of about a point.
-
-The remaining argument for the full panel is not the diagonal but the panel mean:
-four graders average out individual strictness, and the pilot found a full point
-of spread between the strictest and most lenient. With two graders that averaging
-is weaker, and with one it is gone — a single-grader score inherits that grader's
-bias on every row. Whether that matters more than $2,315 is a decision for the
-study.
-
-### Five providers, every rate measured
-
-Muse has run. Nothing below is assumed.
-
-    T = 5² × 18 × 400 × 1 × 3 = 540,000 graded pairs
-    108,000 answers at $945;  540,000 grades at $5,805
-
-| model | `C_answer` | `C_judge` |
+| `C` defined as | value | `T × C` |
 |---|---|---|
-| Google | $0.00996 | **$0.00557** |
-| Muse | $0.01131 | $0.00807 |
-| OpenAI | $0.00686 | $0.00920 |
-| Anthropic | $0.01002 | $0.01032 |
-| xAI | $0.00559 | **$0.02059** |
-| sum | $0.04375 | $0.05374 |
+| a graded pair, all-in (answering amortised in) | **$0.01250** | **$6,750** — the total |
+| a grade alone | $0.01075 | $5,805, then add $945 of answering |
 
-Grading is **86%** of spend.
+One figure that must **not** be used as `C`: **$0.06250**, the cost of one answer
+plus all five of its grades. That is per *answer*, not per pair, so `T × $0.0625`
+comes to $33,750 and counts the grading five times over.
 
 ### Three estimates for C
 
-`C` is a mean cost per graded pair, and the pairs cluster by question — the same
-question appears once per identity, per provider and per grader. Resampling
-individual pairs would treat 450 correlated observations as independent and give
-an interval far too tight, so these come from a **question-clustered bootstrap**,
-20,000 resamples of the questions themselves.
+`C` is a mean, and the pairs cluster by question — the same question appears once
+per identity, per provider and per grader. Resampling individual pairs would treat
+450 correlated observations as independent and give an interval far too tight, so
+these come from a **question-clustered bootstrap**, 20,000 resamples of the
+questions themselves.
 
-| estimate | `C` | total at `R=1` | with negations, `R=2` |
+| estimate | `C` | `R=1` | `R=2` |
 |---|---|---|---|
 | **point** | **$0.01250** | **$6,750** | **$13,500** |
-| 95% interval | $0.01088 – $0.01396 | $5,876 – $7,538 | $11,752 – $15,076 |
-| 99% interval | $0.01034 – $0.01435 | $5,584 – $7,750 | $11,168 – $15,500 |
-| min–max across questions | $0.00889 – $0.01528 | $4,799 – $8,252 | $9,598 – $16,504 |
-
-**Identities are fixed at 18** in all of this — the 17 in the project's Identity
-Matrix plus a no-identity control.
+| 95% | $0.01088 – $0.01396 | $5,876 – $7,538 | $11,752 – $15,076 |
+| 99% | $0.01034 – $0.01435 | $5,584 – $7,750 | $11,168 – $15,500 |
+| min–max by question | $0.00889 – $0.01528 | $4,799 – $8,252 | $9,598 – $16,504 |
 
 Per-question means, which is where the spread comes from:
 
@@ -305,30 +132,48 @@ Per-question means, which is where the spread comes from:
 | PILOT-04 | Loaded (True Premise) | $0.01377 | $7,435 |
 | PILOT-05 | Open-Ended | $0.01528 | $8,252 |
 
-A short factual question runs **42% cheaper** through the grid than an open-ended
-one, because both the answer and all five grades that read it are shorter. The
-final figure therefore depends on the *mix* of question types in the real 400,
-not only on how many there are.
+A factual question runs **42% cheaper** through the grid than an open-ended one,
+because both the answer and all five grades that read it are shorter. So the final
+figure depends on the *mix* of question types in the real 400, not only on how
+many there are.
 
 **One caveat on the intervals.** They rest on six questions, and a cluster
 bootstrap over six clusters is known to under-cover, so the true 95% interval is
-probably wider than the one above. Use the **99% upper bound of $7,750**, or
-**$15,500** with negations, as the planning ceiling rather than the 95% figure.
-Widening the pilot to 20–30 questions spanning the real type mix would cost about
-$30 and would tighten this considerably.
+probably wider than shown. Use the **99% upper bound — $7,750, or $15,500 with
+negations — as the planning ceiling**, not the 95% figure. Widening the pilot to
+20–30 questions spanning the real type mix would cost about $30 and tighten this
+considerably.
 
-### Per account, five providers
+### C by role, and the cost lever
 
-| account | its `C` | `R=1` | `R=2` |
-|---|---|---|---|
-| xAI | $0.00434 | **$2,344** | $4,689 |
-| Anthropic | $0.00246 | **$1,331** | $2,662 |
-| OpenAI | $0.00211 | **$1,142** | $2,284 |
-| Muse | $0.00207 | **$1,116** | $2,232 |
-| Google | $0.00151 | **$817** | $1,633 |
-| **total** | **$0.01250** | **$6,750** | **$13,500** |
+Answering and grading are two separate per-unit costs. Keeping them apart is what
+lets the answering set and the judge panel move independently.
 
-### Judge panels, five providers
+| model | `C_answer` | `C_judge` |
+|---|---|---|
+| Google | $0.00996 | **$0.00557** |
+| Muse | $0.01131 | $0.00807 |
+| OpenAI | $0.00686 | $0.00920 |
+| Anthropic | $0.01002 | $0.01032 |
+| xAI | $0.00559 | **$0.02059** |
+| sum | $0.04375 | $0.05374 |
+
+Per graded pair, `C(answered, graded) = C_answer/M + C_judge`:
+
+| answered by | Anthropic | Google | Muse | OpenAI | xAI | row mean |
+|---|---|---|---|---|---|---|
+| Muse | $0.01258 | $0.00783 | $0.01033 | $0.01146 | $0.02285 | $0.01301 |
+| Anthropic | $0.01232 | $0.00757 | $0.01007 | $0.01120 | $0.02259 | $0.01275 |
+| Google | $0.01231 | $0.00756 | $0.01006 | $0.01119 | $0.02258 | $0.01274 |
+| OpenAI | $0.01169 | $0.00694 | $0.00944 | $0.01057 | $0.02196 | $0.01212 |
+| xAI | $0.01144 | $0.00669 | $0.00919 | $0.01032 | $0.02171 | $0.01187 |
+| **column mean** | $0.01207 | **$0.00732** | $0.00982 | $0.01095 | **$0.02234** | $0.01250 |
+
+**`C` varies 3.05× by which model grades and 1.10× by which model answers.** The
+variation is almost entirely left-to-right, so **if `C` needs cutting, the lever
+is the judge panel, not the providers under test.**
+
+### Sizing the judge panel
 
 | judge panel | `R=1` | `R=2` | vs full |
 |---|---|---|---|
@@ -338,36 +183,56 @@ $30 and would tighten this considerably.
 | Google + Muse | **$2,418** | $4,836 | 36% |
 | Google alone | $1,546 | $3,093 | 23% |
 
-Dropping xAI from the panel saves **$2,224** — still the largest single economy in
-the design, since it grades at $0.02059 against Google's $0.00557. A cheap panel
-everywhere plus the full panel on 10% keeps the self-preference diagonal for all
-five at roughly half the full price.
+Dropping xAI from the panel saves **$2,224**, the largest single economy available
+anywhere in the design, since it grades at $0.02059 against Google's $0.00557.
+
+A smaller panel costs one specific thing: **self-preference can only be measured
+for a model that grades its own answers**, so the full diagonal needs every model
+in the panel. But that is a within-answer paired comparison and does not need the
+whole grid, so running the full panel on a subsample buys it back:
+
+| panel everywhere | full panel on | total | vs full | answers with a self-grade |
+|---|---|---|---|---|
+| Google + Muse | — | $2,418 | 36% | 0 |
+| Google + Muse | **10%** | **$2,851** | **42%** | **2,160 per model** |
+| Google + Muse | 20% | $3,284 | 49% | 4,320 per model |
+
+**Two cheap graders everywhere plus the full panel on 10% comes to $2,851** — 42%
+of the full price — and still yields 2,160 self-graded answers per model, ample
+for a paired difference of about a point.
+
+The argument that survives for the full panel is not the diagonal but the panel
+mean: five graders average out individual strictness, and the pilot measured a
+full point of spread between the strictest and most lenient. With two graders that
+averaging is weaker; with one it is gone, and every score inherits that grader's
+bias. Whether that is worth $3,899 is a decision for the study.
 
 ### Unit costs, for pricing changes to the design
 
 | | |
 |---|---|
-| One answer, plus its four grades | $0.0522 |
-| One question, across the whole grid | $11.27 |
-| One identity, across the whole grid | $251 |
-| One replicate (going from D=3 to D=4) | $1,503 |
-| Adding negations | doubles everything: +$4,509 |
+| One answer, plus its five grades | $0.0625 |
+| One graded pair | $0.0125 |
+| One question, across the whole grid | **$16.87** |
+| One identity, across the whole grid | **$375** |
+| One replicate (going from D=3 to D=4) | **$2,250** |
+| Adding negations | doubles everything: **+$6,750** |
 
-So the question count is cheap to extend and the identity count is the expensive
-axis — adding four more identities costs about as much as adding 90 questions.
+The question count is the cheap axis to extend and the identity count is the
+expensive one: four more identities costs about what 89 more questions does.
 
 ### What these figures do not include
 
-- **Reruns.** A prompt template corrected after a full run means paying for that
-  run twice. The most likely single overrun, and nothing above accounts for it.
+- **Reruns.** A prompt template or rubric corrected after a full run means paying
+  for that run twice. The likeliest single overrun, and nothing above accounts for
+  it.
 - **Human raters** on a subsample. Not an API cost.
-- **Price changes.** Every rate was read in late September 2026.
+- **Price changes.** Every rate was read in late September and early October 2026.
 
-A sensible reserve is double: hold **$9,000** for Q=400 or **$18,000** with
-negations, and expect to spend about half.
+A sensible reserve is the 99% ceiling plus a rerun allowance.
 
-[docs/cost-model.md](docs/cost-model.md) has the derivation, the per-grader rates
-and the invoice reconciliation.
+[docs/cost-model.md](docs/cost-model.md) carries the derivation and the invoice
+reconciliation.
 
 ## How grading works
 
@@ -406,14 +271,15 @@ Premise), Open-Ended.
 
 ## Cross-evaluation
 
-Every answer is graded by all four models, not only by one. Each grade records
-which model produced it, so the results can be read as a four-by-four matrix.
+Every answer is graded by all five models, not only by one. Each grade records
+which model produced it, so the results can be read as a five-by-five matrix.
 
 This is partly a reliability measure and partly a bias measure. A model grading
 its own answer is a conflict of interest, and the gap between a model's
 self-grade and the other three's grade of the same answer measures that bias
-directly. Running only the other three would be cheaper by about $855 and would
-lose the measurement.
+directly. Running only the other four would be cheaper, and a smaller panel
+cheaper still — see [Sizing the judge panel](#sizing-the-judge-panel) — but it
+loses the measurement for any model left out.
 
 The grader is never told which model wrote an answer, and every call is a fresh
 single-turn request, so no conversation history or memory carries between them.
@@ -445,7 +311,7 @@ was the grading setup, not the models.
 
 **So the identity spread measures tailoring as well as quality, and must not be
 reported as quality alone.** How far it distorts things depends on the questions:
-the spread was about 2 points on generic placeholder questions and only 0.19 on
+the spread was about 2 points on generic placeholder questions and only 0.16 on
 the real ones (see [What the pilot showed](#what-the-pilot-showed)), because
 mentioning the asker's background is a non-sequitur on a generic task and
 reasonable on a civil-rights question. The mechanism has not gone away, and 18
