@@ -1,7 +1,8 @@
 # Cost analysis
 
-Budget: **$30,000**. This costs the full benchmark against it, using prices
-measured from live pilot runs rather than estimated.
+The law school's budget is **$30,000**; the request on the table is **$15,000**.
+This costs the full benchmark against both, using prices measured from live pilot
+runs rather than estimated.
 
 **Current headline, five providers, 18 identities, 400 questions, D=3:**
 **$7,577**, or **$15,154** if every question is also asked negated. A
@@ -110,7 +111,7 @@ above changed.
 
     400 × 18 × 4 × 3  =  86,400 answers  →  345,600 grades  →  $4,509
 
-Turned around, $30,000 would fund **119 identities** at 400 questions, or 60 if
+Turned around, $15,000 would fund **35 identities** at 400 questions, or 17 if
 every question is also negated. The design calls for 18. Money is not the
 constraint on this study; the question set is.
 
