@@ -93,6 +93,21 @@ One figure that must not be used as `C`: **$0.05219**, the cost of one answer
 plus all four of its grades. That is per *answer*, not per pair, so `T × $0.05219`
 comes to $18,037 and counts the grading four times over.
 
+**For planning, use `C = $0.014`** — the measured figure plus 7%. That gives
+**$4,838** at `R = 1` and **$9,677** at `R = 2`, and it absorbs answers running
+about 40% longer than the pilot's.
+
+`C` is less sensitive to answer length than it looks, because grade *output*
+dominates it: 4,304 tokens per answer across the four grades, which do not grow
+when the answer does. Doubling answer length raises `C` only 17%, to $0.0153.
+
+| answers vs the pilot | C | total at R=1 |
+|---|---|---|
+| as measured | $0.01305 | $4,510 |
+| 1.5× longer | $0.01415 | $4,891 |
+| 2× longer | $0.01525 | $5,272 |
+| 3× longer | $0.01746 | $6,034 |
+
 **`C` is also not uniform.** It depends on which model is grading:
 
 | grading model | per grade | |
