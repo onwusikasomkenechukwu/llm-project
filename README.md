@@ -22,11 +22,10 @@ rubric, without the grader being told which model wrote it.
 | Repeats of each question | 3 |
 | Answers collected | 86,400 |
 | Grades produced | 345,600 |
-| **Estimated cost** | **~$4,500**, or ~$9,000 if each question is also negated |
+| **Cost** | **$4,509**, or $9,018 if each question is also negated |
 
-Costing is in [docs/cost-model.md](docs/cost-model.md), priced from a real pilot
-run rather than estimated. Against the $30,000 budget there is room for the full
-design, negations included, with reserve left over.
+That costing is measured rather than estimated, and checked against the
+invoices — see [Costs](#costs) below.
 
 ## Status
 
@@ -44,6 +43,73 @@ about the models' handling of Black history.
 | Ready | collection, grading, cross-evaluation, cost accounting |
 | Waiting on | the 400 questions, with reference answers |
 | Open | whether each question is also asked in negated form |
+
+## Costs
+
+Every figure here comes from tokens recorded during a live pilot, priced at each
+provider's own rate. The method was checked against all four invoices and came
+within **0.05%** of the billed total. It is not a list-price estimate.
+
+### The decided design
+
+400 questions, 18 identities, 4 providers, 3 replicates, every answer graded by
+all four models: **86,400 answers and 345,600 grades.**
+
+| account | answering | grading | **total** | with negations |
+|---|---|---|---|---|
+| xAI | $121 | $1,697 | **$1,818** | $3,636 |
+| Anthropic | $216 | $876 | **$1,093** | $2,185 |
+| OpenAI | $148 | $766 | **$915** | $1,829 |
+| Google | $215 | $469 | **$684** | $1,369 |
+| **total** | **$700** | **$3,809** | **$4,509** | **$9,018** |
+
+Against the **$30,000** budget that leaves $25,491 unspent, or $20,982 if every
+question is also asked in negated form.
+
+**Credit is not distributed evenly.** xAI needs 2.7 times Google's budget even
+though it is the cheapest provider to collect answers from, because `grok-4.7`
+emits about 2,700 output tokens per grade against OpenAI's 358 — it reasons at
+length, and reasoning is billed as output. Grading is 84% of the whole bill and
+xAI is 45% of the grading.
+
+### Unit costs, for pricing changes to the design
+
+| | |
+|---|---|
+| One answer, plus its four grades | $0.0522 |
+| One question, across the whole grid | $11.27 |
+| One identity, across the whole grid | $251 |
+| One replicate (going from D=3 to D=4) | $1,503 |
+| Adding negations | doubles everything: +$4,509 |
+
+So the question count is cheap to extend and the identity count is the expensive
+axis — adding four more identities costs about as much as adding 90 questions.
+
+### If fewer graders were acceptable
+
+| | Q=400 | Q=800 |
+|---|---|---|
+| One grader | $1,653 | $3,306 |
+| Three, each model graded by the others | $3,557 | $7,114 |
+| **All four, every model grades every answer** | **$4,509** | **$9,018** |
+
+The full matrix costs $952 more than excluding self-grades, and that is what buys
+the self-preference measurement — see [What the pilot
+showed](#what-the-pilot-showed), where it found Google grading its own answers
+1.07 points above what the other three give them.
+
+### What these figures do not include
+
+- **Reruns.** A prompt template corrected after a full run means paying for that
+  run twice. The most likely single overrun, and nothing above accounts for it.
+- **Human raters** on a subsample. Not an API cost.
+- **Price changes.** Every rate was read in late September 2026.
+
+A sensible reserve is double: hold **$9,000** for Q=400 or **$18,000** with
+negations, and expect to spend about half.
+
+[docs/cost-model.md](docs/cost-model.md) has the derivation, the per-grader rates
+and the invoice reconciliation.
 
 ## How grading works
 
@@ -511,14 +577,15 @@ Priced from the tokens recorded on every row, this pilot was predicted to cost
 | account | answering | grading | predicted | billed |
 |---|---|---|---|---|
 | xAI | $0.10 | $1.41 | $1.52 | **$1.51** |
-| Anthropic | $0.18 | $0.73 | $0.91 | pending |
-| OpenAI | $0.12 | $0.64 | $0.76 | pending |
+| Anthropic | $0.18 | $0.73 | $0.91 | **$0.91** |
+| OpenAI | $0.12 | $0.64 | $0.76 | **$0.76** |
 | Google | $0.18 | $0.39 | $0.57 | **$0.58** |
+| | | | **$3.76** | **$3.76** |
 
-Within 0.2% across the two accounts settled so far, and those are the two that
-were hardest to predict — xAI's figure rests on cached-input pricing, on
-reasoning tokens billed outside `completion_tokens`, and on it having no batch
-discount, all three at once.
+**All four reconcile, to within 0.05% of the billed total.** xAI is the one worth
+having confirmed, since its figure rests on cached-input pricing, on reasoning
+tokens billed outside `completion_tokens`, and on it having no batch discount —
+all three at once, on the account that is 45% of the grading bill.
 
 **Grading is 84% of that, and xAI alone is 45% of the grading** despite being one
 grader of four. `grok-4.7` emits about 2,700 output tokens per grade against

@@ -6,7 +6,7 @@ measured from a real pilot run rather than estimated.
 Everything below is arithmetic on two things: the per-call token counts recorded
 in `responses.jsonl` and `judgments.jsonl`, and the invoices from the pilot runs.
 Nothing here is a vendor's list-price estimate, and the method has been checked
-against the bills — see the next section.
+against all four bills to within 0.05% — see the next section.
 
 ## Summary
 
@@ -36,23 +36,21 @@ then compared against them:
 | account | predicted | billed | error |
 |---|---|---|---|
 | xAI | $1.515 | **$1.51** | −0.3% |
+| Anthropic | $0.910 | **$0.91** | 0.0% |
+| OpenAI | $0.762 | **$0.76** | −0.3% |
 | Google | $0.571 | **$0.58** | +1.6% |
-| Anthropic | $0.910 | pending | |
-| OpenAI | $0.762 | pending | |
-| **checked so far** | **$2.086** | **$2.09** | **+0.2%** |
+| **total** | **$3.758** | **$3.76** | **+0.05%** |
 
-xAI is the useful one. It is the only account whose prediction depends on three
-separate corrections holding at once: cached input billed at $0.50 per million
-rather than $2.00, reasoning tokens billed although they are reported outside
-`completion_tokens`, and no batch discount because its current models refuse
-batch. Landing within a cent means all three are right, and it is the provider
-where getting this wrong would have cost the most, since xAI is 45% of the
-grading bill.
+All four accounts reconcile. xAI is the one worth having confirmed: it is the
+only account whose prediction depends on three corrections holding at once —
+cached input billed at $0.50 per million rather than $2.00, reasoning tokens
+billed although they are reported outside `completion_tokens`, and no batch
+discount because its current models refuse batch. Any one of those being wrong
+would have shown as a visible error, and xAI is 45% of the grading bill, so it is
+also the most expensive place to be wrong.
 
-Scaled onto the full grid, the observed +0.2% moves the $4,509 projection to
-about $4,518. Anthropic and OpenAI are still outstanding, so this is not a
-complete reconciliation — but the two accounts that were hardest to model are the
-two that have been confirmed.
+At +0.05% the projection needs no adjustment. The $4,509 figure for the full grid
+rests on measured per-provider rates that have each been checked against a bill.
 
 ## What one answer costs
 
