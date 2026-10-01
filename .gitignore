@@ -15,3 +15,4 @@ judgments-*.jsonl
 
 # placeholder questions are generated, not committed: FLASK carries no licence
 samples/flask10.xlsx
+samples/rubric_pilot.xlsx

@@ -22,7 +22,7 @@ rubric, without the grader being told which model wrote it.
 | Repeats of each question | 3 |
 | Answers collected | 86,400 |
 | Grades produced | 345,600 |
-| **Estimated cost** | **~$3,700**, or ~$7,300 if each question is also negated |
+| **Estimated cost** | **~$4,500**, or ~$9,000 if each question is also negated |
 
 Costing is in [docs/cost-model.md](docs/cost-model.md), priced from a real pilot
 run rather than estimated. Against the $30,000 budget there is room for the full
@@ -30,11 +30,14 @@ design, negations included, with reserve left over.
 
 ## Status
 
-A pilot has run end to end on real APIs: answers collected from four providers,
-merged, graded, merged again. 120 answers and 120 grades, all parsed, for $2.13.
+A pilot has run end to end on real APIs: answers collected from all four
+providers, then cross-evaluated by all four. 72 answers, 288 grades, every one
+parsed, no failures. Results are at the bottom of this file.
 
-What that proved is the plumbing. It used generic placeholder questions, so it
-says nothing yet about Black history, and its numbers should not be quoted.
+It used six questions, one of each type, taken from the worked examples in the
+project's own rubric document — enough to confirm the rubric behaves correctly
+and to measure self-preference between graders, but far too few to say anything
+about the models' handling of Black history.
 
 | | |
 |---|---|
@@ -85,7 +88,7 @@ which model produced it, so the results can be read as a four-by-four matrix.
 This is partly a reliability measure and partly a bias measure. A model grading
 its own answer is a conflict of interest, and the gap between a model's
 self-grade and the other three's grade of the same answer measures that bias
-directly. Running only the other three would be cheaper by about $715 and would
+directly. Running only the other three would be cheaper by about $855 and would
 lose the measurement.
 
 The grader is never told which model wrote an answer, and every call is a fresh
@@ -111,13 +114,22 @@ That has a consequence the pilot exposed.
 When a model tailors its answer to the stated identity, the grader cannot see
 why that material is there and marks it down. One grade objected that the answer
 "invents the user's race with no basis in the question." The model had done
-nothing wrong; it answered the prompt it was given. Across 120 pilot answers the
-totals came out `none` 17.90, `white-american` 16.71, `black-american` 15.92 —
-and a large part of that spread is the grading setup, not the models.
+nothing wrong; it answered the prompt it was given. On the first pilot, which
+used generic placeholder questions, the totals came out `none` 17.90,
+`white-american` 16.71, `black-american` 15.92 — and a large part of that spread
+was the grading setup, not the models.
 
-**So the identity spread currently measures tailoring, not quality, and must not
-be reported as quality.** Three ways forward, and the choice belongs to the
-study rather than to this software:
+**So the identity spread measures tailoring as well as quality, and must not be
+reported as quality alone.** How far it distorts things depends on the questions:
+the spread was about 2 points on generic placeholder questions and only 0.19 on
+the real ones (see [What the pilot showed](#what-the-pilot-showed)), because
+mentioning the asker's background is a non-sequitur on a generic task and
+reasonable on a civil-rights question. The mechanism has not gone away, and 18
+identities give it much more room than three, so the choice below still has to be
+made. It is just less urgent than the first pilot implied.
+
+Three ways forward, and the choice belongs to the study rather than to this
+software:
 
 1. Show the grader the identity-framed prompt, so tailored material is judged in
    context — at the cost of letting the grader's own assumptions about identity
@@ -255,11 +267,21 @@ python sequential.py answer prompts.xlsx --providers xai --dry-run
 python openai_batch.py answer prompts.xlsx --limit 3 --duplicates 1 --now
 ```
 
-For placeholder questions before the real ones arrive:
+Two question sets can be generated before the real ones arrive. The one the
+current pilot uses carries question types and loaded premises, so it exercises
+premise handling and the hard-fail flag:
 
 ```bash
-python samples/make_sample.py
+python samples/make_rubric_sample.py     # 6 questions, one per question type
+python samples/make_sample.py            # 10 generic questions from FLASK
 ```
+
+`samples/rubric_pilot.xlsx` takes its questions from the worked examples in the
+project's own rubric document. Its reference answers are placeholders written to
+exercise reference-based grading and should be replaced by the project's real
+ones.
+
+The FLASK set:
 
 That writes `samples/flask10.xlsx` — ten instructions sampled from the FLASK
 evaluation set, in the column layout the scripts expect. The rows are fetched
@@ -396,21 +418,108 @@ pipeline without spending money.
 
 ## What the pilot showed
 
-Ten placeholder questions from FLASK (cited above), three identities, all four
-providers, one run each, $2.13. The pilot therefore covered every provider in
-the final design, which is why the cost model needs no assumed figures.
-Every stage worked: submit, poll, collect, resubmit failures, merge, grade, merge.
-120 answers, 120 grades, all parsed.
+Six questions — one of each question type, taken from the worked examples in the
+project's own rubric document — across three identities and all four providers,
+each answer then graded by all four. **72 answers, 288 grades, every one parsed,
+no failures.** Three of the six carried placeholder reference answers.
 
-```
-mean total out of 20          sub-scores    acc  comp  obj  src
-  anthropic  17.63              anthropic  4.67  4.67  4.74  3.56
-  openai     17.18              openai     4.79  4.21  4.71  3.46
-  xai        16.83              xai        4.70  4.13  4.70  3.30
-  google     15.87              google     4.13  4.33  4.10  3.30
-```
+This replaces an earlier pilot that used generic placeholder questions. Those
+could not exercise premise handling or the hard-fail flag, because they contained
+no loaded premises.
 
-**These numbers are about the software, not about the research question.** The
-placeholder questions contain no loaded premises, so there were no hard fails and
-only 16 premise-handling scores out of 120. Nothing here says anything about
-Black history, and the ordering of providers should not be quoted.
+### Answer quality, averaged over all four graders
+
+| provider | mean /20 | spread between graders |
+|---|---|---|
+| Anthropic | **19.21** | 0.67 |
+| Google | 17.69 | 1.53 |
+| xAI | 17.68 | 1.61 |
+| OpenAI | 17.43 | 1.63 |
+
+### The cross-evaluation matrix
+
+Rows are the model that answered, columns the model that graded.
+
+| answered by | Anthropic | Google | OpenAI | xAI | others only |
+|---|---|---|---|---|---|
+| Anthropic | 18.94 | 19.44 | 19.17 | 19.28 | **19.30** |
+| Google | 16.94 | *18.50* | 17.50 | 17.83 | **17.43** |
+| OpenAI | 17.06 | 17.83 | *17.61* | 17.22 | **17.37** |
+| xAI | 17.22 | 18.28 | 17.67 | *17.56* | **17.72** |
+
+**Self-preference, measured rather than argued about** — a model's grade of its
+own answer, minus the mean of the other three graders on the same answer:
+
+| | self | others | difference |
+|---|---|---|---|
+| Google | 18.50 | 17.43 | **+1.07** |
+| OpenAI | 17.61 | 17.37 | +0.24 |
+| xAI | 17.56 | 17.72 | -0.17 |
+| Anthropic | 18.94 | 19.30 | -0.35 |
+
+Google grades its own work a full point higher than the others grade it. Anthropic
+and xAI grade themselves *lower* than the rest of the panel does, so
+self-preference is a property of particular models rather than a safe assumption
+about all of them. This is the measurement the full four-by-four matrix exists to
+produce, and it answers the grading report's first objection directly.
+
+**Graders also differ in strictness**, measured across all providers' answers:
+Anthropic 17.54, xAI 17.97, OpenAI 17.99, Google 18.51. A one-point spread from
+nothing but who is grading, which is on its own a reason not to report
+single-grader scores.
+
+### The rubric behaved correctly
+
+- **Premise handling scored only where it should.** 144 grades across the three
+  Loaded questions, and null on every Factual, Directed and Open-Ended one. The
+  question-type column is what gates this.
+- **All four models handled every loaded premise correctly**, scoring 5.00 on
+  both false premises and on the true premise. **Zero hard fails in 288 grades.**
+- **No answer reached the 4,000-token ceiling**, so nothing was marked down for
+  being cut off.
+
+That zero needs stating plainly. The model that failed this test in the project's
+earlier rounds was Llama, and Llama is no longer in the benchmark. On the four
+providers that remain, the slavery and prison-labour questions did not reproduce
+the failure. The hard-fail machinery works — the flag can be set and it overrides
+the band when it is — but it caught nothing here, and a write-up should not imply
+that the four current providers fail this way.
+
+### The identity spread mostly disappeared
+
+| identity | mean /20 |
+|---|---|
+| `none` | 18.08 |
+| `white-american` | 18.04 |
+| `black-american` | 17.89 |
+
+**A 0.19 spread, against roughly 2 points on the earlier generic-question
+pilot.** That is a substantial correction to the concern recorded under
+[The identities](#the-identities). The mechanism is real, but most of the earlier
+gap came from asking *generic tasks* under an identity framing, where mentioning
+the asker's background is a non-sequitur the grader has no reason to accept. On
+questions where identity is contextually relevant, the penalty largely does not
+arise. The decision described in that section still has to be made before the
+full run, since 18 identities give it far more room to appear than three does —
+but it is a smaller problem than the first pilot suggested.
+
+### Cost
+
+Priced from the tokens recorded on every row, this pilot should come to **$3.76**:
+
+| account | answering | grading | total |
+|---|---|---|---|
+| xAI | $0.10 | $1.41 | **$1.52** |
+| Anthropic | $0.18 | $0.73 | **$0.91** |
+| OpenAI | $0.12 | $0.64 | **$0.76** |
+| Google | $0.18 | $0.39 | **$0.57** |
+
+**Grading is 84% of that, and xAI alone is 45% of the grading** despite being one
+grader of four. `grok-4.7` emits about 2,700 output tokens per grade against
+OpenAI's 358, because it reasons at length and reasoning is billed as output.
+
+Measured against this, the projection in
+[docs/cost-model.md](docs/cost-model.md) ran **23% low**: it assumed 480 output
+tokens per grade where the real figure is 1,076. Revised totals are **$4,509** at
+Q=400 and **$9,018** with negations — still comfortably inside the $30,000
+budget, and now measured per grader rather than modelled.

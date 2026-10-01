@@ -11,16 +11,16 @@ Nothing here is a vendor's list-price estimate.
 
 | | Q = 400 questions | Q = 800 (each question plus its negation) |
 |---|---|---|
-| One judge | $1,519 | $3,037 |
-| Three judges, each model graded by the others | $2,949 | $5,898 |
-| **Four judges, every model grades every answer** | **$3,664** | **$7,328** |
+| One judge | $1,818 | $3,635 |
+| Three judges, each model graded by the others | $3,654 | $7,307 |
+| **Four judges, every model grades every answer** | **$4,509** | **$9,018** |
 
 At the decided design — 400 questions, 18 identities, 4 models, 3 replicates,
-cross-evaluated by all four — the benchmark costs about **$3,700**, or **$7,300**
+cross-evaluated by all four — the benchmark costs about **$4,500**, or **$9,000**
 if each question is also asked in negated form.
 
-If answers run twice as long as the pilot's, double those: $7,300 and $14,700.
-The upper figure is less than half the budget, so the design does not need
+If answers run twice as long as these, double those: $9,000 and $18,000. The
+upper figure is still under two thirds of the budget, so the design does not need
 trimming to fit it.
 
 **Every figure here is measured.** Meta was dropped from the benchmark, and with
@@ -29,16 +29,16 @@ remaining providers, so nothing below is an assumed rate.
 
 ## What one answer costs
 
-The pilot billed **$2.13** for 120 answers and their judgments, across four
-providers. Per provider, per answer:
+A second pilot measured this directly: 72 answers cross-evaluated by all four
+providers, 288 grades. Per provider, per answer:
 
 | provider | per answer | how it ran |
 |---|---|---|
-| Anthropic | $0.01053 | batch, 50% discount |
-| Google | $0.01067 | batch, 50% discount |
-| OpenAI | $0.01033 | batch, 50% discount |
-| xAI | $0.00567 | live — xAI cannot batch its current models |
-| **mean** | **$0.00930** | |
+| Anthropic | $0.01002 | batch, 50% discount |
+| Google | $0.00996 | batch, 50% discount |
+| OpenAI | $0.00686 | batch, 50% discount |
+| xAI | $0.00560 | live — xAI cannot batch its current models |
+| **mean** | **$0.00811** | |
 
 All four were measured on the same pilot, so the mean carries no estimate.
 
@@ -49,19 +49,22 @@ answering. The judges are not equally priced:
 
 | judge | per grade | note |
 |---|---|---|
-| `gemini-3.1-pro-preview` | $0.00453 | cheapest; batch |
-| `claude-opus-5-5` | $0.00810 | batch |
-| `grok-4.7` | $0.00916 | live, and it prepends ~1,200 tokens of its own system prompt to every call |
-| `gpt-5.5` | $0.01132 | dearest; batch |
-| **all four, per answer** | **$0.03311** | |
+| `gemini-3.1-pro-preview` | $0.00543 | cheapest; batch |
+| `gpt-5.5` | $0.00887 | batch; terse, 358 output tokens per grade |
+| `claude-opus-5-5` | $0.01014 | batch |
+| `grok-4.7` | $0.01964 | live, and it emits ~2,700 output tokens per grade |
+| **all four, per answer** | **$0.04408** | |
 
-So judging is **78% of the total bill**. That is the number to watch: the
-answers are nearly incidental.
+So judging is **84% of the total bill**, and **xAI alone is 45% of the judging**
+despite being one grader of four: `grok-4.7` reasons at length and reasoning is
+billed as output. Judging is the number to watch; the answers are nearly
+incidental.
 
-A grade is costed at roughly 1,650 input tokens (rubric, question, answer, and
-the reference answer where one exists) and 480 output tokens including the
-model's reasoning. That shape reproduces the pilot's actual Anthropic judging
-bill, which is the only part of this that has been checked against an invoice.
+Measured per grade: 1,886 input tokens (rubric, question, answer, and the
+reference answer where one exists) and 1,076 output tokens including reasoning,
+averaged over the four graders. An earlier version of this document assumed 480
+output tokens and so ran 23% low overall — the correction is why the figures
+above changed.
 
 ## The arithmetic
 
@@ -71,11 +74,11 @@ bill, which is the only part of this that has been checked against an invoice.
     I  identities                  18   (17 from the Identity Matrix, plus a control)
     P  models answering             4
     D  replicates per question      3
-    T  cost per answer        $0.04241   ($0.00930 to answer + $0.03311 to grade)
+    T  cost per answer        $0.05219   ($0.00811 to answer + $0.04408 to grade)
 
-    400 × 18 × 4 × 3  =  86,400 answers  →  345,600 grades  →  $3,664
+    400 × 18 × 4 × 3  =  86,400 answers  →  345,600 grades  →  $4,509
 
-Turned around, $30,000 would fund **147 identities** at 400 questions, or 74 if
+Turned around, $30,000 would fund **119 identities** at 400 questions, or 60 if
 every question is also negated. The design calls for 18. Money is not the
 constraint on this study; the question set is.
 
@@ -83,13 +86,16 @@ constraint on this study; the question set is.
 
 Grading an answer with the model that wrote it looks like a conflict, and the
 obvious fix is to have each model graded only by the other three. That is cheaper
-— $2,949 against $3,664 — but it throws away the measurement.
+— $3,654 against $4,509 — but it throws away the measurement.
 
 Running the full four-by-four matrix means every model also grades itself, and
 the difference between a model's self-grade and the other three's grade of the
 same answer **is** self-preference bias, measured directly rather than argued
 about. The project's own grading report named that as the first objection anyone
-would raise. For $715 it stops being an objection and becomes a reported result.
+would raise. For $855 it stops being an objection and becomes a reported result,
+and the second pilot produced it: Google grades its own answers 1.07 points above
+what the other three give them, while Anthropic and xAI grade themselves lower
+than the panel does.
 
 ## What this does not cover
 
@@ -97,14 +103,15 @@ would raise. For $715 it stops being an objection and becomes a reported result.
   run twice. The most likely single overrun, and the formula has no term for it.
 - **Human raters** on a subsample, the third of the four priorities set for the
   project. Not an API cost.
-- **The pilot's prompts were short.** They came from a generic benchmark, not
-  from this question set. Real questions ask for about 250 words on contested
-  historical material, which reasoning models think harder about, and reasoning
-  is billed as output. This is why the doubled figures are quoted alongside.
+- **Six questions is a small sample for a token average.** They are the right
+  shape — the project's own worked examples, with real loaded premises — but a
+  longer or more contested question could lengthen both answers and grades, and
+  reasoning is billed as output. This is why the doubled figures are quoted
+  alongside.
 - **Price changes.** Every rate here was read in late September 2026.
 
-A sensible reserve is the doubled figure: budget **$7,300** for Q=400 or
-**$14,700** with negations, and expect to spend about half.
+A sensible reserve is the doubled figure: budget **$9,000** for Q=400 or
+**$18,000** with negations, and expect to spend about half.
 
 ## Reproducing any of this
 
