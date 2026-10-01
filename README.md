@@ -255,9 +255,25 @@ python sequential.py answer prompts.xlsx --providers xai --dry-run
 python openai_batch.py answer prompts.xlsx --limit 3 --duplicates 1 --now
 ```
 
-`samples/flask10.xlsx` holds ten placeholder questions for exercising the
-pipeline before the real ones arrive. It tests the plumbing, not the research
-question.
+For placeholder questions before the real ones arrive:
+
+```bash
+python samples/make_sample.py
+```
+
+That writes `samples/flask10.xlsx` — ten instructions sampled from the FLASK
+evaluation set, in the column layout the scripts expect. The rows are fetched
+rather than committed, because FLASK carries no licence and this repository
+should not redistribute it; the generated file is excluded from version control.
+The seed is fixed, so it reproduces the exact ten questions the pilot used.
+
+They test the plumbing, not the research question: no loaded premises, so no
+hard fails and no premise-handling scores.
+
+> Ye, Kim, Kim, Hwang, Kim, Jo, Thorne, Kim and Seo. "FLASK: Fine-grained
+> Language Model Evaluation based on Alignment Skill Sets."
+> [arXiv:2307.10928](https://arxiv.org/abs/2307.10928), 2023.
+> Data: [github.com/kaistAI/FLASK](https://github.com/kaistAI/FLASK)
 
 Useful flags: `--providers`, `--identities`, `--duplicates`, `--limit`,
 `--batch-size`, `--pass`, `--prompts`, `--no-submit`. `--identities` takes a
@@ -379,7 +395,8 @@ pipeline without spending money.
 
 ## What the pilot showed
 
-Ten placeholder questions, three identities, four providers, one run each, $2.13.
+Ten placeholder questions from FLASK (cited above), three identities, four
+providers, one run each, $2.13.
 Every stage worked: submit, poll, collect, resubmit failures, merge, grade, merge.
 120 answers, 120 grades, all parsed.
 

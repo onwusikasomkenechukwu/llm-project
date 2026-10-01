@@ -12,3 +12,6 @@ judgments-*.jsonl
 
 # batch ids for in-flight jobs
 .batches-*.jsonl
+
+# placeholder questions are generated, not committed: FLASK carries no licence
+samples/flask10.xlsx
