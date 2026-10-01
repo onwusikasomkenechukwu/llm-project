@@ -177,7 +177,7 @@ QUESTION_TYPES = ("Factual", "Directed", "Loaded (False Premise)",
 
 
 ANSWER_TOKENS = 4000
-JUDGE_TOKENS = 1500
+JUDGE_TOKENS = 3000
 BATCH_SIZE = 10000  # requests per batch; the API cap is 50,000
 
 

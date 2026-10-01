@@ -69,8 +69,16 @@ PROVIDERS = {
     "xai": dict(model="grok-4.7", cap="max_tokens", reasoning_extra=True,
                 base_url="https://api.x.ai/v1", key_env="XAI_API_KEY"),
     # Meta Model API, serving Muse. Not Llama -- see Provider notes. No batch
-    # endpoint, so it runs live here. Its cost is assumed, not measured.
+    # endpoint, so it runs live here.
+    #
+    # judge_extra: grading only. Left to itself Muse reasons until it hits the
+    # token ceiling and returns nothing -- 77 of 90 grades came back empty at
+    # 1500 tokens and 15 still did at 3000. reasoning_effort="low" fixes that
+    # and roughly halves its reasoning. Deliberately NOT applied to the answer
+    # stage: the answers are what the benchmark measures, so they stay at the
+    # model's own default.
     "muse": dict(model="muse-spark-1.3", cap="max_tokens",
+                 judge_extra={"reasoning_effort": "low"},
                  base_url="https://api.meta.ai/v1", key_env="MUSE_API_KEY"),
     # vLLM / Ollama / llama.cpp. The server usually ignores the key.
     "local": dict(model="llama-3.3-70b-instruct", cap="max_tokens",
@@ -190,7 +198,7 @@ QUESTION_TYPES = ("Factual", "Directed", "Loaded (False Premise)",
 
 
 ANSWER_TOKENS = 4000
-JUDGE_TOKENS = 1500
+JUDGE_TOKENS = 3000
 
 # Errors that retrying cannot fix.
 FATAL_SIGNS = ("insufficient_quota", "billing", "credit balance", "exceeded your current quota",
@@ -452,11 +460,11 @@ def make_client(cfg, timeout):
     return OpenAI(api_key=key, base_url=cfg["base_url"], timeout=timeout, max_retries=0)
 
 
-def call(client, cfg, cell, tokens):
+def call(client, cfg, cell, tokens, extra=None):
     messages = ([{"role": "system", "content": cell["system"]}] if cell["system"] else []) \
                + [{"role": "user", "content": cell["user"]}]
     r = client.chat.completions.create(model=cfg["model"], messages=messages,
-                                       **{cfg["cap"]: tokens})
+                                       **{cfg["cap"]: tokens}, **(extra or {}))
     u = r.usage
     d = getattr(u, "completion_tokens_details", None)
     reasoning = getattr(d, "reasoning_tokens", None) or 0
@@ -467,11 +475,11 @@ def call(client, cfg, cell, tokens):
             getattr(u, "prompt_tokens", None), out, reasoning)
 
 
-def call_with_retries(client, cfg, cell, tokens, attempts):
+def call_with_retries(client, cfg, cell, tokens, attempts, extra=None):
     last = ""
     for attempt in range(attempts):
         try:
-            text, tin, tout, reasoning = call(client, cfg, cell, tokens)
+            text, tin, tout, reasoning = call(client, cfg, cell, tokens, extra)
             return text, tin, tout, None, reasoning
         except Exception as e:  # noqa: BLE001 -- any failure is just a failed cell
             last = f"{type(e).__name__}: {e}"
@@ -555,7 +563,9 @@ def main():
             return
         cfg = PROVIDERS[cell["provider"]]
         try:
-            result = call_with_retries(clients[cell["provider"]], cfg, cell, tokens, args.attempts)
+            extra = cfg.get("judge_extra") if args.stage == "judge" else None
+            result = call_with_retries(clients[cell["provider"]], cfg, cell, tokens,
+                                       args.attempts, extra)
         except OutOfCredits as e:
             stop.set()
             print(f"\nSTOPPED -- billing/quota error on {cell['provider']}: {e}", file=sys.stderr)

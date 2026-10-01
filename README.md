@@ -23,7 +23,7 @@ is costed below and brings this down substantially.
 | Repeats of each question | 3 |
 | Answers collected | 108,000 |
 | Grades produced | 540,000 |
-| **Cost** | **$7,141**, or $14,281 if each question is also negated |
+| **Cost** | **$6,750**, or $13,500 if each question is also negated |
 
 That costing is measured rather than estimated, and checked against the
 invoices — see [Costs](#costs) below.
@@ -258,93 +258,90 @@ is weaker, and with one it is gone — a single-grader score inherits that grade
 bias on every row. Whether that matters more than $2,315 is a decision for the
 study.
 
-### With Muse: five providers, all measured
+### Five providers, every rate measured
 
-Muse was added at the law school's request and has now run. Every rate below is
-measured; nothing is assumed any more.
+Muse has run. Nothing below is assumed.
 
     T = 5² × 18 × 400 × 1 × 3 = 540,000 graded pairs
-    108,000 answers at $945;  540,000 grades at $6,196
+    108,000 answers at $945;  540,000 grades at $5,805
 
 | model | `C_answer` | `C_judge` |
 |---|---|---|
 | Google | $0.00996 | **$0.00557** |
+| Muse | $0.01131 | $0.00807 |
 | OpenAI | $0.00686 | $0.00920 |
 | Anthropic | $0.01002 | $0.01032 |
-| Muse | $0.01131 | $0.01169 |
 | xAI | $0.00559 | **$0.02059** |
-| sum | $0.04375 | $0.05736 |
+| sum | $0.04375 | $0.05374 |
 
-**The global-average assumption for Muse held.** It was projected at `C_judge`
-$0.01102 and measured $0.01169, 6% out. `C_answer` was projected $0.00811 and
-measured $0.01131, 39% out, but answering is only 15% of the bill, so the total
-moved from the projected $6,827 to **$7,141** — 4.6%.
+Grading is **86%** of spend.
 
 ### Three estimates for C
 
-`C` is a mean cost per graded pair, and the pairs cluster by question: the same
+`C` is a mean cost per graded pair, and the pairs cluster by question — the same
 question appears once per identity, per provider and per grader. Resampling
 individual pairs would treat 450 correlated observations as independent and give
-an interval far too tight, so the intervals below come from a
-**question-clustered bootstrap** — 20,000 resamples of the questions themselves,
-which is the unit that actually varies.
+an interval far too tight, so these come from a **question-clustered bootstrap**,
+20,000 resamples of the questions themselves.
 
 | estimate | `C` | total at `R=1` | with negations, `R=2` |
 |---|---|---|---|
-| **point** | **$0.01322** | **$7,141** | **$14,281** |
-| 95% CI | $0.01160 – $0.01475 | $6,264 – $7,963 | $12,528 – $15,926 |
-| 99% CI | $0.01101 – $0.01512 | $5,948 – $8,166 | $11,896 – $16,332 |
-| min–max across questions | $0.00957 – $0.01613 | $5,168 – $8,710 | $10,336 – $17,420 |
+| **point** | **$0.01250** | **$6,750** | **$13,500** |
+| 95% interval | $0.01088 – $0.01396 | $5,876 – $7,538 | $11,752 – $15,076 |
+| 99% interval | $0.01034 – $0.01435 | $5,584 – $7,750 | $11,168 – $15,500 |
+| min–max across questions | $0.00889 – $0.01528 | $4,799 – $8,252 | $9,598 – $16,504 |
+
+**Identities are fixed at 18** in all of this — the 17 in the project's Identity
+Matrix plus a no-identity control.
 
 Per-question means, which is where the spread comes from:
 
 | question | type | `C` | total at `R=1` |
 |---|---|---|---|
-| PILOT-01 | Factual | $0.00957 | $5,168 |
-| PILOT-06 | Loaded (False Premise) | $0.01261 | $6,812 |
-| PILOT-03 | Loaded (False Premise) | $0.01320 | $7,130 |
-| PILOT-02 | Directed | $0.01327 | $7,167 |
-| PILOT-04 | Loaded (True Premise) | $0.01454 | $7,849 |
-| PILOT-05 | Open-Ended | $0.01613 | $8,710 |
+| PILOT-01 | Factual | $0.00889 | $4,799 |
+| PILOT-06 | Loaded (False Premise) | $0.01189 | $6,419 |
+| PILOT-02 | Directed | $0.01243 | $6,711 |
+| PILOT-03 | Loaded (False Premise) | $0.01273 | $6,875 |
+| PILOT-04 | Loaded (True Premise) | $0.01377 | $7,435 |
+| PILOT-05 | Open-Ended | $0.01528 | $8,252 |
 
-A short factual question costs 40% less to run through the grid than an
-open-ended one, because both the answer and every grade that reads it are
-shorter. So the final figure depends on the mix of question types in the real
-400, not only on their number.
+A short factual question runs **42% cheaper** through the grid than an open-ended
+one, because both the answer and all five grades that read it are shorter. The
+final figure therefore depends on the *mix* of question types in the real 400,
+not only on how many there are.
 
-**Read the intervals with one caveat.** They rest on six questions, and a cluster
-bootstrap over six clusters is known to under-cover — the true 95% interval is
-probably wider than the one above. Treat the 99% upper bound of **$8,166**, or
-**$16,332** with negations, as the planning ceiling rather than the 95% figure,
-and re-estimate once the real question set arrives. Widening the pilot to 20-30
-questions spanning the real type mix would cost about $25 and would tighten this
-substantially.
+**One caveat on the intervals.** They rest on six questions, and a cluster
+bootstrap over six clusters is known to under-cover, so the true 95% interval is
+probably wider than the one above. Use the **99% upper bound of $7,750**, or
+**$15,500** with negations, as the planning ceiling rather than the 95% figure.
+Widening the pilot to 20–30 questions spanning the real type mix would cost about
+$30 and would tighten this considerably.
 
 ### Per account, five providers
 
 | account | its `C` | `R=1` | `R=2` |
 |---|---|---|---|
 | xAI | $0.00434 | **$2,344** | $4,689 |
-| Muse | $0.00279 | **$1,507** | $3,014 |
 | Anthropic | $0.00246 | **$1,331** | $2,662 |
 | OpenAI | $0.00211 | **$1,142** | $2,284 |
+| Muse | $0.00207 | **$1,116** | $2,232 |
 | Google | $0.00151 | **$817** | $1,633 |
-| **total** | **$0.01322** | **$7,141** | **$14,281** |
+| **total** | **$0.01250** | **$6,750** | **$13,500** |
 
 ### Judge panels, five providers
 
 | judge panel | `R=1` | `R=2` | vs full |
 |---|---|---|---|
-| all five | **$7,141** | $14,281 | 100% |
-| four — *drops xAI* | **$4,917** | $9,834 | 69% |
-| Anthropic + Google + OpenAI | **$3,655** | $7,309 | 51% |
-| Google + OpenAI | **$2,540** | $5,080 | 36% |
-| Google alone | $1,546 | $3,093 | 22% |
+| all five | **$6,750** | $13,500 | 100% |
+| four — *drops xAI* | **$4,526** | $9,052 | 67% |
+| Google + Muse + OpenAI | **$3,412** | $6,823 | 51% |
+| Google + Muse | **$2,418** | $4,836 | 36% |
+| Google alone | $1,546 | $3,093 | 23% |
 
-Dropping xAI from the panel saves **$2,224**, still the largest single economy in
-the design. The hybrid still applies: a cheap panel everywhere plus the full panel
-on 10% keeps the self-preference diagonal for all five models at roughly half the
-full price.
+Dropping xAI from the panel saves **$2,224** — still the largest single economy in
+the design, since it grades at $0.02059 against Google's $0.00557. A cheap panel
+everywhere plus the full panel on 10% keeps the self-preference diagonal for all
+five at roughly half the full price.
 
 ### Unit costs, for pricing changes to the design
 
@@ -749,113 +746,101 @@ pipeline without spending money.
 ## What the pilot showed
 
 Six questions — one of each question type, taken from the worked examples in the
-project's own rubric document — across three identities and all four providers,
-each answer then graded by all four. **72 answers, 288 grades, every one parsed,
-no failures.** Three of the six carried placeholder reference answers.
+project's own rubric document — across three identities and all five providers,
+each answer then graded by all five. **90 answers, 450 grades, every one parsed,
+no failures.**
 
-This replaces an earlier pilot that used generic placeholder questions. Those
-could not exercise premise handling or the hard-fail flag, because they contained
-no loaded premises.
-
-### Answer quality, averaged over all four graders
+### Answer quality, averaged over all five graders
 
 | provider | mean /20 | spread between graders |
 |---|---|---|
-| Anthropic | **19.21** | 0.67 |
-| Google | 17.69 | 1.53 |
+| Anthropic | **19.18** | 0.80 |
+| Muse | 18.57 | 1.08 |
+| Google | 17.71 | 1.48 |
 | xAI | 17.68 | 1.61 |
-| OpenAI | 17.43 | 1.63 |
+| OpenAI | 17.42 | 1.62 |
 
 ### The cross-evaluation matrix
 
 Rows are the model that answered, columns the model that graded.
 
-| answered by | Anthropic | Google | OpenAI | xAI | others only |
-|---|---|---|---|---|---|
-| Anthropic | 18.94 | 19.44 | 19.17 | 19.28 | **19.30** |
-| Google | 16.94 | *18.50* | 17.50 | 17.83 | **17.43** |
-| OpenAI | 17.06 | 17.83 | *17.61* | 17.22 | **17.37** |
-| xAI | 17.22 | 18.28 | 17.67 | *17.56* | **17.72** |
+| answered by | Anthropic | Google | Muse | OpenAI | xAI | others only |
+|---|---|---|---|---|---|---|
+| Anthropic | *18.94* | 19.44 | 19.06 | 19.17 | 19.28 | **19.24** |
+| Muse | 18.11 | 19.17 | *18.39* | 18.56 | 18.61 | **18.61** |
+| Google | 16.94 | *18.50* | 17.78 | 17.50 | 17.83 | **17.51** |
+| xAI | 17.22 | 18.28 | 17.67 | 17.67 | *17.56* | **17.71** |
+| OpenAI | 17.06 | 17.83 | 17.39 | *17.61* | 17.22 | **17.38** |
 
 **Self-preference, measured rather than argued about** — a model's grade of its
-own answer, minus the mean of the other three graders on the same answer:
+own answer, minus the mean of the other four graders on the same answer:
 
 | | self | others | difference |
 |---|---|---|---|
-| Google | 18.50 | 17.43 | **+1.07** |
-| OpenAI | 17.61 | 17.37 | +0.24 |
-| xAI | 17.56 | 17.72 | -0.17 |
-| Anthropic | 18.94 | 19.30 | -0.35 |
+| Google | 18.50 | 17.51 | **+0.99** |
+| OpenAI | 17.61 | 17.38 | +0.24 |
+| xAI | 17.56 | 17.71 | −0.15 |
+| Muse | 18.39 | 18.61 | −0.22 |
+| Anthropic | 18.94 | 19.24 | −0.29 |
 
-Google grades its own work a full point higher than the others grade it. Anthropic
-and xAI grade themselves *lower* than the rest of the panel does, so
-self-preference is a property of particular models rather than a safe assumption
-about all of them. This is the measurement the full four-by-four matrix exists to
-produce, and it answers the grading report's first objection directly.
+Google grades its own work a point higher than the rest of the panel does. The
+other four grade themselves at or below the panel, so **self-preference is a
+property of particular models, not a safe assumption about all of them** — which
+is the direct answer to the grading report's first objection, and the reason the
+full matrix is worth running.
 
-**Graders also differ in strictness**, measured across all providers' answers:
-Anthropic 17.54, xAI 17.97, OpenAI 17.99, Google 18.51. A one-point spread from
-nothing but who is grading, which is on its own a reason not to report
-single-grader scores.
+**Graders also differ in strictness**, across all providers' answers: Anthropic
+17.66, Muse 18.06, OpenAI 18.10, xAI 18.10, Google 18.64. A one-point spread from
+nothing but who is grading, which on its own rules out reporting single-grader
+scores.
 
 ### The rubric behaved correctly
 
-- **Premise handling scored only where it should.** 144 grades across the three
+- **Premise handling scored only where it should.** 225 grades across the three
   Loaded questions, and null on every Factual, Directed and Open-Ended one. The
   question-type column is what gates this.
-- **All four models handled every loaded premise correctly**, scoring 5.00 on
-  both false premises and on the true premise. **Zero hard fails in 288 grades.**
-- **No answer reached the 4,000-token ceiling**, so nothing was marked down for
-  being cut off.
+- **All five models handled every loaded premise correctly**, scoring 5.00 on both
+  false premises and on the true one. **Zero hard fails in 450 grades.**
+- **No answer reached the 4,000-token ceiling.**
 
-That zero needs stating plainly. The model that failed this test in the project's
-earlier rounds was Llama, and Llama is no longer in the benchmark. On the four
-providers that remain, the slavery and prison-labour questions did not reproduce
-the failure. The hard-fail machinery works — the flag can be set and it overrides
-the band when it is — but it caught nothing here, and a write-up should not imply
-that the four current providers fail this way.
+That zero needs stating plainly. The model that failed this in the project's
+earlier rounds was Llama, and Muse is not Llama. On the five providers now in the
+benchmark, the slavery and prison-labour questions did not reproduce the failure.
+The hard-fail machinery works and overrides the band when it fires, but it caught
+nothing here, and a write-up should not imply that these five fail this way.
 
 ### The identity spread mostly disappeared
 
 | identity | mean /20 |
 |---|---|
-| `none` | 18.08 |
-| `white-american` | 18.04 |
-| `black-american` | 17.89 |
+| `white-american` | 18.17 |
+| `none` | 18.15 |
+| `black-american` | 18.01 |
 
-**A 0.19 spread, against roughly 2 points on the earlier generic-question
-pilot.** That is a substantial correction to the concern recorded under
-[The identities](#the-identities). The mechanism is real, but most of the earlier
-gap came from asking *generic tasks* under an identity framing, where mentioning
-the asker's background is a non-sequitur the grader has no reason to accept. On
-questions where identity is contextually relevant, the penalty largely does not
-arise. The decision described in that section still has to be made before the
-full run, since 18 identities give it far more room to appear than three does —
-but it is a smaller problem than the first pilot suggested.
+**A 0.16 spread, against roughly 2 points on an earlier pilot that used generic
+placeholder questions.** That is a substantial correction to the concern recorded
+under [The identities](#the-identities). The mechanism is real, but most of the
+earlier gap came from asking generic tasks under an identity framing, where
+mentioning the asker's background is a non-sequitur the grader has no reason to
+accept. On questions where identity is contextually relevant it largely does not
+arise. The decision in that section still has to be made before the full run,
+since 18 identities give it far more room than three — but it is a smaller problem
+than the first pilot suggested.
 
-### Cost
+### One thing Muse needed
 
-Priced from the tokens recorded on every row, this pilot was predicted to cost
-**$3.76**, and the bills confirm the method:
+Left to itself, **Muse reasons until it hits the token ceiling and returns
+nothing**: 77 of 90 grades came back empty at a 1,500-token ceiling, and 15 still
+did at 3,000. It accepts `reasoning_effort`, so grading now passes
+`reasoning_effort="low"`, which fixed all 90 and brought its grading output from
+1,500-plus tokens down to 868.
 
-| account | answering | grading | predicted | billed |
-|---|---|---|---|---|
-| xAI | $0.10 | $1.41 | $1.52 | **$1.51** |
-| Anthropic | $0.18 | $0.73 | $0.91 | **$0.91** |
-| OpenAI | $0.12 | $0.64 | $0.76 | **$0.76** |
-| Google | $0.18 | $0.39 | $0.57 | **$0.58** |
-| | | | **$3.76** | **$3.76** |
+That is applied to **grading only**. The answer stage is left at the model's own
+default, because the answers are what the benchmark measures and capping their
+reasoning would change the thing under test. The consequence to note in a write-up
+is that Muse grades with less deliberation than the other four, which is a caveat
+on Muse-as-grader rather than on Muse-as-subject.
 
-**All four reconcile, to within 0.05% of the billed total.** xAI is the one worth
-having confirmed, since its figure rests on cached-input pricing, on reasoning
-tokens billed outside `completion_tokens`, and on it having no batch discount —
-all three at once, on the account that is 45% of the grading bill.
-
-**Grading is 84% of that, and xAI alone is 45% of the grading** despite being one
-grader of four. `grok-4.7` emits about 2,700 output tokens per grade against
-OpenAI's 358, because it reasons at length and reasoning is billed as output.
-
-Measured against this, the projection in
-[docs/cost-model.md](docs/cost-model.md) ran **23% low**: it assumed 480 output
-tokens per grade where the real figure is 1,076. Revised totals are **$4,509** at
-Q=400 and **$9,018** with negations.
+The same failure appeared on Anthropic at 400 tokens earlier. `JUDGE_TOKENS` is
+now 3,000 and `ANSWER_TOKENS` 4,000 for this reason; a ceiling is not a
+commitment, so raising it costs nothing unused.

@@ -4,9 +4,9 @@ Budget: **$30,000**. This costs the full benchmark against it, using prices
 measured from live pilot runs rather than estimated.
 
 **Current headline, five providers, 18 identities, 400 questions, D=3:**
-**$7,141**, or **$14,281** if every question is also asked negated. A
-question-clustered bootstrap puts the 99% interval at $5,948–$8,166 and
-$11,896–$16,332. The README's [Costs](../README.md#costs) section carries the
+**$6,750**, or **$13,500** if every question is also asked negated. A
+question-clustered bootstrap puts the 99% interval at $5,584–$7,750 and
+$11,168–$15,500. The README's [Costs](../README.md#costs) section carries the
 full breakdown; this document keeps the derivation.
 
 Everything below is arithmetic on two things: the per-call token counts recorded
