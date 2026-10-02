@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
-"""xAI answers and Muse, live through a thread pool, because neither can batch
-what they run here.
+"""xAI and Muse, live through a thread pool, because neither can batch.
 
     python sequential.py answer prompts.xlsx --providers xai
+    python sequential.py judge responses.jsonl --providers xai
     python sequential.py answer prompts.xlsx --providers muse
-    python sequential.py judge responses.jsonl --providers muse
 
 xAI's batch endpoint refuses every current model: grok-4.5, 4.6 and 4.7 all
 return "not supported for batch processing", leaving only grok-4.3 and the 4.20
-line. Benchmarking an older Grok against everyone else's flagship is not a trade
-worth making, so grok-4.7 answers here. Grading does not have that problem, so
-xAI grades through xai_batch.py with grok-4.3 at batch price. Muse has no batch
+line. grok-4.7 answers and grades here, so xAI's answers are graded by the model
+that wrote them and its self-preference can be measured. Muse has no batch
 endpoint at all.
 
 Writes to responses-sequential.jsonl, not the shared file, so all the
@@ -557,8 +555,6 @@ def main():
     unknown = [x for x in providers if x not in PROVIDERS]
     if unknown:
         sys.exit(f"Unknown provider(s): {unknown}. This script covers {list(PROVIDERS)}.")
-    if args.stage == "judge" and "xai" in providers:
-        sys.exit("xAI grades through xai_batch.py, with grok-4.3 at batch price.")
 
     stem = os.path.splitext(os.path.basename(__file__))[0]
     base = "responses" if args.stage == "answer" else "judgments"

@@ -34,10 +34,12 @@ Corrected 2026-09-23 after running against the live APIs: OpenAI and xAI do
 named batch and posts requests into it under a `chat_get_completion` variant.
 And xAI's batch endpoint refuses every current Grok, so the flagship has to run
 live regardless. That leaves OpenAI, Anthropic and Google on batch — one script
-each — with xAI's answers on the sequential script. Since 2026-10-02 xAI's
-*grading* runs by batch on `grok-4.3` through `xai_batch.py`; results come back
-under `batch_result.response.chat_get_completion` with usage in the usual shape,
-plus `cost_in_usd_ticks` (1e-10 USD) per request.
+each — with xAI on the sequential script. Grading by batch on `grok-4.3` was
+tested on 2026-10-02: all 90 pilot grades parsed, at $0.00245 each billed against
+$0.02059 for `grok-4.7` live. It is not used, because xAI's answers would then be
+graded by a different model than the one under test. For the record, results
+come back under `batch_result.response.chat_get_completion`, with usage in the
+usual shape plus `cost_in_usd_ticks` (1e-10 USD) per request.
 
 **3. Two providers hide the tokens they bill you for.** Reconciling the first
 pilot against the actual invoices: Google reports reasoning in
