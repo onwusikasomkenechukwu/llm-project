@@ -30,9 +30,10 @@ invoices — see [Costs](#costs) below.
 
 ## Status
 
-A pilot has run end to end on real APIs: answers collected from all five
+A pilot has run end to end on real APIs, twice: answers collected from all five
 providers, then cross-evaluated by all five. 90 answers, 450 grades, every one
-parsed, no failures. Results are at the bottom of this file.
+parsed, no failures. The second run, on 2 October 2026, went through a recorded
+manifest on the final settings. Results are at the bottom of this file.
 
 It used six questions, one of each type, taken from the worked examples in the
 project's own rubric document — enough to confirm the rubric behaves correctly
@@ -48,9 +49,8 @@ about the models' handling of Black history.
 
 `analyze.py` now produces scores by model, identity and question type, a judge
 matrix, matched comparisons, self-preference estimates and replicate variability.
-Intervals resample questions. The original figures below came from ad-hoc pilot
-analysis; the new script reproduces the five reported model means. Publication
-plots remain separate work.
+Intervals resample questions. The pilot figures at the bottom of this file come
+from it. Publication plots remain separate work.
 
 ## Costs
 
@@ -59,6 +59,10 @@ priced at each provider's own rate. None of it is a list-price estimate. The
 method was checked against the invoices of an earlier run and came within
 **0.05%** of the billed total, and the token counts it rests on are published
 below so the arithmetic can be checked independently.
+
+The figures come from the first five-provider pilot. Rerunning it on 2 October
+on the final settings gave $7,549 against $7,577, a 99% ceiling of $8,586 against
+$8,593, and xAI grading at $0.02060 against $0.02059, so they stand.
 
 **Against a $15,000 request:**
 
@@ -280,8 +284,8 @@ of the full price — and still yields 2,160 self-graded answers per model, ampl
 for a paired difference of about a point.
 
 The argument that survives for the full panel is not the diagonal but the panel
-mean: five graders average out individual strictness, and the pilot measured a
-full point of spread between the strictest and most lenient. With two graders that
+mean: five graders average out individual strictness, and both pilots measured
+nearly a point of spread between the strictest and most lenient. With two graders that
 averaging is weaker; with one it is gone, and every score inherits that grader's
 bias. Whether that is worth $4,533 is a decision for the study.
 
@@ -389,8 +393,8 @@ was the grading setup, not the models.
 
 **So the identity spread measures tailoring as well as quality, and must not be
 reported as quality alone.** How far it distorts things depends on the questions:
-the spread was about 2 points on generic placeholder questions and only 0.16 on
-the real ones (see [What the pilot showed](#what-the-pilot-showed)), because
+the spread was about 2 points on generic placeholder questions and 0.16–0.37 on
+the project's worked examples (see [What the pilot showed](#what-the-pilot-showed)), because
 mentioning the asker's background is a non-sequitur on a generic task and
 reasonable on a civil-rights question. The mechanism has not gone away, and 18
 identities give it much more room than three, so the choice below still has to be
@@ -859,15 +863,25 @@ project's own rubric document — across three identities and all five providers
 each answer then graded by all five. **90 answers, 450 grades, every one parsed,
 no failures.**
 
+The figures below are from a rerun on 2 October 2026, recorded as a manifest run
+in `runs/pilot-2026-10-02/` and computed by `analyze.py`, with every provider on
+its final settings. The first pilot, a day earlier, gave the same ranking, the
+same self-preference pattern and a cost within 0.4%. Three of the six questions
+carry **placeholder** reference answers written to test the pipeline, not the law
+school's own, so completeness on those three is graded against stand-in text.
+
 ### Answer quality, averaged over all five graders
 
 | provider | mean /20 | spread between graders |
 |---|---|---|
-| Anthropic | **19.18** | 0.80 |
-| Muse | 18.57 | 1.08 |
-| Google | 17.71 | 1.48 |
-| xAI | 17.68 | 1.61 |
-| OpenAI | 17.42 | 1.62 |
+| Anthropic | **19.21** | 0.56 |
+| Muse | 18.64 | 1.11 |
+| Google | 18.01 | 1.28 |
+| xAI | 17.76 | 1.17 |
+| OpenAI | 17.72 | 0.61 |
+
+Six questions cannot rank these. The 95% intervals of neighbouring models
+overlap, and the order should not be quoted as a result.
 
 ### The cross-evaluation matrix
 
@@ -875,42 +889,45 @@ Rows are the model that answered, columns the model that graded.
 
 | answered by | Anthropic | Google | Muse | OpenAI | xAI | others only |
 |---|---|---|---|---|---|---|
-| Anthropic | *18.94* | 19.44 | 19.06 | 19.17 | 19.28 | **19.24** |
-| Muse | 18.11 | 19.17 | *18.39* | 18.56 | 18.61 | **18.61** |
-| Google | 16.94 | *18.50* | 17.78 | 17.50 | 17.83 | **17.51** |
-| xAI | 17.22 | 18.28 | 17.67 | 17.67 | *17.56* | **17.71** |
-| OpenAI | 17.06 | 17.83 | 17.39 | *17.61* | 17.22 | **17.38** |
+| Anthropic | *19.06* | 19.44 | 18.89 | 19.39 | 19.28 | **19.25** |
+| Muse | 18.11 | 19.22 | *18.50* | 18.67 | 18.72 | **18.68** |
+| Google | 17.33 | *18.61* | 18.17 | 17.94 | 18.00 | **17.86** |
+| xAI | 17.11 | 18.28 | 17.61 | 18.06 | *17.72* | **17.76** |
+| OpenAI | 17.50 | 18.11 | 17.67 | *17.78* | 17.56 | **17.71** |
 
 **Self-preference, measured rather than argued about** — a model's grade of its
 own answer, minus the mean of the other four graders on the same answer:
 
-| | self | others | difference |
-|---|---|---|---|
-| Google | 18.50 | 17.51 | **+0.99** |
-| OpenAI | 17.61 | 17.38 | +0.24 |
-| xAI | 17.56 | 17.71 | −0.15 |
-| Muse | 18.39 | 18.61 | −0.22 |
-| Anthropic | 18.94 | 19.24 | −0.29 |
+| | self | others | difference | 95% interval |
+|---|---|---|---|---|
+| Google | 18.61 | 17.86 | **+0.75** | +0.38 to +1.07 |
+| OpenAI | 17.78 | 17.71 | +0.07 | −0.10 to +0.26 |
+| xAI | 17.72 | 17.76 | −0.04 | −0.57 to +0.32 |
+| Muse | 18.50 | 18.68 | −0.18 | −1.38 to +0.58 |
+| Anthropic | 19.06 | 19.25 | −0.19 | −0.51 to +0.22 |
 
-Google grades its own work a point higher than the rest of the panel does. The
-other four grade themselves at or below the panel, so **self-preference is a
-property of particular models, not a safe assumption about all of them** — which
-is the direct answer to the grading report's first objection, and the reason the
-full matrix is worth running.
+Google grades its own work three quarters of a point above the rest of the panel,
+and its interval excludes zero; the first pilot measured +0.97. The other four
+grade themselves at or about the panel, every interval spanning zero. So
+**self-preference is a property of particular models, not a safe assumption about
+all of them** — which is the direct answer to the grading report's first
+objection, and the reason the full matrix is worth running.
 
 **Graders also differ in strictness**, across all providers' answers: Anthropic
-17.66, Muse 18.06, OpenAI 18.10, xAI 18.10, Google 18.64. A one-point spread from
-nothing but who is grading, which on its own rules out reporting single-grader
-scores.
+17.82, Muse 18.17, xAI 18.26, OpenAI 18.37, Google 18.73. Nearly a point of spread
+from nothing but who is grading, with Anthropic strictest and Google most lenient
+on both pilots, which on its own rules out reporting single-grader scores.
 
 ### The rubric behaved correctly
 
 - **Premise handling scored only where it should.** 225 grades across the three
   Loaded questions, and null on every Factual, Directed and Open-Ended one. The
   question-type column is what gates this.
-- **All five models handled every loaded premise correctly**, scoring 5.00 on both
-  false premises and on the true one. **Zero hard fails in 450 grades.**
-- **No answer reached the 4,000-token ceiling.**
+- **Every model rejected every false premise and accepted the true one.** 219 of
+  225 premise grades were 5. The six 4s were all on xAI answers that rejected the
+  premise correctly but thinly and without sources, so xAI averages 4.87 and the
+  other four 5.00. **Zero hard fails in 450 grades**, on both pilots.
+- **No answer reached the 4,000-token ceiling**; the longest was 3,668.
 
 That zero needs stating plainly. The model that failed this in the project's
 earlier rounds was Llama, and Muse is not Llama. On the five providers now in the
@@ -920,26 +937,27 @@ nothing here, and a write-up should not imply that these five fail this way.
 
 ### The identity spread mostly disappeared
 
-| identity | mean /20 |
-|---|---|
-| `white-american` | 18.17 |
-| `none` | 18.15 |
-| `black-american` | 18.01 |
+| identity | mean /20 | minus `none` | 95% interval |
+|---|---|---|---|
+| `white-american` | 18.45 | +0.37 | −0.02 to +0.77 |
+| `black-american` | 18.28 | +0.20 | −0.10 to +0.49 |
+| `none` | 18.08 | | |
 
-**A 0.16 spread, against roughly 2 points on an earlier pilot that used generic
-placeholder questions.** That is a substantial correction to the concern recorded
-under [The identities](#the-identities). The mechanism is real, but most of the
-earlier gap came from asking generic tasks under an identity framing, where
-mentioning the asker's background is a non-sequitur the grader has no reason to
-accept. On questions where identity is contextually relevant it largely does not
-arise. The decision in that section still has to be made before the full run,
-since 18 identities give it far more room than three — but it is a smaller problem
-than the first pilot suggested.
+**A 0.37 spread, and 0.16 on the first pilot, against roughly 2 points on an
+earlier pilot that used generic placeholder questions.** Neither difference from
+the control is distinguishable from zero at six questions. That is a substantial
+correction to the concern recorded under [The identities](#the-identities). The
+mechanism is real, but most of the earlier gap came from asking generic tasks
+under an identity framing, where mentioning the asker's background is a
+non-sequitur the grader has no reason to accept. On questions where identity is
+contextually relevant it largely does not arise. The decision in that section
+still has to be made before the full run, since 18 identities give it far more
+room than three — but it is a smaller problem than the first pilot suggested.
 
 ### One thing Muse needed
 
-**Muse reasons far longer than the others before answering** — 2,146 output tokens
-per grade against OpenAI's 375. At a 1,500-token grading ceiling, 77 of 90 grades
+**Muse reasons far longer than the others before answering** — on the first
+pilot, 2,146 output tokens per grade against OpenAI's 375. At a 1,500-token grading ceiling, 77 of 90 grades
 came back empty: the reasoning consumed the whole allowance and left nothing for
 the JSON. 15 still failed at 3,000.
 
