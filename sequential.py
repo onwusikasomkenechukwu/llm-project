@@ -66,7 +66,11 @@ PROVIDERS = {
     # xAI's flagship. Batch-capable models are all older, so this runs live.
     # reasoning_tokens sits OUTSIDE completion_tokens on xAI but is billed, so
     # it has to be added in. OpenAI-style servers usually include it already.
-    "xai": dict(model="grok-4.7", cap="max_tokens", reasoning_extra=True,
+    # concurrency: measured. xAI slows its own responses under load rather than
+    # erroring -- 3x the workers bought only 1.55x throughput -- and advertises
+    # x-ratelimit-limit-requests: 7200. Muse showed no errors at 48 workers and
+    # scaled linearly, so it gets the higher setting.
+    "xai": dict(model="grok-4.7", cap="max_tokens", reasoning_extra=True, concurrency=16,
                 base_url="https://api.x.ai/v1", key_env="XAI_API_KEY"),
     # Meta Model API, serving Muse. Not Llama -- see Provider notes. No batch
     # endpoint, so it runs live here.
@@ -79,9 +83,10 @@ PROVIDERS = {
     # grader deliberating less than the rest, so the ceiling is raised instead
     # and every model grades under the same conditions.
     "muse": dict(model="muse-spark-1.3", cap="max_tokens", judge_tokens=6000,
+                 concurrency=48,
                  base_url="https://api.meta.ai/v1", key_env="MUSE_API_KEY"),
     # vLLM / Ollama / llama.cpp. The server usually ignores the key.
-    "local": dict(model="llama-3.3-70b-instruct", cap="max_tokens",
+    "local": dict(model="llama-3.3-70b-instruct", cap="max_tokens", concurrency=8,
                   base_url="http://localhost:8000/v1", key_env="LOCAL_API_KEY"),
 }
 
@@ -511,7 +516,9 @@ def main():
                         "reference answers in it")
     p.add_argument("--identities",
                    help="comma-separated subset, e.g. none,black-american")
-    p.add_argument("--concurrency", type=int, default=8)
+    p.add_argument("--concurrency", type=int,
+                   help="default: the lowest setting among the chosen providers. "
+                        "Run them as separate commands to give each its own.")
     p.add_argument("--attempts", type=int, default=5)
     p.add_argument("--timeout", type=float, default=120.0)
     p.add_argument("--dry-run", action="store_true", help="print the plan, call nothing")
@@ -541,6 +548,13 @@ def main():
         for k in list(IDENTITIES):
             if k not in want:
                 del IDENTITIES[k]
+
+    # one pool serves the whole run, so a mixed run is held to the slowest
+    # provider's limit. Separate commands let each run at its own.
+    if args.concurrency is None:
+        args.concurrency = min(PROVIDERS[p].get("concurrency", 8) for p in providers)
+        print(f"concurrency {args.concurrency} "
+              f"({'lowest of ' + ', '.join(providers) if len(providers) > 1 else providers[0]})")
 
     cells = answer_cells(args, providers) if args.stage == "answer" else judge_cells(args, providers)
     saved = done_ids(args.out, args.stage, providers[0], args.pass_)

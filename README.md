@@ -507,6 +507,47 @@ Then combine:
 python merge.py responses
 ```
 
+### How long the sequential providers take
+
+Three providers batch; xAI and Muse do not, so their calls go through a thread
+pool in `sequential.py`. At the full grid that is a lot of calls:
+
+| | answers | grades | total |
+|---|---|---|---|
+| xAI | 21,600 | 108,000 | **129,600** |
+| Muse | 21,600 | 108,000 | **129,600** |
+
+Measured grading throughput, with the pool sized as the provider allows:
+
+| provider | workers | throughput | its share of the grid |
+|---|---|---|---|
+| Muse | 48 | 4,535 calls/hour | ~29 hours |
+| xAI | 16 | ~1,100 calls/hour | days, not hours |
+
+**They behave differently under load and the settings reflect that.** Muse showed
+no errors at 48 workers and scaled linearly. xAI does not error either — it slows
+its own responses, so three times the workers bought 1.55× the throughput — and it
+advertises `x-ratelimit-limit-requests: 7200`. So `sequential.py` carries a
+per-provider `concurrency` and defaults to the lowest among the providers you
+select.
+
+**Run them as separate commands**, or a mixed run is held to xAI's limit:
+
+```bash
+python sequential.py judge responses.jsonl --prompts prompts.xlsx --providers muse
+python sequential.py judge responses.jsonl --prompts prompts.xlsx --providers xai
+```
+
+Both resume, so an interrupted run of either picks up where it stopped. `R=2`
+doubles the volume.
+
+**xAI is the throughput bottleneck as well as the cost one.** Worth knowing that
+its batch endpoint does work for older models — `grok-4.3` and the `4.20` line —
+so xAI *grading* could go through batch at half price and without the thread pool,
+if the study will accept a different Grok grading than the one being graded. That
+breaks the self-preference diagonal for xAI, which is the reason not to do it
+casually, but it removes the project's worst bottleneck in one move.
+
 ## Grading
 
 Each script grades with its own provider, so cross-evaluation is these four
