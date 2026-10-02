@@ -10,7 +10,7 @@ consistency. The provider clients use fixture responses during testing.
 | Existing pipeline | Workbook limits and validation, identity framing, blind grading, score parsing, completion detection, merge selection, and retry behavior tested across the runners |
 | Provider adapters | Mocked OpenAI, Anthropic, Google and compatible chat clients; installed Google SDK request types exercised |
 | Batch lifecycle | Submit, fetch, resume, pass isolation, incompatible inputs, dry runs and bounded retries tested |
-| Sequential lifecycle | Two-provider collection and resume tested with a mocked transport |
+| Sequential lifecycle | Two-provider collection and resume, 3,000-RPM settings, retry pacing and delayed wake-ups tested without network calls |
 | Samples | Both generators tested in temporary directories; FLASK download replaced by a deterministic fixture |
 | Analysis | Question weighting, seeded bootstrap, matching, hard-fail policy, replicate variability, invalid rows and exports tested |
 | Manifest | Creation, execution, merge, complete preflight, analysis, provenance, interrupted-run recovery, locks and integrity checks tested |
@@ -19,7 +19,7 @@ consistency. The provider clients use fixture responses during testing.
 | Pilot analysis | All 450 grades usable; ten tables and summary generated; five model means reproduced |
 | CLI smoke checks | All four provider scripts passed dry runs |
 | Manifest CLI | Created runs/offline-verification, recorded a dry run and verified integrity; correctly reported collection incomplete |
-| Final suite | 40 unittest tests passed |
+| Final suite | 42 unittest tests passed |
 | Syntax | All project Python scripts and tests compiled |
 
 The fixture manifest test exercises collection output through merge, strict

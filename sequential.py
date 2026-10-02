@@ -71,7 +71,7 @@ PROVIDERS = {
     # concurrency: measured. xAI slows its own responses under load rather than
     # erroring -- 3x the workers bought only 1.55x throughput -- and advertises
     # x-ratelimit-limit-requests: 7200.
-    "xai": dict(model="grok-4.7", cap="max_tokens", reasoning_extra=True, concurrency=16,
+    "xai": dict(model="grok-4.7", cap="max_tokens", reasoning_extra=True, concurrency=16, rpm=3000,
                 base_url="https://api.x.ai/v1", key_env="XAI_API_KEY"),
     # Meta Model API, serving Muse. Not Llama -- see Provider notes. No batch
     # endpoint, so it runs live here.
@@ -220,8 +220,7 @@ class OutOfCredits(Exception):
 
 
 class Pacer:
-    """Spaces request starts so a provider never sees more than rpm a minute,
-    however many workers are waiting. Retries count, since they are requests."""
+    """Pace admissions per provider within this process, including retries."""
 
     def __init__(self, rpm):
         self.gap = 60.0 / rpm if rpm else 0.0
@@ -231,9 +230,11 @@ class Pacer:
     def wait(self):
         with self.lock:
             now = time.monotonic()
-            start = max(now, self.next)
-            self.next = start + self.gap
-        time.sleep(start - now)
+            while now < self.next:
+                time.sleep(self.next - now)
+                now = time.monotonic()
+            # Base the next admission on the actual wake-up, with no catch-up burst.
+            self.next = now + self.gap
 
 
 # ---------------------------------------------------------------------------

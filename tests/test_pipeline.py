@@ -158,9 +158,47 @@ class PipelineTests(unittest.TestCase):
         with patch.object(seq, "call", side_effect=[RuntimeError("temporary"), ("OK", 1, 2, 0)]), \
              patch.object(seq.time, "sleep"):
             self.assertEqual(seq.call_with_retries(None, {}, {}, 100, 2, pacer), ("OK", 1, 2, None, 0))
+        self.assertEqual(pacer.wait.call_count, 2)
+        pacer.reset_mock()
         with patch.object(seq, "call", side_effect=RuntimeError("insufficient_quota")):
             with self.assertRaises(seq.OutOfCredits):
                 seq.call_with_retries(None, {}, {}, 100, 2, pacer)
+        pacer.wait.assert_called_once()
+
+    def test_live_provider_rate_limits(self):
+        seq = RUNNERS[3]
+        for provider in ("xai", "muse"):
+            with self.subTest(provider=provider):
+                self.assertEqual(seq.PROVIDERS[provider]["rpm"], 3000)
+                pacer = seq.Pacer(seq.PROVIDERS[provider]["rpm"])
+                clock = [0.0]
+                def sleep(delay):
+                    self.assertTrue(pacer.lock.locked())
+                    clock[0] += delay
+                with patch.object(seq.time, "monotonic", side_effect=lambda: clock[0]), \
+                     patch.object(seq.time, "sleep", side_effect=sleep):
+                    admissions = []
+                    for _ in range(3001):
+                        pacer.wait()
+                        admissions.append(clock[0])
+                self.assertGreaterEqual(admissions[-1] - admissions[0], 60 - 1e-8)
+                self.assertTrue(all(b - a >= .02 - 1e-10 for a, b in zip(admissions, admissions[1:])))
+
+    def test_pacer_does_not_catch_up_after_delayed_wakeup(self):
+        seq = RUNNERS[3]
+        pacer = seq.Pacer(3000)
+        clock = [0.0]
+        oversleep = [1.0, 0.0]
+        def sleep(delay):
+            self.assertTrue(pacer.lock.locked())
+            clock[0] += delay + oversleep.pop(0)
+        with patch.object(seq.time, "monotonic", side_effect=lambda: clock[0]), \
+             patch.object(seq.time, "sleep", side_effect=sleep):
+            pacer.wait()
+            pacer.wait()
+            delayed = clock[0]
+            pacer.wait()
+        self.assertAlmostEqual(clock[0] - delayed, .02)
 
     def test_merge_prefers_usable_result(self):
         good = dict(SCORE, total=14, error=None, ts="2026-01-01")

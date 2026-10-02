@@ -523,13 +523,16 @@ xAI and Muse cannot batch, so their calls go through a thread pool in
 | provider | workers | throughput, measured | its share of the grid |
 |---|---|---|---|
 | Muse | 200, paced to 3,000/min | ~35,000 calls/hour | ~4 hours |
-| xAI | 16 | ~1,100 calls/hour | ~5 days |
+| xAI | 16, paced to 3,000/min | ~1,100 calls/hour | ~5 days |
 
 **They behave differently under load and the settings reflect that.** Muse
 graded 300 answers at 200 workers with no errors and every grade parsed, at about
 20 seconds a call and ~600 calls a minute. Its account cap is 3,000 a minute, so
-there is headroom; the cap is enforced as a pace, so it can never be exceeded
-whatever the worker count. xAI does not error either — it slows its own
+there is headroom. Both providers now have a configured ceiling of 3,000 requests
+per minute per process, including retries. Workers share a pacer that spaces
+admissions at least 20 ms apart without catching up after a delayed wake-up.
+Separate processes do not share that limiter; run only one process per provider
+and account at a time. xAI does not error either — it slows its own
 responses, so three times the workers bought 1.55× the throughput — and it
 advertises `x-ratelimit-limit-requests: 7200`. So `sequential.py` carries a
 per-provider `concurrency` and defaults to the lowest among the providers you
