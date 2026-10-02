@@ -35,16 +35,34 @@ def read_jsonl(path):
             if not line:
                 continue
             try:
-                yield json.loads(line)
+                row = json.loads(line)
             except json.JSONDecodeError:
-                print(f"  skipped {path}:{n}, not valid JSON", file=sys.stderr)
+                raise ValueError(f"{path}:{n}: invalid JSON") from None
+            if not isinstance(row, dict) or not isinstance(row.get("id"), str):
+                raise ValueError(f"{path}:{n}: expected an object with a string id")
+            yield row
+
+
+def usable(row: dict) -> bool:
+    if row.get("error") is not None:
+        return False
+    if "response" in row:
+        return isinstance(row["response"], str) and bool(row["response"].strip())
+    criteria = ("accuracy", "completeness", "objectivity", "sourcing")
+    return (all(type(row.get(k)) is int and 1 <= row[k] <= 5 for k in criteria)
+            and row.get("total") == sum(row[k] for k in criteria)
+            and type(row.get("hard_fail")) is bool
+            and ((type(row.get("premise_handling")) is int
+                  and 1 <= row["premise_handling"] <= 5)
+                 if str(row.get("question_type", "")).startswith("Loaded")
+                 else row.get("premise_handling") is None))
 
 
 def better(new, old):
     """True if `new` should replace `old` for the same key."""
     if old is None:
         return True
-    new_ok, old_ok = new.get("error") is None, old.get("error") is None
+    new_ok, old_ok = usable(new), usable(old)
     if new_ok != old_ok:
         return new_ok                       # a success always beats a failure
     return str(new.get("ts", "")) >= str(old.get("ts", ""))  # else the later one
@@ -64,6 +82,12 @@ def merge(kind, in_dir, out_path):
     for path in sources:
         n = 0
         for row in read_jsonl(path):
+            if kind == "judgments":
+                row.setdefault("pass", 0)
+                if not isinstance(row.get("judge"), str) or type(row["pass"]) is not int or row["pass"] < 0:
+                    raise ValueError(f"{path}: invalid judge or pass for {row['id']}")
+            if not usable(row) and row.get("error") is None:
+                row["error"] = "Empty answer or invalid rubric result; raw output retained."
             n += 1
             key = tuple(row.get(f) for f in key_fields)
             if better(row, best.get(key)):
@@ -103,8 +127,11 @@ def main():
 
     if args.out and not args.kind:
         sys.exit("--out needs a kind: merge.py responses --out ... ")
-    for kind in ([args.kind] if args.kind else list(KINDS)):
-        merge(kind, args.in_dir, args.out)
+    try:
+        for kind in ([args.kind] if args.kind else list(KINDS)):
+            merge(kind, args.in_dir, args.out)
+    except (OSError, ValueError) as exc:
+        sys.exit(str(exc))
 
 
 if __name__ == "__main__":

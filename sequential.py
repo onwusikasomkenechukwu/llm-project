@@ -26,6 +26,7 @@ import os
 import random
 import re
 import sys
+import subprocess
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -242,15 +243,19 @@ class Pacer:
 def load_prompts(path, sheet, id_col, pos_col, neg_col, limit):
     """Read the prompts spreadsheet into [(qid, polarity, text, qtype), ...]."""
     wb = openpyxl.load_workbook(path, data_only=True)
-    if isinstance(sheet, str) and sheet in wb.sheetnames:
-        ws = wb[sheet]
-    else:
-        ws = wb.worksheets[sheet if isinstance(sheet, int) else 0]
-    rows = list(ws.iter_rows(values_only=True))
+    try:
+        ws = wb[sheet] if isinstance(sheet, str) else wb.worksheets[sheet]
+        rows = list(ws.iter_rows(values_only=True))
+    except (KeyError, IndexError):
+        sys.exit(f"Unknown sheet {sheet!r}. Sheets: {wb.sheetnames}")
+    finally:
+        wb.close()
     if not rows:
         sys.exit(f"{path} sheet {ws.title!r} is empty.")
     header = [str(c).strip() if c is not None else "" for c in rows[0]]
     lower = {h.lower(): i for i, h in enumerate(header) if h}
+    if len(lower) != sum(bool(h) for h in header):
+        sys.exit("Duplicate column names in prompt workbook.")
 
     def pick(explicit, *guesses):
         if explicit:
@@ -284,9 +289,14 @@ def load_prompts(path, sheet, id_col, pos_col, neg_col, limit):
             return ""
         return str(row[j]).strip()
 
-    out = []
+    out, seen = [], set()
     for i, r in enumerate(rows[1:], start=1):
+        if not cell(r, pos) and not cell(r, neg):
+            continue
         ident = cell(r, qid) or f"q{i:04d}"
+        if "|" in ident or ident in seen:
+            sys.exit(f"Invalid or duplicate question id: {ident!r}")
+        seen.add(ident)
         base = {"qid": ident, "qtype": cell(r, qt) or "Unspecified",
                 "ideal": cell(r, ide), "components": cell(r, cmp_)}
         if cell(r, pos):
@@ -294,16 +304,28 @@ def load_prompts(path, sheet, id_col, pos_col, neg_col, limit):
         if neg is not None and cell(r, neg):
             out.append(dict(base, polarity="neg", text=cell(r, neg)))
     if limit:
-        keep = {q["qid"] for q in out[: limit * 2]}
+        keep = set(list(dict.fromkeys(q["qid"] for q in out))[:limit])
         out = [q for q in out if q["qid"] in keep]
+    if not out:
+        sys.exit("No usable questions in prompt workbook.")
     return out
 
 def answer_cells(args, providers):
     cells = []
-    for q in load_prompts(args.input, args.sheet, args.id_col,
-                          args.pos_col, args.neg_col, args.limit):
+    questions = load_prompts(args.input, args.sheet, args.id_col,
+                             args.pos_col, args.neg_col, args.limit)
+    if getattr(args, "polarity", "auto") == "pos-neg":
+        pos = {q["qid"] for q in questions if q["polarity"] == "pos"}
+        neg = {q["qid"] for q in questions if q["polarity"] == "neg"}
+        if pos != neg or not pos:
+            sys.exit("--polarity pos-neg requires both polarities for every question.")
+    for q in questions:
         qid, polarity, text, qtype = q["qid"], q["polarity"], q["text"], q["qtype"]
+        if getattr(args, "polarity", "auto") == "pos" and polarity != "pos":
+            continue
         for iname, frag in IDENTITIES.items():
+            if args.identities is not None and iname not in args.identities.split(","):
+                continue
             for prov in providers:
                 for run in range(args.duplicates):
                     cells.append({
@@ -331,9 +353,13 @@ def judge_cells(args, providers):
         print(f"{len(refs)} of the questions have a reference answer")
 
     cells = []
+    seen = set()
     for a in read_jsonl(args.input):
         if a.get("error") is not None or not a.get("response"):
             continue
+        if a["id"] in seen:
+            sys.exit(f"Duplicate answer id {a['id']!r}; run merge.py before judging.")
+        seen.add(a["id"])
         # graded against the bare question, not the identity-framed prompt: the
         # identity effect is measured by comparing rows, not inside one grade
         claim = a.get("question") or a["user"]
@@ -367,7 +393,7 @@ def parse_score(raw):
                # "do the facts chosen shift by identity" cannot be answered from
                # one answer in isolation. Filled in by comparing rows, not graded.
                selective_emphasis=None)
-    if not raw:
+    if not isinstance(raw, str) or not raw:
         return out
     m = re.search(r"\{.*\}", raw, re.S)
     o = None
@@ -382,7 +408,7 @@ def parse_score(raw):
         # them out of the raw text rather than paying to grade the row again.
         o = {}
         for k in CRITERIA + ("premise_handling",):
-            f = re.search(rf'"{k}"\s*:\s*(null|\d+)', raw)
+            f = re.search(rf'"{k}"\s*:\s*(null|\d+)(?=\s*[,}}]|\s*$)', raw)
             if f:
                 o[k] = None if f.group(1) == "null" else int(f.group(1))
         f = re.search(r'"hard_fail"\s*:\s*(true|false)', raw)
@@ -393,11 +419,9 @@ def parse_score(raw):
             o["justification"] = f.group(1).rstrip('"').strip() or None
 
     def one(v):
-        try:
+        if isinstance(v, str) and re.fullmatch(r"[1-5]", v):
             v = int(v)
-        except (TypeError, ValueError):
-            return None
-        return v if 1 <= v <= 5 else None
+        return v if type(v) is int and 1 <= v <= 5 else None
 
     for k in CRITERIA:
         out[k] = one(o.get(k))
@@ -420,6 +444,9 @@ def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
     report it separately -- Anthropic bills thinking as output and does not
     break it out."""
     row = {"id": cell["id"], **cell["row"], "ts": datetime.now(timezone.utc).isoformat()}
+    for field, variable in (("run_id", "BENCHMARK_RUN_ID"), ("invocation_id", "BENCHMARK_INVOCATION_ID")):
+        if os.environ.get(variable):
+            row[field] = os.environ[variable]
     if stage == "answer":
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
                    input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning, error=err)
@@ -427,7 +454,23 @@ def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
         row.update(judge_model=cfg["model"], **parse_score(text),
                    input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
                    raw=text, error=err)
+    if err is None and not usable(row, stage):
+        row["error"] = "Empty answer or invalid rubric result; raw output retained."
     return row
+
+
+def usable(row: dict, stage: str) -> bool:
+    if row.get("error") is not None:
+        return False
+    if stage == "answer":
+        return isinstance(row.get("response"), str) and bool(row["response"].strip())
+    return (all(type(row.get(k)) is int and 1 <= row[k] <= 5 for k in CRITERIA)
+            and row.get("total") == sum(row[k] for k in CRITERIA)
+            and type(row.get("hard_fail")) is bool
+            and ((type(row.get("premise_handling")) is int
+                  and 1 <= row["premise_handling"] <= 5)
+                 if str(row.get("question_type", "")).startswith("Loaded")
+                 else row.get("premise_handling") is None))
 
 
 
@@ -438,15 +481,26 @@ def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
 def read_jsonl(path):
     if not os.path.exists(path):
         return []
+    rows = []
     with open(path, encoding="utf-8") as f:
-        return [json.loads(l) for l in f if l.strip()]
+        for n, line in enumerate(f, 1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except ValueError:
+                sys.exit(f"{path}:{n}: invalid JSON; repair the file before resuming.")
+            if not isinstance(row, dict):
+                sys.exit(f"{path}:{n}: expected a JSON object.")
+            rows.append(row)
+    return rows
 
 
 def done_ids(path, stage, judge, pass_):
     """Ids already saved successfully. Failures are left out so they get retried."""
     ids = set()
     for r in read_jsonl(path):
-        if r.get("error") is not None:
+        if not usable(r, stage):
             continue
         if stage == "judge":
             if r.get("judge") != judge or r.get("pass") != pass_:
@@ -522,6 +576,13 @@ def call_with_retries(client, cfg, cell, tokens, attempts, pacer, extra=None):
 # Main
 # ---------------------------------------------------------------------------
 
+def verify_drift() -> None:
+    guard = os.path.join(os.path.dirname(os.path.abspath(__file__)), "check_drift.py")
+    result = subprocess.run([sys.executable, guard], capture_output=True, text=True)
+    if result.returncode:
+        sys.exit(result.stderr.strip() or result.stdout.strip() or "Drift guard failed.")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -533,6 +594,7 @@ def main():
     p.add_argument("--duplicates", type=int, default=3, help="D, runs per cell")
     p.add_argument("--pass", dest="pass_", type=int, default=0, help="judge pass number")
     p.add_argument("--limit", type=int)
+    p.add_argument("--polarity", choices=["auto", "pos", "pos-neg"], default="auto")
     p.add_argument("--prompts",
                    help="judge stage: the prompts .xlsx, to grade against the "
                         "reference answers in it")
@@ -549,10 +611,21 @@ def main():
     p.add_argument("--pos-col")
     p.add_argument("--neg-col")
     args = p.parse_args()
+    verify_drift()
+    if args.attempts < 1 or args.timeout <= 0 or (args.concurrency is not None and args.concurrency < 1):
+        p.error("attempts, timeout, and concurrency must be positive")
+    if args.duplicates < 1 or args.pass_ < 0 or (args.limit is not None and args.limit < 1):
+        p.error("duplicates and limit must be positive; pass must be nonnegative")
+    if not os.path.isfile(args.input):
+        p.error(f"input file not found: {args.input}")
     load_env()
 
     providers = [x.strip() for x in args.providers.split(",") if x.strip()]
     unknown = [x for x in providers if x not in PROVIDERS]
+    if not providers or len(providers) != len(set(providers)):
+        p.error("choose a nonempty, unique provider list")
+    if args.stage == "judge" and len(providers) != 1:
+        p.error("choose one judge per invocation")
     if unknown:
         sys.exit(f"Unknown provider(s): {unknown}. This script covers {list(PROVIDERS)}.")
 
@@ -562,14 +635,14 @@ def main():
     args.sheet = int(args.sheet) if str(args.sheet).isdigit() else args.sheet
     tokens = ANSWER_TOKENS if args.stage == "answer" else JUDGE_TOKENS
 
-    if args.identities:
+    if args.identities is not None:
         want = [x.strip() for x in args.identities.split(",") if x.strip()]
+        if not want or len(want) != len(set(want)):
+            p.error("choose a nonempty, unique identity list")
         unknown = [x for x in want if x not in IDENTITIES]
         if unknown:
             sys.exit(f"Unknown identity/identities: {unknown}. Known: {list(IDENTITIES)}")
-        for k in list(IDENTITIES):
-            if k not in want:
-                del IDENTITIES[k]
+        args.identities = ",".join(want)
 
     # one pool serves the whole run, so a mixed run is held to the slowest
     # provider's limit. Separate commands let each run at its own.
@@ -630,6 +703,7 @@ def main():
         sys.exit(2)
     if counts["fail"]:
         print("Rerun the same command to retry the failed cells.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

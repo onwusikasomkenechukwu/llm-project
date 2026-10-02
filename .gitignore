@@ -16,3 +16,7 @@ judgments-*.jsonl
 # placeholder questions are generated, not committed: FLASK carries no licence
 samples/flask10.xlsx
 samples/rubric_pilot.xlsx
+
+# Local analysis exports and manifest-owned run artifacts.
+analysis/
+runs/

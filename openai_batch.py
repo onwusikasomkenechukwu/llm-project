@@ -19,11 +19,14 @@ batches themselves abandoned.
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
 import sys
+import subprocess
 import time
+import uuid
 from datetime import datetime, timezone
 
 import openpyxl
@@ -188,15 +191,19 @@ BATCH_SIZE = 10000  # requests per batch; the API cap is 50,000
 def load_prompts(path, sheet, id_col, pos_col, neg_col, limit):
     """Read the prompts spreadsheet into [(qid, polarity, text, qtype), ...]."""
     wb = openpyxl.load_workbook(path, data_only=True)
-    if isinstance(sheet, str) and sheet in wb.sheetnames:
-        ws = wb[sheet]
-    else:
-        ws = wb.worksheets[sheet if isinstance(sheet, int) else 0]
-    rows = list(ws.iter_rows(values_only=True))
+    try:
+        ws = wb[sheet] if isinstance(sheet, str) else wb.worksheets[sheet]
+        rows = list(ws.iter_rows(values_only=True))
+    except (KeyError, IndexError):
+        sys.exit(f"Unknown sheet {sheet!r}. Sheets: {wb.sheetnames}")
+    finally:
+        wb.close()
     if not rows:
         sys.exit(f"{path} sheet {ws.title!r} is empty.")
     header = [str(c).strip() if c is not None else "" for c in rows[0]]
     lower = {h.lower(): i for i, h in enumerate(header) if h}
+    if len(lower) != sum(bool(h) for h in header):
+        sys.exit("Duplicate column names in prompt workbook.")
 
     def pick(explicit, *guesses):
         if explicit:
@@ -230,9 +237,14 @@ def load_prompts(path, sheet, id_col, pos_col, neg_col, limit):
             return ""
         return str(row[j]).strip()
 
-    out = []
+    out, seen = [], set()
     for i, r in enumerate(rows[1:], start=1):
+        if not cell(r, pos) and not cell(r, neg):
+            continue
         ident = cell(r, qid) or f"q{i:04d}"
+        if "|" in ident or ident in seen:
+            sys.exit(f"Invalid or duplicate question id: {ident!r}")
+        seen.add(ident)
         base = {"qid": ident, "qtype": cell(r, qt) or "Unspecified",
                 "ideal": cell(r, ide), "components": cell(r, cmp_)}
         if cell(r, pos):
@@ -240,16 +252,28 @@ def load_prompts(path, sheet, id_col, pos_col, neg_col, limit):
         if neg is not None and cell(r, neg):
             out.append(dict(base, polarity="neg", text=cell(r, neg)))
     if limit:
-        keep = {q["qid"] for q in out[: limit * 2]}
+        keep = set(list(dict.fromkeys(q["qid"] for q in out))[:limit])
         out = [q for q in out if q["qid"] in keep]
+    if not out:
+        sys.exit("No usable questions in prompt workbook.")
     return out
 
 def answer_cells(args, providers):
     cells = []
-    for q in load_prompts(args.input, args.sheet, args.id_col,
-                          args.pos_col, args.neg_col, args.limit):
+    questions = load_prompts(args.input, args.sheet, args.id_col,
+                             args.pos_col, args.neg_col, args.limit)
+    if getattr(args, "polarity", "auto") == "pos-neg":
+        pos = {q["qid"] for q in questions if q["polarity"] == "pos"}
+        neg = {q["qid"] for q in questions if q["polarity"] == "neg"}
+        if pos != neg or not pos:
+            sys.exit("--polarity pos-neg requires both polarities for every question.")
+    for q in questions:
         qid, polarity, text, qtype = q["qid"], q["polarity"], q["text"], q["qtype"]
+        if getattr(args, "polarity", "auto") == "pos" and polarity != "pos":
+            continue
         for iname, frag in IDENTITIES.items():
+            if args.identities is not None and iname not in args.identities.split(","):
+                continue
             for prov in providers:
                 for run in range(args.duplicates):
                     cells.append({
@@ -277,9 +301,13 @@ def judge_cells(args, providers):
         print(f"{len(refs)} of the questions have a reference answer")
 
     cells = []
+    seen = set()
     for a in read_jsonl(args.input):
         if a.get("error") is not None or not a.get("response"):
             continue
+        if a["id"] in seen:
+            sys.exit(f"Duplicate answer id {a['id']!r}; run merge.py before judging.")
+        seen.add(a["id"])
         # graded against the bare question, not the identity-framed prompt: the
         # identity effect is measured by comparing rows, not inside one grade
         claim = a.get("question") or a["user"]
@@ -313,7 +341,7 @@ def parse_score(raw):
                # "do the facts chosen shift by identity" cannot be answered from
                # one answer in isolation. Filled in by comparing rows, not graded.
                selective_emphasis=None)
-    if not raw:
+    if not isinstance(raw, str) or not raw:
         return out
     m = re.search(r"\{.*\}", raw, re.S)
     o = None
@@ -328,7 +356,7 @@ def parse_score(raw):
         # them out of the raw text rather than paying to grade the row again.
         o = {}
         for k in CRITERIA + ("premise_handling",):
-            f = re.search(rf'"{k}"\s*:\s*(null|\d+)', raw)
+            f = re.search(rf'"{k}"\s*:\s*(null|\d+)(?=\s*[,}}]|\s*$)', raw)
             if f:
                 o[k] = None if f.group(1) == "null" else int(f.group(1))
         f = re.search(r'"hard_fail"\s*:\s*(true|false)', raw)
@@ -339,11 +367,9 @@ def parse_score(raw):
             o["justification"] = f.group(1).rstrip('"').strip() or None
 
     def one(v):
-        try:
+        if isinstance(v, str) and re.fullmatch(r"[1-5]", v):
             v = int(v)
-        except (TypeError, ValueError):
-            return None
-        return v if 1 <= v <= 5 else None
+        return v if type(v) is int and 1 <= v <= 5 else None
 
     for k in CRITERIA:
         out[k] = one(o.get(k))
@@ -366,6 +392,9 @@ def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
     report it separately -- Anthropic bills thinking as output and does not
     break it out."""
     row = {"id": cell["id"], **cell["row"], "ts": datetime.now(timezone.utc).isoformat()}
+    for field, variable in (("run_id", "BENCHMARK_RUN_ID"), ("invocation_id", "BENCHMARK_INVOCATION_ID")):
+        if os.environ.get(variable):
+            row[field] = os.environ[variable]
     if stage == "answer":
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
                    input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning, error=err)
@@ -373,7 +402,23 @@ def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
         row.update(judge_model=cfg["model"], **parse_score(text),
                    input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
                    raw=text, error=err)
+    if err is None and not usable(row, stage):
+        row["error"] = "Empty answer or invalid rubric result; raw output retained."
     return row
+
+
+def usable(row: dict, stage: str) -> bool:
+    if row.get("error") is not None:
+        return False
+    if stage == "answer":
+        return isinstance(row.get("response"), str) and bool(row["response"].strip())
+    return (all(type(row.get(k)) is int and 1 <= row[k] <= 5 for k in CRITERIA)
+            and row.get("total") == sum(row[k] for k in CRITERIA)
+            and type(row.get("hard_fail")) is bool
+            and ((type(row.get("premise_handling")) is int
+                  and 1 <= row["premise_handling"] <= 5)
+                 if str(row.get("question_type", "")).startswith("Loaded")
+                 else row.get("premise_handling") is None))
 
 
 
@@ -384,8 +429,19 @@ def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
 def read_jsonl(path):
     if not os.path.exists(path):
         return []
+    rows = []
     with open(path, encoding="utf-8") as f:
-        return [json.loads(l) for l in f if l.strip()]
+        for n, line in enumerate(f, 1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except ValueError:
+                sys.exit(f"{path}:{n}: invalid JSON; repair the file before resuming.")
+            if not isinstance(row, dict):
+                sys.exit(f"{path}:{n}: expected a JSON object.")
+            rows.append(row)
+    return rows
 
 
 def append_jsonl(path, rows):
@@ -398,7 +454,7 @@ def done_ids(path, stage, judge, pass_):
     """Ids already saved successfully. Failures are left out so they get retried."""
     ids = set()
     for r in read_jsonl(path):
-        if r.get("error") is not None:
+        if not usable(r, stage):
             continue
         if stage == "judge":
             if r.get("judge") != judge or r.get("pass") != pass_:
@@ -420,6 +476,26 @@ def pending_batches(state_path, stage):
         elif r.get("stage") == stage:
             open_[r["batch_id"]] = r
     return [r for b, r in open_.items() if b not in fetched]
+
+
+def batch_digest(cells: list[dict], cfg: dict) -> str:
+    return hashlib.sha256(json.dumps([cells, cfg], sort_keys=True).encode()).hexdigest()
+
+
+def matching_batches(state_path: str, args, by_id: dict) -> list[dict]:
+    records = []
+    for rec in pending_batches(state_path, args.stage):
+        if rec.get("pass", 0) != args.pass_:
+            continue
+        if rec.get("out", os.path.abspath(args.out)) != os.path.abspath(args.out):
+            continue
+        if any(i not in by_id for i in rec["ids"]):
+            sys.exit("Pending batch contains cells outside this invocation. Resume its original command.")
+        if rec.get("digest") and rec["digest"] != batch_digest(
+                [by_id[i] for i in rec["ids"]], PROVIDERS[rec["provider"]]):
+            sys.exit("Pending batch inputs or settings changed. Restore the original inputs before fetching.")
+        records.append(rec)
+    return records
 
 
 # ---------------------------------------------------------------------------
@@ -494,7 +570,12 @@ def fetch(client, batch_id):
                 # OpenAI counts reasoning inside completion_tokens already, so
                 # this is recorded for visibility, not added on
                 d = u.get("completion_tokens_details") or {}
-                out[key] = (body["choices"][0]["message"].get("content") or "",
+                choices = body.get("choices") or []
+                if not choices:
+                    out[key] = (None, u.get("prompt_tokens"), u.get("completion_tokens"),
+                                "No answer choices in provider result", d.get("reasoning_tokens") or 0)
+                    continue
+                out[key] = (choices[0]["message"].get("content") or "",
                             u.get("prompt_tokens"), u.get("completion_tokens"), None,
                             d.get("reasoning_tokens") or 0)
             else:
@@ -523,6 +604,13 @@ def call_now(client, cfg, cell, tokens):
 # Main
 # ---------------------------------------------------------------------------
 
+def verify_drift() -> None:
+    guard = os.path.join(os.path.dirname(os.path.abspath(__file__)), "check_drift.py")
+    result = subprocess.run([sys.executable, guard], capture_output=True, text=True)
+    if result.returncode:
+        sys.exit(result.stderr.strip() or result.stdout.strip() or "Drift guard failed.")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -534,6 +622,7 @@ def main():
     p.add_argument("--duplicates", type=int, default=3, help="D, runs per cell")
     p.add_argument("--pass", dest="pass_", type=int, default=0, help="judge pass number")
     p.add_argument("--limit", type=int)
+    p.add_argument("--polarity", choices=["auto", "pos", "pos-neg"], default="auto")
     p.add_argument("--prompts",
                    help="judge stage: the prompts .xlsx, to grade against the "
                         "reference answers in it")
@@ -543,20 +632,32 @@ def main():
     p.add_argument("--wait", action="store_true", help="poll until every batch is done")
     p.add_argument("--poll-seconds", type=int, default=120)
     p.add_argument("--now", action="store_true", help="call immediately instead of batching")
+    p.add_argument("--dry-run", action="store_true", help="print the plan, call nothing")
     p.add_argument("--no-submit", action="store_true", help="only fetch what is already running")
     p.add_argument("--sheet", default=0)
     p.add_argument("--id-col")
     p.add_argument("--pos-col")
     p.add_argument("--neg-col")
     args = p.parse_args()
+    verify_drift()
+    if args.batch_size < 1 or args.poll_seconds < 1:
+        p.error("batch-size and poll-seconds must be positive")
+    if args.now and args.no_submit:
+        p.error("--now and --no-submit cannot be combined")
+    if args.duplicates < 1 or args.pass_ < 0 or (args.limit is not None and args.limit < 1):
+        p.error("duplicates and limit must be positive; pass must be nonnegative")
+    if not os.path.isfile(args.input):
+        p.error(f"input file not found: {args.input}")
     load_env()
 
-    providers = [x.strip() for x in (args.providers or "openai").split(",") if x.strip()]
+    providers = [x.strip() for x in args.providers.split(",") if x.strip()]
     unknown = [x for x in providers if x not in PROVIDERS]
+    if not providers or len(providers) != len(set(providers)):
+        p.error("choose a nonempty, unique provider list")
+    if args.stage == "judge" and len(providers) != 1:
+        p.error("choose one judge per invocation")
     if unknown:
         sys.exit(f"Unknown provider(s): {unknown}. This script covers {list(PROVIDERS)}.")
-    if args.stage == "judge" and len(providers) > 1:
-        sys.exit("One judge at a time. Use --pass or rerun for a second judge.")
 
     stem = os.path.splitext(os.path.basename(__file__))[0]
     base = "responses" if args.stage == "answer" else "judgments"
@@ -565,24 +666,29 @@ def main():
     args.sheet = int(args.sheet) if str(args.sheet).isdigit() else args.sheet
     tokens = ANSWER_TOKENS if args.stage == "answer" else JUDGE_TOKENS
 
-    if args.identities:
+    if args.identities is not None:
         want = [x.strip() for x in args.identities.split(",") if x.strip()]
+        if not want or len(want) != len(set(want)):
+            p.error("choose a nonempty, unique identity list")
         unknown = [x for x in want if x not in IDENTITIES]
         if unknown:
             sys.exit(f"Unknown identity/identities: {unknown}. Known: {list(IDENTITIES)}")
-        for k in list(IDENTITIES):
-            if k not in want:
-                del IDENTITIES[k]
+        args.identities = ",".join(want)
 
     cells = answer_cells(args, providers) if args.stage == "answer" else judge_cells(args, providers)
     by_id = {c["id"]: c for c in cells}
+    if args.dry_run:
+        print(f"{len(cells)} cells; dry run, no API calls")
+        return
+    matching_batches(args.state, args, by_id)
     clients = {name: make_client(PROVIDERS[name]) for name in providers}
     print(f"{len(cells)} cells across {', '.join(providers)}")
 
+    attempted = set()
     while True:
         # 1. collect anything that has finished
         still_open = []
-        for rec in pending_batches(args.state, args.stage):
+        for rec in matching_batches(args.state, args, by_id):
             cfg = PROVIDERS[rec["provider"]]
             status, results = fetch(clients[rec["provider"]], rec["batch_id"])
             if results is None:
@@ -595,6 +701,7 @@ def main():
                 if cell:
                     rows.append(make_row(args.stage, cell, cfg, *vals))
             append_jsonl(args.out, rows)
+            attempted.update(rec["ids"])
             append_jsonl(args.state, [{"batch_id": rec["batch_id"], "fetched": True,
                                        "ts": datetime.now(timezone.utc).isoformat()}])
             bad = sum(1 for r in rows if r["error"] is not None)
@@ -603,7 +710,8 @@ def main():
         # 2. work out what is left
         saved = done_ids(args.out, args.stage, providers[0], args.pass_)
         in_flight = {i for rec in still_open for i in rec["ids"]}
-        todo = [c for c in cells if c["id"] not in saved and c["id"] not in in_flight]
+        missing = [c for c in cells if c["id"] not in saved and c["id"] not in in_flight]
+        todo = [c for c in missing if c["id"] not in attempted]
         print(f"{len(saved)} saved, {len(in_flight)} in flight, {len(todo)} to go")
 
         # 3. submit what is missing
@@ -616,22 +724,31 @@ def main():
                                          *call_now(clients[c["provider"]], cfg, c, tokens)))
                 append_jsonl(args.out, rows)
                 print(f"  called {len(rows)} directly")
+                if any(r["error"] is not None for r in rows):
+                    sys.exit(1)
                 return
             for prov in providers:
                 mine = [c for c in todo if c["provider"] == prov]
                 for i in range(0, len(mine), args.batch_size):
                     chunk = mine[i: i + args.batch_size]
                     bid = submit(clients[prov], PROVIDERS[prov], chunk, tokens,
-                                 f".{prov}-batch-{i}.jsonl")
+                                 f"{args.state}.{uuid.uuid4().hex}.requests.jsonl")
                     append_jsonl(args.state, [{
                         "batch_id": bid, "provider": prov, "stage": args.stage,
+                        "pass": args.pass_, "out": os.path.abspath(args.out),
+                        "digest": batch_digest(chunk, PROVIDERS[prov]),
                         "ts": datetime.now(timezone.utc).isoformat(),
                         "n": len(chunk), "ids": [c["id"] for c in chunk]}])
                     print(f"  submitted {bid} ({len(chunk)} requests to {prov})")
+                    attempted.update(c["id"] for c in chunk)
         elif not todo and not still_open:
+            if missing:
+                sys.exit("Some results are unusable. Rerun the command to retry.")
             print("nothing left to do")
             return
 
+        if args.no_submit and not still_open:
+            return
         if not args.wait:
             print(f"\nCheck back with the same command, or add --wait. "
                   f"Batches usually finish well inside 24h.")

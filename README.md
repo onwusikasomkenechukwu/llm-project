@@ -41,16 +41,16 @@ about the models' handling of Black history.
 
 | | |
 |---|---|
-| Ready | collection, grading, cross-evaluation, cost accounting |
+| Ready | collection, grading, cross-evaluation, cost accounting, analysis tables, run manifests, drift checks |
 | Waiting on | the 400 questions, with reference answers |
-| Not built yet | the analysis and plotting layer that turns `judgments.jsonl` into results |
+| Not built yet | publication plots |
 | Open | whether each question is also asked in negated form |
 
-**There is no analysis layer yet.** The pipeline produces `judgments.jsonl` and
-every number in this file was computed from it with ad-hoc scripts. Turning that
-into the study's actual outputs — scores by model, by identity, by question type,
-the cross-evaluation matrix, variance across replicates, and the plots — is the
-next piece of work and is not in this repository.
+`analyze.py` now produces scores by model, identity and question type, a judge
+matrix, matched comparisons, self-preference estimates and replicate variability.
+Intervals resample questions. The original figures below came from ad-hoc pilot
+analysis; the new script reproduces the five reported model means. Publication
+plots remain separate work.
 
 ## Costs
 
@@ -461,7 +461,7 @@ Copy `.env.example` to `.env` and fill in the keys needed. Each script loads
 `.env` at startup and never prints a value. `.env` is excluded from version
 control.
 
-## The five scripts
+## Collection scripts
 
 Three of the five providers support batch processing, in three mutually
 incompatible formats. Rather than one script with branches, each format gets its
@@ -564,7 +564,30 @@ the five run alongside each other rather than overwriting.
 
 ## Checking before spending
 
+Run the preflight checker before any full or pilot spend. It reads the prompt
+workbook, checks the column contract, prints the expected answer and judgment
+counts, and can audit merged outputs without calling any API.
+
+```bash
+python check_run.py prompts.xlsx --expected-questions 400 --polarity pos
+python check_run.py prompts.xlsx --expected-questions 400 --polarity pos-neg
+python check_run.py prompts.xlsx --responses responses.jsonl --judgments judgments.jsonl
+```
+
+For subset pilots, pass the same identities and duplicate count used in the run,
+so missing rows mean missing work rather than a different design:
+
+```bash
+python check_run.py samples/rubric_pilot.xlsx \
+  --polarity pos \
+  --identities none,black-american,white-american \
+  --duplicates 1 \
+  --responses responses.jsonl \
+  --judgments judgments.jsonl
+```
+
 `--dry-run` reads the spreadsheet and prints the plan without calling anything.
+`--dry-run` is available in all four provider scripts.
 `--now` skips batching and calls the API directly, which is the only way to see
 an answer in seconds rather than hours.
 
@@ -606,6 +629,106 @@ hard fails and no premise-handling scores.
 Useful flags: `--providers`, `--identities`, `--duplicates`, `--limit`,
 `--batch-size`, `--pass`, `--prompts`, `--no-submit`. `--identities` takes a
 subset and is the main cost control. `--help` lists them all.
+
+Preflight exits nonzero for incomplete, duplicate, failed or out-of-grid output.
+Warnings alone do not change the exit code. An answer-stage `--limit N` selects
+the first N distinct questions, including both polarities when present; a
+judge-stage limit selects N answers. `--polarity pos` excludes negations;
+`--polarity pos-neg` requires both sides. Use the same setting in preflight and
+collection. Negated text shares its row's question type and reference fields;
+review those for both polarities before running a negated design.
+
+## Analysis
+
+```bash
+python analyze.py judgments.jsonl --responses responses.jsonl --out-dir analysis/pilot
+```
+
+This writes ten CSV tables and `summary.json`, including input hashes, exclusion
+counts, observed panel coverage, model versions and analysis settings.
+Means weight questions equally. The 95% intervals use a seeded question-clustered
+bootstrap; identity and model contrasts match cells before taking differences.
+Hard fails retain their raw rubric total and are reported separately as a rate.
+Duplicate keys and mixed run IDs or model versions are rejected.
+
+The six-question pilot remains exploratory. Missing grades are excluded and
+reported; the observed panel cannot reveal an entirely absent judge. Run
+preflight with the intended grid to establish completeness. See
+[analysis methods](docs/analysis.md) for definitions and table columns.
+
+## Recorded runs
+
+Use a new, empty directory for each study run. The manifest freezes a workbook
+copy, the selected grid, model settings, rubric, code hashes and dependency
+versions. It records the operator and gives every generated row a run ID and an
+invocation ID. Credentials are not written to the manifest.
+
+```bash
+python run_manifest.py create prompts.xlsx --out runs/study/manifest.json --polarity pos --operator "Your name"
+python run_manifest.py run runs/study/manifest.json openai answer --dry-run
+python run_manifest.py run runs/study/manifest.json openai answer --wait
+```
+
+Run the answer command for each selected provider: `openai`, `anthropic`,
+`google`, `xai` and `muse`. Omit `--wait` for xAI and Muse. Once all answers
+are collected, merge them through the manifest, then grade with each selected
+judge:
+
+```bash
+python run_manifest.py merge runs/study/manifest.json responses
+python run_manifest.py run runs/study/manifest.json openai judge --wait
+python run_manifest.py finish runs/study/manifest.json
+python run_manifest.py verify runs/study/manifest.json
+```
+
+Repeat the judge command for every judge before `finish`. For multiple passes,
+create with `--passes N` and run each judge with `--pass 0` through
+`--pass N-1`. Finishing merges outputs, requires a complete preflight, then
+runs analysis. A successful integrity check by itself does not mean the
+collection is complete.
+
+Each command appends start and finish events, exit status and artifact hashes to
+`events.jsonl`. Events are hash-chained, with the latest digest stored separately.
+Outputs are locked per provider and stage; separate providers can run concurrently.
+The manifest refuses changed code, dependencies, workbook contents and unrecorded
+output. Create a new run for changed settings. These are local integrity checks,
+not signatures or proof that a provider kept a model alias unchanged.
+
+After an abrupt process termination, inspect the PID in the leftover lock and
+confirm the process has stopped before removing that lock. Record the interrupted
+invocation before resuming:
+
+```bash
+python run_manifest.py recover runs/study/manifest.json INVOCATION_ID --reason "Process terminated; partial output retained"
+```
+
+Then rerun the original command. Recovery preserves partial artifact hashes and
+records the interruption in the event log.
+
+## Drift checks
+
+```bash
+python check_drift.py
+python -m unittest discover -s tests -q
+```
+
+The drift guard runs automatically before preflight, collection and grading.
+It checks the duplicated identities, prompts, rubric, parsing, completion checks
+and workbook loading, plus each provider's settings against
+`drift-baseline.json`. It compares Python syntax trees, so comments and formatting
+do not cause drift. Provider-specific API implementations remain separate.
+
+For an intentional change, update every affected copy, review the diff, explicitly
+refresh the baseline, then run the regression tests:
+
+```bash
+python check_drift.py --write-baseline
+```
+
+The baseline cannot be refreshed while the shared copies disagree. Existing run
+manifests remain tied to their original code and baseline. The offline verification
+scope and remaining live-service limits are recorded in
+[verification](docs/verification.md).
 
 ## Resuming
 
