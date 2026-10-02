@@ -9,7 +9,7 @@ come back later for the results file.
 Each run fetches any job that has finished, submits whatever is still missing,
 then reports. Add --wait to poll in a loop instead of coming back by hand.
 
-Writes to responses-google_batch.jsonl, not the shared file, so all four scripts
+Writes to responses-google_batch.jsonl, not the shared file, so all the scripts
 can run at once without racing each other. Run merge.py when they are done. Job
 names live in .batches-google_batch.jsonl.
 

@@ -21,8 +21,8 @@ on 6 July 2026. The only direct-from-vendor option left is Muse Spark, a Meta
 model but not Llama, so including it would have measured a different model under
 the label the project's earlier Llama results used. Reaching Llama itself would
 have meant a third-party host, adding a serving stack no other provider in the
-comparison uses. The benchmark runs four providers instead, each reached directly
-from its own vendor.
+comparison uses. The benchmark ran four providers for a time. Muse was later
+added back as the fifth, reported as Muse rather than as Meta or Llama.
 
 Self-hosting was ruled out for a related reason: a local open model is not
 expected to match the cloud models, so measuring it would spend compute without
@@ -34,7 +34,10 @@ Corrected 2026-09-23 after running against the live APIs: OpenAI and xAI do
 named batch and posts requests into it under a `chat_get_completion` variant.
 And xAI's batch endpoint refuses every current Grok, so the flagship has to run
 live regardless. That leaves OpenAI, Anthropic and Google on batch — one script
-each — with xAI on the sequential script.
+each — with xAI's answers on the sequential script. Since 2026-10-02 xAI's
+*grading* runs by batch on `grok-4.3` through `xai_batch.py`; results come back
+under `batch_result.response.chat_get_completion` with usage in the usual shape,
+plus `cost_in_usd_ticks` (1e-10 USD) per request.
 
 **3. Two providers hide the tokens they bill you for.** Reconciling the first
 pilot against the actual invoices: Google reports reasoning in

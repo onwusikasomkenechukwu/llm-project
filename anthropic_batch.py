@@ -9,7 +9,7 @@ Each run fetches any batch that has finished, submits whatever is still
 missing, then reports. The same command submits the work, checks on it, and
 picks up failures on the next pass. Add --wait to poll in a loop.
 
-Writes to responses-anthropic_batch.jsonl, not the shared file, so all four
+Writes to responses-anthropic_batch.jsonl, not the shared file, so all the
 scripts can run at once without racing each other. Run merge.py when they are
 done. Batch ids live in .batches-anthropic_batch.jsonl.
 """

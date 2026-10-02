@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""xAI, one request at a time, because it cannot be batched.
+"""xAI answers and Muse, live through a thread pool, because neither can batch
+what they run here.
 
     python sequential.py answer prompts.xlsx --providers xai
-    python sequential.py judge responses.jsonl --providers xai
+    python sequential.py answer prompts.xlsx --providers muse
+    python sequential.py judge responses.jsonl --providers muse
 
-xAI has a batch API, but it is a different dialect from OpenAI's and, more to
-the point, it refuses every current model: grok-4.5, 4.6 and 4.7 all return
-"not supported for batch processing", leaving only grok-4.3 and the 4.20 line.
-Benchmarking an older Grok against everyone else's flagship is not a trade
-worth making for half price.
+xAI's batch endpoint refuses every current model: grok-4.5, 4.6 and 4.7 all
+return "not supported for batch processing", leaving only grok-4.3 and the 4.20
+line. Benchmarking an older Grok against everyone else's flagship is not a trade
+worth making, so grok-4.7 answers here. Grading does not have that problem, so
+xAI grades through xai_batch.py with grok-4.3 at batch price. Muse has no batch
+endpoint at all.
 
-Writes to responses-sequential.jsonl, not the shared file, so all four
+Writes to responses-sequential.jsonl, not the shared file, so all the
 scripts can run at once without racing each other. Run merge.py when they are
 done.
 
@@ -68,8 +71,7 @@ PROVIDERS = {
     # it has to be added in. OpenAI-style servers usually include it already.
     # concurrency: measured. xAI slows its own responses under load rather than
     # erroring -- 3x the workers bought only 1.55x throughput -- and advertises
-    # x-ratelimit-limit-requests: 7200. Muse showed no errors at 48 workers and
-    # scaled linearly, so it gets the higher setting.
+    # x-ratelimit-limit-requests: 7200.
     "xai": dict(model="grok-4.7", cap="max_tokens", reasoning_extra=True, concurrency=16,
                 base_url="https://api.x.ai/v1", key_env="XAI_API_KEY"),
     # Meta Model API, serving Muse. Not Llama -- see Provider notes. No batch
@@ -82,8 +84,12 @@ PROVIDERS = {
     # reasoning_effort would fix that, but it would also make Muse the only
     # grader deliberating less than the rest, so the ceiling is raised instead
     # and every model grades under the same conditions.
+    #
+    # Measured at 200 workers: 300 grades, no errors, ~35,000 calls an hour at
+    # ~20s a call. Its account cap is 3,000 requests a minute; that is enforced
+    # as a pace rather than left to the worker count.
     "muse": dict(model="muse-spark-1.3", cap="max_tokens", judge_tokens=6000,
-                 concurrency=48,
+                 concurrency=200, rpm=3000,
                  base_url="https://api.meta.ai/v1", key_env="MUSE_API_KEY"),
     # vLLM / Ollama / llama.cpp. The server usually ignores the key.
     "local": dict(model="llama-3.3-70b-instruct", cap="max_tokens", concurrency=8,
@@ -212,6 +218,23 @@ FATAL_SIGNS = ("insufficient_quota", "billing", "credit balance", "exceeded your
 
 class OutOfCredits(Exception):
     """Raised on a billing/quota error so the run stops instead of retrying."""
+
+
+class Pacer:
+    """Spaces request starts so a provider never sees more than rpm a minute,
+    however many workers are waiting. Retries count, since they are requests."""
+
+    def __init__(self, rpm):
+        self.gap = 60.0 / rpm if rpm else 0.0
+        self.next = 0.0
+        self.lock = threading.Lock()
+
+    def wait(self):
+        with self.lock:
+            now = time.monotonic()
+            start = max(now, self.next)
+            self.next = start + self.gap
+        time.sleep(start - now)
 
 
 # ---------------------------------------------------------------------------
@@ -480,9 +503,10 @@ def call(client, cfg, cell, tokens, extra=None):
             getattr(u, "prompt_tokens", None), out, reasoning)
 
 
-def call_with_retries(client, cfg, cell, tokens, attempts, extra=None):
+def call_with_retries(client, cfg, cell, tokens, attempts, pacer, extra=None):
     last = ""
     for attempt in range(attempts):
+        pacer.wait()
         try:
             text, tin, tout, reasoning = call(client, cfg, cell, tokens, extra)
             return text, tin, tout, None, reasoning
@@ -533,6 +557,8 @@ def main():
     unknown = [x for x in providers if x not in PROVIDERS]
     if unknown:
         sys.exit(f"Unknown provider(s): {unknown}. This script covers {list(PROVIDERS)}.")
+    if args.stage == "judge" and "xai" in providers:
+        sys.exit("xAI grades through xai_batch.py, with grok-4.3 at batch price.")
 
     stem = os.path.splitext(os.path.basename(__file__))[0]
     base = "responses" if args.stage == "answer" else "judgments"
@@ -567,6 +593,7 @@ def main():
         return
 
     clients = {name: make_client(PROVIDERS[name], args.timeout) for name in providers}
+    pacers = {name: Pacer(PROVIDERS[name].get("rpm")) for name in providers}
     lock = threading.Lock()
     out = open(args.out, "a", encoding="utf-8")
     counts = {"ok": 0, "fail": 0}
@@ -581,7 +608,7 @@ def main():
             # the reasoning crowds out the answer entirely
             cap = cfg.get("judge_tokens", tokens) if args.stage == "judge" else tokens
             result = call_with_retries(clients[cell["provider"]], cfg, cell, cap,
-                                       args.attempts)
+                                       args.attempts, pacers[cell["provider"]])
         except OutOfCredits as e:
             stop.set()
             print(f"\nSTOPPED -- billing/quota error on {cell['provider']}: {e}", file=sys.stderr)

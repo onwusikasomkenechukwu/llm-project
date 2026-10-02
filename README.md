@@ -13,7 +13,7 @@ It answers two questions at scale:
 
 Every answer is then graded by **all five models**, against the project's own
 rubric, without the grader being told which model wrote it. A smaller judge panel
-is costed below and brings this down substantially.
+is costed below and brings this down further.
 
 | | |
 |---|---|
@@ -23,15 +23,15 @@ is costed below and brings this down substantially.
 | Repeats of each question | 3 |
 | Answers collected | 108,000 |
 | Grades produced | 540,000 |
-| **Cost** | **$7,577**, or $15,154 if each question is also negated |
+| **Cost** | **$5,618**, or $11,236 if each question is also negated |
 
 That costing is measured rather than estimated, and checked against the
 invoices — see [Costs](#costs) below.
 
 ## Status
 
-A pilot has run end to end on real APIs: answers collected from all four
-providers, then cross-evaluated by all four. 72 answers, 288 grades, every one
+A pilot has run end to end on real APIs: answers collected from all five
+providers, then cross-evaluated by all five. 90 answers, 450 grades, every one
 parsed, no failures. Results are at the bottom of this file.
 
 It used six questions, one of each type, taken from the worked examples in the
@@ -55,24 +55,24 @@ next piece of work and is not in this repository.
 ## Costs
 
 Every figure here is measured: tokens recorded on each row of a live pilot run,
-priced at each provider's own rate. None of it is a list-price estimate. The
-method was checked against the invoices of an earlier run and came within
-**0.05%** of the billed total, and the token counts it rests on are published
-below so the arithmetic can be checked independently.
+priced at each provider's own rate, and for xAI's grading the cost xAI itself
+billed per request. None of it is a list-price estimate. The method was checked
+against the invoices of an earlier run and came within **0.05%** of the billed
+total, and the token counts it rests on are published below so the arithmetic
+can be checked independently.
 
 **Against a $15,000 request:**
 
 | | point | 99% ceiling | inside $15,000? |
 |---|---|---|---|
-| 400 questions | **$7,577** | $8,593 | yes, with room for a full rerun |
-| 800, each question also negated | **$15,154** | $17,186 | **no, over even at the expected cost** |
-| 800 negated, judge panel of four | **$10,707** | ~$12,100 | yes, with room to spare |
+| 400 questions | **$5,618** | $6,215 | yes, with room for a full rerun |
+| 800, each question also negated | **$11,236** | $12,430 | **yes**, with $2,570 to spare at the ceiling |
 
-The honest reading: **400 questions fits comfortably, and the negated design does
-not** — $15,154 expected against a $15,000 request, before any allowance for a
-rerun. Negations and a five-model judge panel cannot both be had for $15,000.
-Dropping one model from the panel brings the negated design to $10,707 and leaves
-a rerun allowance, which is the overrun the arithmetic cannot predict.
+**Both designs fit, with the full five-model judge panel.** What changed is xAI's
+grading: it now runs through xAI's batch endpoint on `grok-4.3`, at half price
+and with far less reasoning per grade, and the grading bill fell from $2,224 to
+$265. The negated design leaves room for partial reruns but not a full one, which
+would cost another $11,236.
 
 **The design is fixed at 400 questions, 18 identities** — the 17 in the project's
 Identity Matrix plus a no-identity control — **5 providers and 3 replicates, with
@@ -82,26 +82,43 @@ every answer graded by all five models.**
 
 | estimate | total at `R=1` | with negations, `R=2` |
 |---|---|---|
-| **point** | **$7,577** | **$15,154** |
-| 95% interval | $6,659 – $8,386 | $13,318 – $16,772 |
-| 99% interval | $6,375 – $8,593 | $12,750 – $17,186 |
-| min–max across questions | $5,180 – $9,065 | $10,360 – $18,130 |
+| **point** | **$5,618** | **$11,236** |
+| 95% interval | $4,948 – $6,139 | $9,896 – $12,279 |
+| 99% interval | $4,679 – $6,215 | $9,359 – $12,430 |
+| min–max across questions | $4,014 – $6,289 | $8,029 – $12,578 |
 
 ### Per account
 
-Credit is not distributed evenly. xAI needs almost three times Google's budget
-despite being the cheapest provider to collect answers from.
+Credit is not distributed evenly. Muse needs the most, because it reasons at
+length when grading and runs live with no batch discount.
 
 | account | answering | grading | **total** | with negations |
 |---|---|---|---|---|
-| xAI | $121 | $2,224 | **$2,344** | $4,689 |
 | Muse | $244 | $1,699 | **$1,943** | $3,886 |
-| Anthropic | $216 | $1,115 | **$1,331** | $2,662 |
-| OpenAI | $148 | $994 | **$1,142** | $2,284 |
-| Google | $215 | $602 | **$817** | $1,633 |
-| **total** | **$945** | **$6,632** | **$7,577** | **$15,154** |
+| Anthropic | $216 | $1,114 | **$1,331** | $2,662 |
+| OpenAI | $148 | $993 | **$1,141** | $2,283 |
+| Google | $215 | $601 | **$817** | $1,633 |
+| xAI | $121 | $265 | **$386** | $772 |
+| **total** | **$945** | **$4,673** | **$5,618** | **$11,236** |
 
-**Grading is 88% of the bill.** The answers are nearly incidental.
+**Grading is 83% of the bill.** The answers are nearly incidental.
+
+### xAI grades with `grok-4.3`
+
+xAI's batch endpoint refuses every current model, so `grok-4.7` still *answers*
+live and `grok-4.3`, the newest model it accepts, does the *grading*. Measured by
+re-grading all 90 pilot answers through the batch: every grade parsed, no hard
+fails, **$0.00245 per grade against $0.02059** for `grok-4.7` live. The batch
+discount accounts for a factor of two; the rest is that it reasons for 461 tokens
+per grade rather than 2,771.
+
+Two costs come with it:
+
+- **No self-preference reading for xAI.** `grok-4.3` grading `grok-4.7` is not
+  self-grading, so the diagonal is measured for the other four only.
+- **`grok-4.3` grades a little more leniently.** On the same 90 answers it gave
+  18.52 against `grok-4.7`'s 18.10, correlation 0.68, identical totals on 39. Its
+  rows record `judge_model: grok-4.3`, so this stays visible in the analysis.
 
 ### The arithmetic
 
@@ -121,12 +138,12 @@ is `M²`, and
 
 | `C` defined as | value | `T × C` |
 |---|---|---|
-| a graded pair, all-in (answering amortised in) | **$0.01403** | **$7,577** — the total |
-| a grade alone | $0.01228 | $6,632, then add $945 of answering |
+| a graded pair, all-in (answering amortised in) | **$0.01040** | **$5,618** — the total |
+| a grade alone | $0.00865 | $4,673, then add $945 of answering |
 
-One figure that must **not** be used as `C`: **$0.07016**, the cost of one answer
-plus all five of its grades. That is per *answer*, not per pair, so `T × $0.07016`
-comes to $37,886 and counts the grading five times over.
+One figure that must **not** be used as `C`: **$0.05202**, the cost of one answer
+plus all five of its grades. That is per *answer*, not per pair, so `T × $0.05202`
+comes to $28,091 and counts the grading five times over.
 
 ### Three estimates for C
 
@@ -138,32 +155,32 @@ questions themselves.
 
 | estimate | `C` | `R=1` | `R=2` |
 |---|---|---|---|
-| **point** | **$0.01403** | **$7,577** | **$15,154** |
-| 95% | $0.01233 – $0.01553 | $6,659 – $8,386 | $13,318 – $16,772 |
-| 99% | $0.01181 – $0.01591 | $6,375 – $8,593 | $12,750 – $17,186 |
-| min–max by question | $0.00959 – $0.01679 | $5,180 – $9,065 | $10,360 – $18,130 |
+| **point** | **$0.01040** | **$5,618** | **$11,236** |
+| 95% | $0.00916 – $0.01137 | $4,948 – $6,139 | $9,896 – $12,279 |
+| 99% | $0.00867 – $0.01151 | $4,679 – $6,215 | $9,359 – $12,430 |
+| min–max by question | $0.00743 – $0.01165 | $4,014 – $6,289 | $8,029 – $12,578 |
 
 Per-question means, which is where the spread comes from:
 
 | question | type | `C` | total at `R=1` |
 |---|---|---|---|
-| PILOT-01 | Factual | $0.00959 | $5,180 |
-| PILOT-06 | Loaded (False Premise) | $0.01335 | $7,209 |
-| PILOT-02 | Directed | $0.01391 | $7,511 |
-| PILOT-03 | Loaded (False Premise) | $0.01437 | $7,760 |
-| PILOT-04 | Loaded (True Premise) | $0.01546 | $8,348 |
-| PILOT-05 | Open-Ended | $0.01679 | $9,065 |
+| PILOT-01 | Factual | $0.00743 | $4,014 |
+| PILOT-02 | Directed | $0.00987 | $5,330 |
+| PILOT-06 | Loaded (False Premise) | $0.01061 | $5,730 |
+| PILOT-03 | Loaded (False Premise) | $0.01141 | $6,160 |
+| PILOT-04 | Loaded (True Premise) | $0.01145 | $6,185 |
+| PILOT-05 | Open-Ended | $0.01165 | $6,289 |
 
-A factual question runs **42% cheaper** through the grid than an open-ended one,
+A factual question runs **36% cheaper** through the grid than an open-ended one,
 because both the answer and all five grades that read it are shorter. So the final
 figure depends on the *mix* of question types in the real 400, not only on how
 many there are.
 
 **One caveat on the intervals.** They rest on six questions, and a cluster
 bootstrap over six clusters is known to under-cover, so the true 95% interval is
-probably wider than shown. Use the **99% upper bound — $8,593, or $17,186 with
+probably wider than shown. Use the **99% upper bound — $6,215, or $12,430 with
 negations — as the planning ceiling**, not the 95% figure. Widening the pilot to
-20–30 questions spanning the real type mix would cost about $30 and tighten this
+20–30 questions spanning the real type mix would cost about $20 and tighten this
 considerably.
 
 ### Where the tokens go
@@ -187,25 +204,21 @@ totals follow.
 
 | grader | input | output |
 |---|---|---|
-| xAI | 2,643 | **2,838** |
-| Muse | 1,428 | 2,146 |
-| Anthropic | 2,213 | 589 |
-| OpenAI | 1,431 | 375 |
+| Muse | 1,428 | **2,146** |
 | Google | 1,422 | 691 |
-| **mean** | **1,827** | **1,328** |
+| Anthropic | 2,213 | 589 |
+| xAI (`grok-4.3`) | 1,574 | 522 |
+| OpenAI | 1,431 | 375 |
+| **mean** | **1,614** | **865** |
 
-Two things in there are worth saying out loud.
+**Judging input is 5.9× answering input**, because every grade re-reads the
+rubric, the question, the answer and the reference answer. Output runs the other
+way: a grade is shorter than an answer for every grader except Muse.
 
-**Judging input is 6.7× answering input**, because every grade re-reads the
-rubric, the question, the answer and the reference answer. Output is 1.15× — so
-the common expectation that judging costs more per call is right, and the input is
-the larger part of why.
-
-**xAI writes far more when grading than anyone else** — 2,838 output tokens
-against OpenAI's 375, a factor of 7.6 — while its answers are mid-range at 801.
-That single fact is why xAI is the most expensive account in the project despite
-being the cheapest to collect answers from, and why dropping it from the judge
-panel is the largest available economy.
+**Muse writes far more when grading than anyone else** — 2,146 output tokens
+against OpenAI's 375 — which is why it is now the most expensive account.
+`grok-4.7` wrote more still, 2,838 per grade, which is what made xAI the dearest
+grader until grading moved to `grok-4.3`.
 
 xAI's answering input looks anomalous at 1,259 tokens for a one-line question
 because `grok-4.7` prepends roughly 1,200 tokens of its own system prompt to
@@ -218,8 +231,8 @@ prompt length.
 | | input | output |
 |---|---|---|
 | answering, 108,000 calls | 29.4M | 124.9M |
-| judging, 540,000 calls | 986.7M | 717.1M |
-| **total** | **1.02 billion** | **842 million** |
+| judging, 540,000 calls | 871.3M | 466.9M |
+| **total** | **901 million** | **592 million** |
 
 ### C by role, and the cost lever
 
@@ -228,25 +241,25 @@ lets the answering set and the judge panel move independently.
 
 | model | `C_answer` | `C_judge` |
 |---|---|---|
-| Google | $0.00996 | **$0.00557** |
+| xAI | $0.00559 | **$0.00245** |
+| Google | $0.00996 | $0.00557 |
 | OpenAI | $0.00686 | $0.00920 |
 | Anthropic | $0.01002 | $0.01032 |
-| Muse | $0.01131 | $0.01573 |
-| xAI | $0.00559 | **$0.02059** |
-| sum | $0.04375 | $0.06140 |
+| Muse | $0.01131 | **$0.01573** |
+| sum | $0.04375 | $0.04327 |
 
 Per graded pair, `C(answered, graded) = C_answer/M + C_judge`:
 
 | answered by | Anthropic | Google | Muse | OpenAI | xAI | row mean |
 |---|---|---|---|---|---|---|
-| Muse | $0.01258 | $0.00783 | $0.01799 | $0.01146 | $0.02285 | $0.01454 |
-| Anthropic | $0.01232 | $0.00757 | $0.01773 | $0.01120 | $0.02259 | $0.01428 |
-| Google | $0.01231 | $0.00756 | $0.01772 | $0.01119 | $0.02258 | $0.01427 |
-| OpenAI | $0.01169 | $0.00694 | $0.01710 | $0.01057 | $0.02196 | $0.01365 |
-| xAI | $0.01144 | $0.00669 | $0.01685 | $0.01032 | $0.02171 | $0.01340 |
-| **column mean** | $0.01207 | **$0.00732** | $0.01748 | $0.01095 | **$0.02234** | $0.01403 |
+| Muse | $0.01258 | $0.00783 | $0.01799 | $0.01146 | $0.00471 | $0.01092 |
+| Anthropic | $0.01232 | $0.00757 | $0.01773 | $0.01120 | $0.00445 | $0.01066 |
+| Google | $0.01231 | $0.00756 | $0.01772 | $0.01119 | $0.00444 | $0.01065 |
+| OpenAI | $0.01169 | $0.00694 | $0.01710 | $0.01057 | $0.00382 | $0.01003 |
+| xAI | $0.01144 | $0.00669 | $0.01685 | $0.01032 | $0.00357 | $0.00977 |
+| **column mean** | $0.01207 | $0.00732 | **$0.01748** | $0.01095 | **$0.00420** | $0.01040 |
 
-**`C` varies 3.05× by which model grades and 1.09× by which model answers.** The
+**`C` varies 4.16× by which model grades and 1.12× by which model answers.** The
 variation is almost entirely left-to-right, so **if `C` needs cutting, the lever
 is the judge panel, not the providers under test.**
 
@@ -254,15 +267,16 @@ is the judge panel, not the providers under test.**
 
 | judge panel | `R=1` | `R=2` | vs full |
 |---|---|---|---|
-| all five | **$7,577** | $15,154 | 100% |
-| four — *drops xAI* | **$5,353** | $10,707 | 71% |
-| Anthropic + Google + OpenAI | **$3,655** | $7,309 | 48% |
-| Google + OpenAI | **$2,540** | $5,080 | 34% |
-| Google alone | $1,546 | $3,093 | 20% |
+| all five | **$5,618** | $11,236 | 100% |
+| four — *drops Muse* | **$3,919** | $7,838 | 70% |
+| four — *drops xAI* | $5,353 | $10,706 | 95% |
+| Anthropic + Google + OpenAI | $3,654 | $7,308 | 65% |
+| Google + OpenAI | $2,540 | $5,079 | 45% |
+| Google alone | $1,546 | $3,093 | 28% |
 
-Dropping xAI from the panel saves **$2,224**, the largest single economy available
-anywhere in the design, since it grades at $0.02059 against Google's $0.00557.
-Dropping Muse as well saves another $1,699.
+Dropping Muse from the panel saves **$1,699**, now the largest single economy
+available, since it grades at $0.01573. Dropping xAI saves only $265: at
+`grok-4.3` batch prices it is the cheapest grader in the panel.
 
 A smaller panel costs one specific thing: **self-preference can only be measured
 for a model that grades its own answers**, so the full diagonal needs every model
@@ -271,11 +285,11 @@ whole grid, so running the full panel on a subsample buys it back:
 
 | panel everywhere | full panel on | total | vs full | answers with a self-grade |
 |---|---|---|---|---|
-| Google + OpenAI | — | $2,540 | 34% | 0 |
-| Google + OpenAI | **10%** | **$3,044** | **40%** | **2,160 per model** |
-| Google + OpenAI | 20% | $3,547 | 47% | 4,320 per model |
+| Google + OpenAI | — | $2,540 | 45% | 0 |
+| Google + OpenAI | **10%** | **$2,847** | **51%** | **2,160 per model** |
+| Google + OpenAI | 20% | $3,155 | 56% | 4,320 per model |
 
-**Two cheap graders everywhere plus the full panel on 10% comes to $3,044** — 40%
+**Two cheap graders everywhere plus the full panel on 10% comes to $2,847** — 51%
 of the full price — and still yields 2,160 self-graded answers per model, ample
 for a paired difference of about a point.
 
@@ -283,18 +297,19 @@ The argument that survives for the full panel is not the diagonal but the panel
 mean: five graders average out individual strictness, and the pilot measured a
 full point of spread between the strictest and most lenient. With two graders that
 averaging is weaker; with one it is gone, and every score inherits that grader's
-bias. Whether that is worth $4,533 is a decision for the study.
+bias. With both designs now inside $15,000 at the full panel, there is less
+reason to trade that away.
 
 ### Unit costs, for pricing changes to the design
 
 | | |
 |---|---|
-| One answer, plus its five grades | $0.0702 |
-| One graded pair | $0.0140 |
-| One question, across the whole grid | **$18.94** |
-| One identity, across the whole grid | **$421** |
-| One replicate (going from D=3 to D=4) | **$2,526** |
-| Adding negations | doubles everything: **+$7,577** |
+| One answer, plus its five grades | $0.0520 |
+| One graded pair | $0.0104 |
+| One question, across the whole grid | **$14.04** |
+| One identity, across the whole grid | **$312** |
+| One replicate (going from D=3 to D=4) | **$1,873** |
+| Adding negations | doubles everything: **+$5,618** |
 
 The question count is the cheap axis to extend and the identity count is the
 expensive one: four more identities costs about what 89 more questions does.
@@ -354,10 +369,11 @@ which model produced it, so the results can be read as a five-by-five matrix.
 
 This is partly a reliability measure and partly a bias measure. A model grading
 its own answer is a conflict of interest, and the gap between a model's
-self-grade and the other three's grade of the same answer measures that bias
+self-grade and the other four's grade of the same answer measures that bias
 directly. Running only the other four would be cheaper, and a smaller panel
 cheaper still — see [Sizing the judge panel](#sizing-the-judge-panel) — but it
-loses the measurement for any model left out.
+loses the measurement for any model left out. xAI is the exception already:
+`grok-4.3` grades `grok-4.7`'s answers, so its diagonal is not a self-grade.
 
 The grader is never told which model wrote an answer, and every call is a fresh
 single-turn request, so no conversation history or memory carries between them.
@@ -461,9 +477,9 @@ Copy `.env.example` to `.env` and fill in the keys needed. Each script loads
 `.env` at startup and never prints a value. `.env` is excluded from version
 control.
 
-## The five scripts
+## The six scripts
 
-Three of the five providers support batch processing, in three mutually
+Four of the five providers support batch processing, in four mutually
 incompatible formats. Rather than one script with branches, each format gets its
 own file:
 
@@ -472,13 +488,15 @@ own file:
 | `openai_batch.py` | OpenAI | upload JSONL, create batch, fetch results |
 | `anthropic_batch.py` | Anthropic | inline requests, poll, stream results |
 | `google_batch.py` | Google | upload JSONL, create job, download results |
-| `sequential.py` | xAI, Muse | one request at a time |
+| `xai_batch.py` | xAI grading | create a named batch, post requests into it, page results |
+| `sequential.py` | xAI answers, Muse | thread pool, paced per provider |
 | `merge.py` | — | folds the per-script files into one |
 
-xAI cannot be batched. It has a batch endpoint, but it refuses every current
-model — `grok-4.5`, `4.6` and `4.7` all return "not supported for batch
-processing" — and benchmarking an older Grok against everyone else's current
-model is not worth the discount.
+xAI is split across two. Its batch endpoint refuses every current model —
+`grok-4.5`, `4.6` and `4.7` all return "not supported for batch processing" —
+and benchmarking an older Grok against everyone else's current model is not
+worth the discount, so `grok-4.7` answers live. Grading has no such problem, so
+`grok-4.3` grades by batch. Muse has no batch endpoint at all.
 
 Each script writes to **its own file**, so all of them can run at once without
 competing for one handle. `merge.py` combines them.
@@ -498,7 +516,8 @@ The other three run the same way, concurrently:
 ```bash
 python anthropic_batch.py answer prompts.xlsx
 python google_batch.py answer prompts.xlsx
-python sequential.py answer prompts.xlsx --providers xai,muse
+python sequential.py answer prompts.xlsx --providers xai
+python sequential.py answer prompts.xlsx --providers muse
 ```
 
 Then combine:
@@ -507,57 +526,49 @@ Then combine:
 python merge.py responses
 ```
 
-### How long the sequential providers take
+### How long the live providers take
 
-Three providers batch; xAI and Muse do not, so their calls go through a thread
-pool in `sequential.py`. At the full grid that is a lot of calls:
+Muse cannot batch at all, and xAI's answers cannot, so those calls go through a
+thread pool in `sequential.py`:
 
-| | answers | grades | total |
+| | answers | grades | live calls |
 |---|---|---|---|
-| xAI | 21,600 | 108,000 | **129,600** |
 | Muse | 21,600 | 108,000 | **129,600** |
-
-Measured grading throughput, with the pool sized as the provider allows:
+| xAI | 21,600 | by batch | **21,600** |
 
 | provider | workers | throughput | its share of the grid |
 |---|---|---|---|
-| Muse | 48 | 4,535 calls/hour | ~29 hours |
-| xAI | 16 | ~1,100 calls/hour | days, not hours |
+| Muse | 200, paced to 3,000/min | ~35,000 calls/hour, measured | ~4 hours |
+| xAI | 16 | ~1,100 calls/hour, measured | ~20 hours |
 
-**They behave differently under load and the settings reflect that.** Muse showed
-no errors at 48 workers and scaled linearly. xAI does not error either — it slows
-its own responses, so three times the workers bought 1.55× the throughput — and it
-advertises `x-ratelimit-limit-requests: 7200`. So `sequential.py` carries a
-per-provider `concurrency` and defaults to the lowest among the providers you
-select.
+**They behave differently under load and the settings reflect that.** Muse
+graded 300 answers at 200 workers with no errors and every grade parsed, at about
+20 seconds a call and ~600 calls a minute. Its account cap is 3,000 a minute, so
+there is headroom; the cap is enforced as a pace, so it can never be exceeded
+whatever the worker count. xAI does not error either — it slows its own responses, so
+three times the workers bought 1.55× the throughput — and it advertises
+`x-ratelimit-limit-requests: 7200`. So `sequential.py` carries a per-provider
+`concurrency` and defaults to the lowest among the providers you select.
 
-**Run them as separate commands**, or a mixed run is held to xAI's limit:
+**Run them as separate commands**, or a mixed run is held to xAI's limit. Both
+resume, so an interrupted run of either picks up where it stopped. `R=2` doubles
+the volume.
 
-```bash
-python sequential.py judge responses.jsonl --prompts prompts.xlsx --providers muse
-python sequential.py judge responses.jsonl --prompts prompts.xlsx --providers xai
-```
-
-Both resume, so an interrupted run of either picks up where it stopped. `R=2`
-doubles the volume.
-
-**xAI is the throughput bottleneck as well as the cost one.** Worth knowing that
-its batch endpoint does work for older models — `grok-4.3` and the `4.20` line —
-so xAI *grading* could go through batch at half price and without the thread pool,
-if the study will accept a different Grok grading than the one being graded. That
-breaks the self-preference diagonal for xAI, which is the reason not to do it
-casually, but it removes the project's worst bottleneck in one move.
+xAI grading runs by batch through `xai_batch.py`, which took 90 seconds for the
+90 pilot grades. Batches are not guaranteed to finish inside 24 hours, so allow a
+day for 108,000.
 
 ## Grading
 
-Each script grades with its own provider, so cross-evaluation is these four
+Each script grades with its own provider, so cross-evaluation is these five
 commands run against the merged answers:
 
 ```bash
 python anthropic_batch.py judge responses.jsonl --prompts prompts.xlsx
 python openai_batch.py    judge responses.jsonl --prompts prompts.xlsx
 python google_batch.py    judge responses.jsonl --prompts prompts.xlsx
-python sequential.py      judge responses.jsonl --prompts prompts.xlsx --providers xai
+python xai_batch.py       judge responses.jsonl --prompts prompts.xlsx
+python sequential.py      judge responses.jsonl --prompts prompts.xlsx --providers muse
 python merge.py judgments
 ```
 
@@ -645,8 +656,10 @@ confirmed with a live call on 2026-09-23:
 |---|---|---|
 | OpenAI | `gpt-5.5` | |
 | Anthropic | `claude-opus-5-5` | |
-| xAI | `grok-4.7` | cannot be batched; runs live |
+| xAI | `grok-4.7` | answers live, since it cannot be batched |
+| xAI | `grok-4.3` | grades, by batch |
 | Google | `gemini-3.1-pro-preview` | the only version 3 Pro on offer — a preview model in a published benchmark deserves a footnote in the methods |
+| Muse | `muse-spark-1.3` | no batch endpoint; runs live |
 
 Two earlier identifiers taken from documentation did not exist at all, so check
 rather than assume when these age.
@@ -654,8 +667,8 @@ rather than assume when these age.
 **Reasoning models spend the token ceiling before they answer.** Gemini 3.1 Pro
 used 288 of a 300-token ceiling on reasoning and returned a sentence cut off
 mid-clause; Claude Opus 5.5 spent an entire 400-token grading budget reasoning
-and returned nothing. The ceilings are 4,000 for answers and 1,500 for grades for
-that reason. A ceiling is not a commitment, so raising it costs nothing unused,
+and returned nothing. The ceilings are 4,000 for answers and 3,000 for grades
+for that reason, 6,000 for Muse's grades. A ceiling is not a commitment, so raising it costs nothing unused,
 but a truncated answer is marked down for completeness — which would be our bug
 recorded as the model's failure. To find them: `output_tokens >= ANSWER_TOKENS`.
 
@@ -711,14 +724,14 @@ would mean a third-party host, adding a serving stack no other provider in the
 comparison uses.
 
 Muse also has no batch endpoint, so it runs live through `sequential.py`. Its
-cost has now been measured on a pilot and came in close to the average of the
-other four — see the five-provider costing above.
+cost has been measured on a pilot, and it is now the most expensive account —
+see the costing above.
 
 Two things the documentation got wrong, both found by calling the APIs:
 
 - **xAI does not share OpenAI's batch format**, whatever its guide implies.
   Creating a batch takes only a name, and requests are added separately under a
-  different structure. Moot anyway, since its current models refuse batch.
+  different structure. `xai_batch.py` speaks it, for grading with `grok-4.3`.
 - **Google's result format is undocumented.** The parser accepts both plausible
   shapes. A live batch has confirmed which one is real.
 
@@ -773,6 +786,9 @@ other four grade themselves at or below the panel, so **self-preference is a
 property of particular models, not a safe assumption about all of them** — which
 is the direct answer to the grading report's first objection, and the reason the
 full matrix is worth running.
+
+The pilot graded with `grok-4.7`. The full run grades xAI with `grok-4.3`, so its
+row here will not exist there; the other four diagonals are unaffected.
 
 **Graders also differ in strictness**, across all providers' answers: Anthropic
 17.66, Muse 18.06, OpenAI 18.10, xAI 18.10, Google 18.64. A one-point spread from
