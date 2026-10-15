@@ -261,6 +261,9 @@ def answer_cells(args, providers):
         neg = {q["qid"] for q in questions if q["polarity"] == "neg"}
         if pos != neg or not pos:
             sys.exit("--polarity pos-neg requires both polarities for every question.")
+    cues = read_jsonl(args.cues) if getattr(args, "cues", None) else []
+    if cues:
+        args.identities = ""   # cues stand in for the identity list
     for q in questions:
         qid, polarity, text, qtype = q["qid"], q["polarity"], q["text"], q["qtype"]
         if getattr(args, "polarity", "auto") == "pos" and polarity != "pos":
@@ -278,6 +281,20 @@ def answer_cells(args, providers):
                         "row": {"qid": qid, "polarity": polarity, "identity": iname,
                                 "provider": prov, "run": run, "question_type": qtype,
                                 "question": text},
+                    })
+        # the cue experiment (cues.py) replaces the identity list: each cue is a
+        # full prompt, may put the identity in the system prompt, and sets its
+        # own run count
+        for cue in cues:
+            for prov in providers:
+                for run in range(cue["runs"]):
+                    cells.append({
+                        "id": f"{qid}|{polarity}|{cue['identity']}|{prov}|{run}",
+                        "provider": prov, "system": cue["system"],
+                        "user": cue["user"].replace("{QUESTION}", text),
+                        "row": {"qid": qid, "polarity": polarity, "identity": cue["identity"],
+                                "provider": prov, "run": run, "question_type": qtype,
+                                "question": text, **cue["row"]},
                     })
     return cells
 
@@ -599,6 +616,7 @@ def main():
                         "reference answers in it")
     p.add_argument("--identities",
                    help="comma-separated subset, e.g. none,black-american")
+    p.add_argument("--cues", help="cues.jsonl from cues.py, in place of the identities")
     p.add_argument("--batch-size", type=int, default=BATCH_SIZE)
     p.add_argument("--wait", action="store_true", help="poll until every batch is done")
     p.add_argument("--poll-seconds", type=int, default=120)
