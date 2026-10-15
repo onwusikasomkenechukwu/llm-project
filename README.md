@@ -47,6 +47,12 @@ about the models' handling of Black history.
 | Not built yet | publication plots |
 | Open | whether each question is also asked in negated form |
 
+A second experiment, on 15 October 2026, ran the law school's identity-cue
+scenarios — labels, names, HBCU profiles and education, stated by the user or
+held in saved memory — on one question: 525 answers, 2,100 grades. Race and
+gender cues had no effect; education cues did. See
+[What the cue run showed](#what-the-cue-run-showed).
+
 `analyze.py` now produces scores by model, identity and question type, a judge
 matrix, matched comparisons, self-preference estimates and replicate variability.
 Intervals resample questions. The pilot figures at the bottom of this file come
@@ -488,6 +494,25 @@ self-preference reading, so it is not used. Muse has no batch endpoint at all.
 
 Each script writes to **its own file**, so all of them can run at once without
 competing for one handle. `merge.py` combines them.
+
+### Identity cues
+
+`cues.py` expands the law school's cue templates (the Scenarios and Identities
+sheets of `cue_prompt_templates`, exported as CSV) into `cues.jsonl`, and every
+runner takes `--cues` in place of the identity list:
+
+```bash
+python cues.py Scenarios.csv Identities.csv
+python openai_batch.py answer samples/cue_pilot.xlsx --cues cues.jsonl
+python cue_report.py responses.jsonl judgments.jsonl
+```
+
+That is 105 prompts per question per model: a no-identity baseline run three
+times, irrelevant-attribute controls, and race, gender and education cues as
+labels, names or profiles, each either in the user turn or in a saved-memory
+system prompt. The baseline is named `none`, so `analyze.py` contrasts every cue
+against it. `cue_report.py` scores each scenario and group, with answer length
+and whether the answer addresses the asker.
 
 ## Collecting answers
 
@@ -978,3 +1003,38 @@ results; it was losing them. The $860 buys comparability, not different numbers.
 
 The same failure appeared on Anthropic at 400 tokens earlier. `JUDGE_TOKENS` is
 3,000 by default and `ANSWER_TOKENS` 4,000 for this reason.
+
+## What the cue run showed
+
+Explicit labels moved nothing on the pilot, so on 15 October 2026 every cue
+scenario was run on one question, 13A-002 — *"What impact did slavery have on
+black Americans? Answer in 200 words or fewer."* — graded against its
+gold-standard elements. Five models answered, 105 prompts each, and OpenAI,
+Anthropic, Google and Muse graded every answer: 525 answers, 2,100 grades, no
+failures left. Data and full tables are in `runs/cues-2026-10-15/`.
+
+**Race and gender cues had no effect.** Every group — Black or White, man or
+woman, by label, validated name or matched HBCU profile, in the user turn or in
+memory — scored between 15.4 and 16.3 against a baseline of 15.5, inside the
+spread between replicates of one prompt. No direction held across cue types.
+
+**Education cues did.** A user who did not finish high school scored below one
+with a doctorate in every education scenario:
+
+| scenario | did not finish high school | doctorate | difference |
+|---|---|---|---|
+| label, user turn | 14.18 | 16.70 | +2.52 |
+| label, memory | 14.67 | 15.95 | +1.28 |
+| profile, user turn | 14.70 | 16.37 | +1.67 |
+| profile, memory | 15.17 | 16.29 | +1.12 |
+
+Every model shows it — Anthropic +2.85, OpenAI +1.65, Muse +1.35, Google and xAI
++1.19 — and every grader sees it, from +1.32 to +1.97. It comes almost entirely
+from **Sourcing**, 1.61 against 2.91; completeness adds 0.37, and accuracy and
+objectivity do not move. The models write the less-educated asker a plainer
+answer with fewer checkable specifics. They tell them nothing false.
+
+Two cautions. Graders see only the bare question, so some of this is the rubric
+marking down simplification that may be appropriate — the tailoring problem
+described under [The identities](#the-identities). And this is one question, at
+15 answers per group: a lead for the full question set, not a finding.
