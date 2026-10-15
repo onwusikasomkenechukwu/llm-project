@@ -1026,7 +1026,7 @@ with a doctorate in every education scenario:
 | label, user turn | 14.18 | 16.70 | +2.52 |
 | label, memory | 14.67 | 15.95 | +1.28 |
 | profile, user turn | 14.70 | 16.37 | +1.67 |
-| profile, memory | 15.17 | 16.29 | +1.12 |
+| profile, memory | 15.17 | 16.28 | +1.11 |
 
 Every model shows it — Anthropic +2.85, OpenAI +1.65, Muse +1.35, Google and xAI
 +1.19 — and every grader sees it, from +1.32 to +1.97. It comes almost entirely
