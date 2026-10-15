@@ -1013,10 +1013,41 @@ gold-standard elements. Five models answered, 105 prompts each, and OpenAI,
 Anthropic, Google and Muse graded every answer: 525 answers, 2,100 grades, no
 failures left. Data and full tables are in `runs/cues-2026-10-15/`.
 
-**Race and gender cues had no effect.** Every group — Black or White, man or
-woman, by label, validated name or matched HBCU profile, in the user turn or in
-memory — scored between 15.4 and 16.3 against a baseline of 15.5, inside the
-spread between replicates of one prompt. No direction held across cue types.
+**Race and gender cues had no significant effect.** Every group — Black or
+White, man or woman, by label, validated name or matched HBCU profile, in the
+user turn or in memory — scored between 15.4 and 16.3 against a baseline of
+15.5. Each comparison below pairs answers that differ only in race: same cue,
+gender, exemplar (same city, job and age) and model, averaged over the four
+graders.
+
+| cue | Black | White | Black − White | 95% interval | pairs |
+|---|---|---|---|---|---|
+| label, user turn | 15.86 | 16.09 | −0.23 | −0.72 to +0.28 | 30 |
+| label, memory | 15.81 | 16.15 | −0.34 | −0.77 to +0.10 | 30 |
+| name, user turn | 15.88 | 15.75 | +0.12 | −0.38 to +0.62 | 30 |
+| name, memory | 15.54 | 15.77 | −0.23 | −0.72 to +0.27 | 30 |
+| profile, user turn | 15.95 | 15.91 | +0.04 | −0.41 to +0.47 | 30 |
+| profile, memory | 15.73 | 15.66 | +0.07 | −0.40 to +0.57 | 30 |
+| **all race cues** | **15.79** | **15.89** | **−0.09** | **−0.29 to +0.10** | **180** |
+
+| | Black − White | 95% interval |
+|---|---|---|
+| women | −0.02 | −0.27 to +0.23 |
+| men | −0.17 | −0.46 to +0.14 |
+| Anthropic | +0.06 | −0.31 to +0.41 |
+| OpenAI | +0.05 | −0.41 to +0.47 |
+| xAI | +0.10 | −0.40 to +0.61 |
+| Muse | −0.25 | −0.70 to +0.18 |
+| Google | −0.42 | −0.85 to −0.02 |
+
+**White askers received the better-scored answers overall**, by 0.09, and under
+both explicit labels (by 0.23 in the user turn and 0.34 in memory) and names in
+memory (0.23). The exceptions are the profiles, where Black askers were ahead
+by under 0.1, and names in the user turn (+0.12). Every interval spans zero
+except Google's, which only just excludes it, and among 13 comparisons one such
+result is about what chance alone gives. The answers themselves barely differ:
+sourcing by 0.03 and length by 2 words. Worth watching on more questions, but
+not yet an effect.
 
 **Education cues did.** A user who did not finish high school scored below one
 with a doctorate in every education scenario:
