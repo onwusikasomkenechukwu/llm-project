@@ -1,0 +1,91 @@
+525 graded answers
+
+contrast                                                     pairs   total      95% interval  2nd higher  sourcing
+provider: google - anthropic                                   105   -2.44    -2.68 to -2.19         3%     -1.15
+provider: muse - anthropic                                     105   -0.85    -1.11 to -0.59        22%     -0.18
+provider: openai - anthropic                                   105   -1.71    -1.97 to -1.45        10%     -1.29
+provider: xai - anthropic                                      105   -1.20    -1.51 to -0.89        24%     -0.84
+provider: muse - google                                        105   +1.59    +1.32 to +1.86        87%     +0.97
+provider: openai - google                                      105   +0.73    +0.44 to +1.02        70%     -0.14
+provider: xai - google                                         105   +1.24    +0.95 to +1.54        75%     +0.31
+provider: openai - muse                                        105   -0.86    -1.14 to -0.60        28%     -1.11
+provider: xai - muse                                           105   -0.36    -0.66 to -0.05        43%     -0.66
+provider: xai - openai                                         105   +0.51    +0.18 to +0.84        56%     +0.45
+channel: memory - user                                         255   -0.06    -0.24 to +0.12        47%     -0.09
+channel: memory - user  provider=anthropic                      51   -0.16    -0.48 to +0.16        43%     -0.23
+channel: memory - user  provider=google                         51   +0.13    -0.22 to +0.45        59%     +0.12
+channel: memory - user  provider=muse                           51   +0.12    -0.34 to +0.56        55%     +0.12
+channel: memory - user  provider=openai                         51   -0.53    -0.94 to -0.12        27%     -0.51
+channel: memory - user  provider=xai                            51   +0.13    -0.28 to +0.56        49%     +0.06
+cue_type: name - label                                         120   -0.24    -0.51 to +0.01        39%     -0.25
+cue_type: name - label  provider=anthropic                      24   -0.02    -0.50 to +0.44        42%     +0.02
+cue_type: name - label  provider=google                         24   +0.35    -0.20 to +0.89        54%     +0.17
+cue_type: name - label  provider=muse                           24   -0.12    -0.69 to +0.40        42%     -0.25
+cue_type: name - label  provider=openai                         24   -0.79    -1.33 to -0.21        25%     -0.54
+cue_type: name - label  provider=xai                            24   -0.64    -1.29 to +0.00        33%     -0.64
+cue_type: profile - label                                      180   -0.03    -0.24 to +0.20        46%     +0.00
+cue_type: profile - label  provider=anthropic                   36   +0.04    -0.37 to +0.41        47%     +0.06
+cue_type: profile - label  provider=google                      36   +0.17    -0.26 to +0.60        50%     +0.21
+cue_type: profile - label  provider=muse                        36   +0.06    -0.47 to +0.60        42%     +0.03
+cue_type: profile - label  provider=openai                      36   -0.02    -0.49 to +0.47        47%     -0.06
+cue_type: profile - label  provider=xai                         36   -0.37    -0.97 to +0.24        44%     -0.24
+cue_type: profile - name                                       120   +0.08    -0.19 to +0.33        48%     +0.13
+cue_type: profile - name  provider=anthropic                    24   +0.03    -0.52 to +0.57        50%     +0.03
+cue_type: profile - name  provider=google                       24   -0.03    -0.52 to +0.47        38%     +0.21
+cue_type: profile - name  provider=muse                         24   -0.01    -0.52 to +0.51        42%     +0.10
+cue_type: profile - name  provider=openai                       24   +0.42    -0.12 to +0.95        67%     +0.22
+cue_type: profile - name  provider=xai                          24   -0.01    -0.80 to +0.79        46%     +0.10
+race: Black - White                                            180   -0.09    -0.29 to +0.10        46%     -0.03
+race: Black - White  provider=anthropic                         36   +0.06    -0.31 to +0.41        53%     -0.01
+race: Black - White  provider=google                            36   -0.42    -0.82 to -0.02        33%     -0.12
+race: Black - White  provider=muse                              36   -0.25    -0.70 to +0.21        36%     -0.15
+race: Black - White  provider=openai                            36   +0.05    -0.41 to +0.47        58%     +0.04
+race: Black - White  provider=xai                               36   +0.10    -0.38 to +0.62        47%     +0.10
+gender: woman - man                                            180   +0.02    -0.19 to +0.23        51%     +0.00
+gender: woman - man  provider=anthropic                         36   -0.24    -0.61 to +0.15        33%     -0.20
+gender: woman - man  provider=google                            36   -0.35    -0.82 to +0.08        47%     -0.32
+gender: woman - man  provider=muse                              36   +0.26    -0.16 to +0.69        61%     +0.15
+gender: woman - man  provider=openai                            36   +0.17    -0.30 to +0.64        58%     +0.14
+gender: woman - man  provider=xai                               36   +0.26    -0.35 to +0.83        53%     +0.24
+education: doctorate - no diploma                               60   +1.65    +1.28 to +2.01        83%     +1.30
+education: doctorate - no diploma  provider=anthropic           12   +2.85    +2.12 to +3.52        92%     +2.04
+education: doctorate - no diploma  provider=google              12   +1.19    +0.71 to +1.73        92%     +1.38
+education: doctorate - no diploma  provider=muse                12   +1.35    +0.27 to +2.27        75%     +1.10
+education: doctorate - no diploma  provider=openai              12   +1.65    +0.96 to +2.35        92%     +1.08
+education: doctorate - no diploma  provider=xai                 12   +1.19    +0.48 to +1.92        67%     +0.92
+exemplar: 2 - 1                                                170   -0.09    -0.31 to +0.12        41%     -0.06
+exemplar: 2 - 1  provider=anthropic                             34   +0.20    -0.15 to +0.54        53%     +0.16
+exemplar: 2 - 1  provider=google                                34   -0.32    -0.76 to +0.13        32%     -0.24
+exemplar: 2 - 1  provider=muse                                  34   -0.16    -0.68 to +0.37        35%     -0.11
+exemplar: 2 - 1  provider=openai                                34   -0.22    -0.68 to +0.22        41%     -0.21
+exemplar: 2 - 1  provider=xai                                   34   +0.05    -0.54 to +0.61        41%     +0.10
+exemplar: 3 - 1                                                170   +0.05    -0.16 to +0.27        43%     +0.03
+exemplar: 3 - 1  provider=anthropic                             34   +0.01    -0.43 to +0.45        44%     -0.03
+exemplar: 3 - 1  provider=google                                34   -0.18    -0.53 to +0.21        35%     -0.15
+exemplar: 3 - 1  provider=muse                                  34   -0.10    -0.57 to +0.38        38%     -0.10
+exemplar: 3 - 1  provider=openai                                34   -0.29    -0.77 to +0.20        35%     -0.19
+exemplar: 3 - 1  provider=xai                                   34   +0.79    +0.26 to +1.33        62%     +0.61
+exemplar: 3 - 2                                                170   +0.14    -0.07 to +0.36        47%     +0.09
+exemplar: 3 - 2  provider=anthropic                             34   -0.19    -0.60 to +0.21        38%     -0.19
+exemplar: 3 - 2  provider=google                                34   +0.14    -0.25 to +0.51        56%     +0.10
+exemplar: 3 - 2  provider=muse                                  34   +0.07    -0.41 to +0.56        44%     +0.01
+exemplar: 3 - 2  provider=openai                                34   -0.07    -0.49 to +0.35        32%     +0.01
+exemplar: 3 - 2  provider=xai                                   34   +0.74    +0.12 to +1.36        65%     +0.51
+run: 1 - 0                                                       5   -0.95    -2.25 to -0.15         0%     -0.70
+run: 1 - 0  provider=anthropic                                   1   -0.75    -0.75 to -0.75         0%     -0.75
+run: 1 - 0  provider=google                                      1   +0.00    +0.00 to +0.00         0%     +0.00
+run: 1 - 0  provider=muse                                        1   -0.25    -0.25 to -0.25         0%     +0.00
+run: 1 - 0  provider=openai                                      1   -3.50    -3.50 to -3.50         0%     -2.75
+run: 1 - 0  provider=xai                                         1   -0.25    -0.25 to -0.25         0%     +0.00
+run: 2 - 0                                                       5   -0.05    -0.25 to +0.35        20%     +0.35
+run: 2 - 0  provider=anthropic                                   1   -0.25    -0.25 to -0.25         0%     +0.75
+run: 2 - 0  provider=google                                      1   +0.75    +0.75 to +0.75       100%     +1.00
+run: 2 - 0  provider=muse                                        1   -0.25    -0.25 to -0.25         0%     +0.00
+run: 2 - 0  provider=openai                                      1   -0.25    -0.25 to -0.25         0%     +0.00
+run: 2 - 0  provider=xai                                         1   -0.25    -0.25 to -0.25         0%     +0.00
+run: 2 - 1                                                       5   +0.90    +0.10 to +2.10        60%     +1.05
+run: 2 - 1  provider=anthropic                                   1   +0.50    +0.50 to +0.50       100%     +1.50
+run: 2 - 1  provider=google                                      1   +0.75    +0.75 to +0.75       100%     +1.00
+run: 2 - 1  provider=muse                                        1   +0.00    +0.00 to +0.00         0%     +0.00
+run: 2 - 1  provider=openai                                      1   +3.25    +3.25 to +3.25       100%     +2.75
+run: 2 - 1  provider=xai                                         1   +0.00    +0.00 to +0.00         0%     +0.00
