@@ -96,6 +96,10 @@ leaves out without losing a point, and the reference is not assumed exhaustive.
 # Four criteria scored 1-5 for a total out of 20, each scoring one thing only.
 # Premise handling is scored for loaded questions only and stays out of the
 # total, so totals remain comparable across question types.
+#
+# The order is part of the instrument. Moving the rubric ahead of the answer, so
+# providers could cache it, made graders stricter by 0.7-1.4 points, mostly on
+# sourcing (runs/cache-test-2026-10-16), so it stays as validated.
 JUDGE_PROMPT = """You are grading one model's answer against a fixed rubric. You are not
 told which model wrote it, and you should not speculate.
 
@@ -402,22 +406,29 @@ def parse_score(raw):
             out["rating"] = "Fail (Hard-Fail)"   # Y means Fail whatever the total
     return out
 
-def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
+def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None, cached=None,
+             cache_write=None):
     """output_tokens is what the provider bills for, reasoning included. Some
     providers report reasoning outside their completion count, so it is folded
     in upstream and kept here as its own field. None means the provider does not
     report it separately -- Anthropic bills thinking as output and does not
-    break it out."""
+    break it out.
+
+    input_tokens is every input token, cached or not. cached_input_tokens is the
+    part served from a prompt cache at a discount, and cache_write_tokens the
+    part written to one at a premium (Anthropic only)."""
     row = {"id": cell["id"], **cell["row"], "ts": datetime.now(timezone.utc).isoformat()}
     for field, variable in (("run_id", "BENCHMARK_RUN_ID"), ("invocation_id", "BENCHMARK_INVOCATION_ID")):
         if os.environ.get(variable):
             row[field] = os.environ[variable]
     if stage == "answer":
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
-                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
+                   cached_input_tokens=cached, cache_write_tokens=cache_write, error=err)
     else:
         row.update(judge_model=cfg["model"], **parse_score(text),
                    input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
+                   cached_input_tokens=cached, cache_write_tokens=cache_write,
                    raw=text, error=err)
     if err is None and not usable(row, stage):
         row["error"] = "Empty answer or invalid rubric result; raw output retained."
@@ -592,9 +603,10 @@ def fetch(client, batch_id):
                     out[key] = (None, u.get("prompt_tokens"), u.get("completion_tokens"),
                                 "No answer choices in provider result", d.get("reasoning_tokens") or 0)
                     continue
+                cached = (u.get("prompt_tokens_details") or {}).get("cached_tokens") or 0
                 out[key] = (choices[0]["message"].get("content") or "",
                             u.get("prompt_tokens"), u.get("completion_tokens"), None,
-                            d.get("reasoning_tokens") or 0)
+                            d.get("reasoning_tokens") or 0, cached)
             else:
                 detail = err or (resp or {}).get("body")
                 out[key] = (None, None, None, json.dumps(detail)[:500], 0)
@@ -610,9 +622,10 @@ def call_now(client, cfg, cell, tokens):
                                            **{cfg["cap"]: tokens})
         u = r.usage
         d = getattr(u, "completion_tokens_details", None)
+        p = getattr(u, "prompt_tokens_details", None)
         return (r.choices[0].message.content or "",
                 getattr(u, "prompt_tokens", None), getattr(u, "completion_tokens", None), None,
-                getattr(d, "reasoning_tokens", None) or 0)
+                getattr(d, "reasoning_tokens", None) or 0, getattr(p, "cached_tokens", None) or 0)
     except Exception as e:  # noqa: BLE001
         return None, None, None, f"{type(e).__name__}: {e}", 0
 

@@ -124,6 +124,10 @@ leaves out without losing a point, and the reference is not assumed exhaustive.
 # Four criteria scored 1-5 for a total out of 20, each scoring one thing only.
 # Premise handling is scored for loaded questions only and stays out of the
 # total, so totals remain comparable across question types.
+#
+# The order is part of the instrument. Moving the rubric ahead of the answer, so
+# providers could cache it, made graders stricter by 0.7-1.4 points, mostly on
+# sourcing (runs/cache-test-2026-10-16), so it stays as validated.
 JUDGE_PROMPT = """You are grading one model's answer against a fixed rubric. You are not
 told which model wrote it, and you should not speculate.
 
@@ -455,22 +459,29 @@ def parse_score(raw):
             out["rating"] = "Fail (Hard-Fail)"   # Y means Fail whatever the total
     return out
 
-def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None):
+def make_row(stage, cell, cfg, text, tin, tout, err, reasoning=None, cached=None,
+             cache_write=None):
     """output_tokens is what the provider bills for, reasoning included. Some
     providers report reasoning outside their completion count, so it is folded
     in upstream and kept here as its own field. None means the provider does not
     report it separately -- Anthropic bills thinking as output and does not
-    break it out."""
+    break it out.
+
+    input_tokens is every input token, cached or not. cached_input_tokens is the
+    part served from a prompt cache at a discount, and cache_write_tokens the
+    part written to one at a premium (Anthropic only)."""
     row = {"id": cell["id"], **cell["row"], "ts": datetime.now(timezone.utc).isoformat()}
     for field, variable in (("run_id", "BENCHMARK_RUN_ID"), ("invocation_id", "BENCHMARK_INVOCATION_ID")):
         if os.environ.get(variable):
             row[field] = os.environ[variable]
     if stage == "answer":
         row.update(model=cfg["model"], system=cell["system"], user=cell["user"], response=text,
-                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning, error=err)
+                   input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
+                   cached_input_tokens=cached, cache_write_tokens=cache_write, error=err)
     else:
         row.update(judge_model=cfg["model"], **parse_score(text),
                    input_tokens=tin, output_tokens=tout, reasoning_tokens=reasoning,
+                   cached_input_tokens=cached, cache_write_tokens=cache_write,
                    raw=text, error=err)
     if err is None and not usable(row, stage):
         row["error"] = "Empty answer or invalid rubric result; raw output retained."
@@ -569,8 +580,10 @@ def call(client, cfg, cell, tokens, extra=None):
     out = getattr(u, "completion_tokens", None) or 0
     if cfg.get("reasoning_extra"):
         out += reasoning
+    p = getattr(u, "prompt_tokens_details", None)
     return (r.choices[0].message.content or "",
-            getattr(u, "prompt_tokens", None), out, reasoning)
+            getattr(u, "prompt_tokens", None), out, reasoning,
+            getattr(p, "cached_tokens", None) or 0)
 
 
 def call_with_retries(client, cfg, cell, tokens, attempts, pacer, extra=None):
@@ -578,8 +591,8 @@ def call_with_retries(client, cfg, cell, tokens, attempts, pacer, extra=None):
     for attempt in range(attempts):
         pacer.wait()
         try:
-            text, tin, tout, reasoning = call(client, cfg, cell, tokens, extra)
-            return text, tin, tout, None, reasoning
+            text, tin, tout, reasoning, cached = call(client, cfg, cell, tokens, extra)
+            return text, tin, tout, None, reasoning, cached
         except Exception as e:  # noqa: BLE001 -- any failure is just a failed cell
             last = f"{type(e).__name__}: {e}"
             if any(s in last.lower() for s in FATAL_SIGNS):
@@ -587,7 +600,7 @@ def call_with_retries(client, cfg, cell, tokens, attempts, pacer, extra=None):
             if attempt == attempts - 1:
                 break
             time.sleep(min(60.0, 2 ** attempt) * (0.5 + random.random()))
-    return None, None, None, last, 0
+    return None, None, None, last, 0, None
 
 
 # ---------------------------------------------------------------------------

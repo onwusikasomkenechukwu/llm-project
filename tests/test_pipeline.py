@@ -122,7 +122,7 @@ class PipelineTests(unittest.TestCase):
             "usageMetadata": {"promptTokenCount": 10, "candidatesTokenCount": 3,
                               "thoughtsTokenCount": 7}}
         result = mod.read_results("\n" + json.dumps(body))["r0"]
-        self.assertEqual(result, ("Answer", 10, 10, None, 7))
+        self.assertEqual(result, ("Answer", 10, 10, None, 7, 0))
         blocked = mod.read_results(json.dumps({"key": "r2", "response": {}}))["r2"]
         self.assertIsNotNone(blocked[3])
 
@@ -139,25 +139,31 @@ class PipelineTests(unittest.TestCase):
             "status_code": 200, "body": {"choices": [{"message": {"content": "OK"}}],
             "usage": {"prompt_tokens": 2, "completion_tokens": 10,
                       "completion_tokens_details": {"reasoning_tokens": 7}}}}}))
-        self.assertEqual(oa.fetch(client, "batch1")[1]["r0"], ("OK", 2, 10, None, 7))
+        self.assertEqual(oa.fetch(client, "batch1")[1]["r0"], ("OK", 2, 10, None, 7, 0))
         client.messages.batches.create.return_value = NS(id="ant1")
         self.assertEqual(ant.submit(client, ant.PROVIDERS["anthropic"], [cell], 100, None), "ant1")
         client.messages.batches.retrieve.return_value = NS(processing_status="ended")
         client.messages.batches.results.return_value = [NS(custom_id="r0", result=NS(type="succeeded",
             message=NS(content=[NS(type="thinking"), NS(type="text", text="OK")],
                        usage=NS(input_tokens=2, output_tokens=10))))]
-        self.assertEqual(ant.fetch(client, "ant1")[1]["r0"], ("OK", 2, 10, None))
+        self.assertEqual(ant.fetch(client, "ant1")[1]["r0"], ("OK", 2, 10, None, None, 0, 0))
+        # cache reads and writes are excluded from Anthropic's input_tokens; added back
+        client.messages.batches.results.return_value = [NS(custom_id="r0", result=NS(type="succeeded",
+            message=NS(content=[NS(type="text", text="OK")],
+                       usage=NS(input_tokens=2, output_tokens=10, cache_read_input_tokens=900,
+                                cache_creation_input_tokens=0))))]
+        self.assertEqual(ant.fetch(client, "ant1")[1]["r0"], ("OK", 902, 10, None, None, 900, 0))
         client.chat.completions.create.return_value = NS(choices=[NS(message=NS(content="OK"))],
             usage=NS(prompt_tokens=2, completion_tokens=10, completion_tokens_details=NS(reasoning_tokens=7)))
-        self.assertEqual(seq.call(client, seq.PROVIDERS["xai"], cell, 100), ("OK", 2, 17, 7))
-        self.assertEqual(seq.call(client, seq.PROVIDERS["muse"], cell, 100), ("OK", 2, 10, 7))
+        self.assertEqual(seq.call(client, seq.PROVIDERS["xai"], cell, 100), ("OK", 2, 17, 7, 0))
+        self.assertEqual(seq.call(client, seq.PROVIDERS["muse"], cell, 100), ("OK", 2, 10, 7, 0))
 
     def test_retries_and_billing_stop(self):
         seq = RUNNERS[3]
         pacer = Mock()
-        with patch.object(seq, "call", side_effect=[RuntimeError("temporary"), ("OK", 1, 2, 0)]), \
+        with patch.object(seq, "call", side_effect=[RuntimeError("temporary"), ("OK", 1, 2, 0, 0)]), \
              patch.object(seq.time, "sleep"):
-            self.assertEqual(seq.call_with_retries(None, {}, {}, 100, 2, pacer), ("OK", 1, 2, None, 0))
+            self.assertEqual(seq.call_with_retries(None, {}, {}, 100, 2, pacer), ("OK", 1, 2, None, 0, 0))
         self.assertEqual(pacer.wait.call_count, 2)
         pacer.reset_mock()
         with patch.object(seq, "call", side_effect=RuntimeError("insufficient_quota")):
@@ -298,7 +304,7 @@ class PipelineTests(unittest.TestCase):
         client.models.generate_content.return_value = NS(text="OK", usage_metadata=NS(
             prompt_token_count=1, candidates_token_count=2, thoughts_token_count=3))
         self.assertEqual(google.call_now(client, google.PROVIDERS["google"], cell, 100),
-                         ("OK", 1, 5, None, 3))
+                         ("OK", 1, 5, None, 3, 0))
 
     def test_sequential_collect_and_resume(self):
         mod = RUNNERS[3]
