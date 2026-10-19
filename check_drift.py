@@ -47,8 +47,26 @@ def definitions(path: Path) -> dict[str, ast.AST]:
     return result
 
 
+def canonical(node) -> str:
+    """ast.dump's text changes between Python versions (3.13 began omitting
+    None and empty fields, and new versions add fields), so a baseline written
+    on one version failed every check on another. This drops None and empty
+    fields on every version, so the same source gives the same text."""
+    if isinstance(node, ast.AST):
+        fields = []
+        for name in node._fields:
+            value = getattr(node, name, None)
+            if value is None or value == []:
+                continue
+            fields.append(f"{name}={canonical(value)}")
+        return f"{type(node).__name__}({', '.join(fields)})"
+    if isinstance(node, list):
+        return "[" + ", ".join(canonical(item) for item in node) + "]"
+    return repr(node)
+
+
 def fingerprint(node: ast.AST) -> str:
-    return hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+    return hashlib.sha256(canonical(node).encode()).hexdigest()
 
 
 def snapshot(root: Path) -> tuple[dict, list[str]]:
