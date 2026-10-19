@@ -15,7 +15,10 @@ import sys
 from pathlib import Path
 
 
-RUNNERS = ("openai_batch.py", "anthropic_batch.py", "google_batch.py", "sequential.py")
+RUNNERS = ("openai_batch.py", "anthropic_batch.py", "google_batch.py", "sequential.py",
+           "vllm_offline.py")
+# runners that call models directly, so have no batch bookkeeping
+LIVE = ("sequential.py", "vllm_offline.py")
 CONSTANTS = ("IDENTITIES", "USER_TEMPLATE", "COMPONENTS_LINE", "REFERENCE_BLOCK", "JUDGE_PROMPT",
              "CRITERIA", "RATINGS", "QUESTION_TYPES", "ANSWER_TOKENS", "JUDGE_TOKENS")
 FUNCTIONS = ("load_prompts", "answer_cells", "judge_cells", "parse_score", "make_row",
@@ -54,7 +57,7 @@ def snapshot(root: Path) -> tuple[dict, list[str]]:
         tree = definitions(root / filename)
         trees[filename] = tree
         required = (*CONSTANTS, *FUNCTIONS, "PROVIDERS")
-        if filename != "sequential.py":
+        if filename not in LIVE:
             required += BATCH_FUNCTIONS
         hashes[filename] = {}
         for name in required:
@@ -65,7 +68,7 @@ def snapshot(root: Path) -> tuple[dict, list[str]]:
     reference = hashes[RUNNERS[0]]
     for filename in RUNNERS[1:]:
         names = (*CONSTANTS, *FUNCTIONS)
-        if filename != "sequential.py":
+        if filename not in LIVE:
             names += BATCH_FUNCTIONS
         for name in names:
             if hashes[filename].get(name) != reference.get(name):

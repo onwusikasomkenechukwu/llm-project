@@ -1,67 +1,101 @@
-# Running the cue experiment on open-weight models
+# Open-weight run on the IRB-411 GPU machine
 
-Dr. Aryal's proposal (16 October 2026): run the cue scenarios at scale on
-open-weight models served locally with vLLM, and check whether the effects seen
-on the frontier APIs carry over. Not an exact map, a cheaper approximation.
+Dr. Aryal, 19 October 2026: the same design as the API run, with the five
+open-weight models he downloaded in place of the five providers. Every model
+answers every question three times, then every model grades every answer, against
+the current rubric, with the four subscores saved on every grade. No identities
+for this first pass. vLLM offline batched inference, tuned for prompts per second.
 
-Hardware assumed: 2 × RTX A6000 (48 GB each, 96 GB total, Ampere) and 256 GB RAM,
-on the cluster or a machine in 411.
+`vllm_offline.py` does it. It shares the rubric, prompt building, output rows and
+resume logic with the API runners, and `check_drift.py` holds it to them.
 
 ## Size
 
-The team workbook has **76 questions** written so far. At 105 cue prompts each:
-
-| | per model |
+| | |
 |---|---|
-| answers | 7,980 |
-| grades, per judge | 7,980 |
+| questions | 150 (`samples/prompts-2026-10-19.xlsx`, built from the team sheet on 19 Oct) |
+| answers | 150 × 3 replicates × 5 models = **2,250** |
+| grades | 2,250 × 5 judges = **11,250** |
 
-Measured on the cue run, a non-reasoning model writes about 250 output tokens
-per answer, and a grade is about 1,300 input and 400 output tokens. So one model
-answering everything is about 2.0M output tokens, and one judge grading one
-model's answers about 3.2M output tokens and 10.4M input. Every judge prompt
-shares the same rubric prefix, so `--enable-prefix-caching` should make most of
-that input nearly free.
+115 of the 150 carry gold-standard elements and are graded against them; 35 do
+not yet and are graded on their own merits. Two are typed Normative, a type the
+rubric dropped; they are kept and graded without premise handling.
 
-**Time is output tokens divided by measured throughput.** At 500 output tokens a
-second, a model's answers take about 70 minutes and one judge pass about 1.8
-hours. That figure is a placeholder until the throughput test below replaces it.
+"Quality" in the team sheet's rubric tab is v1. The current rubric (v2, the PDF)
+renamed it **Completeness**, so the subscores on every row are `accuracy`,
+`completeness`, `objectivity`, `sourcing`, plus `total`, `premise_handling` and
+`hard_fail`.
 
-## Models that fit in 96 GB
+## Defaults, as Dr. Aryal asked
 
-Ampere has no FP8 compute, so the options are 16-bit weights or 4-bit (AWQ or
-GPTQ, through vLLM's Marlin kernels). Both cards together, `--tensor-parallel-size 2`:
+- **Sampling** is each model's own, from its `generation_config.json`
+  (`llm.get_default_sampling_params()`). Only `max_tokens` is set, as a ceiling:
+  4,000 to answer, 3,000 to grade (`--judge-tokens` to raise it for a model that
+  reasons at length, as Muse needed).
+- **System prompt**: none is sent for these prompts, so each chat template applies
+  its model's default. Where a cue puts text in the system prompt, it is sent as
+  the default followed by ours, never in its place.
+- **Reasoning** models' thinking (`<think>` blocks, gpt-oss channels) is split off
+  the answer before it is saved or graded, and counted in `reasoning_tokens`.
 
-| model | open-weight relative of | weights | fits |
-|---|---|---|---|
-| Llama 3.3 70B Instruct, AWQ 4-bit | Meta | ~40 GB | yes, with KV cache to spare |
-| Gemma 3 27B, 16-bit | Google | ~55 GB | yes |
-| Qwen3 32B, 16-bit | — | ~65 GB | yes, smaller KV cache |
-| gpt-oss-20b | OpenAI | ~13 GB | yes; the 120b needs checking on Ampere |
+## On the machine
 
-One model per vendor where one exists is what makes "does it translate to the
-frontier model" answerable.
+```bash
+git clone https://github.com/onwusikasomkenechukwu/llm-project.git && cd llm-project
+python -m venv .venv && source .venv/bin/activate
+pip install vllm openpyxl
+nvidia-smi
+python vllm_offline.py --list-models
+```
 
-## Throughput test
+`--list-models` prints the cached models and the short name each gets in the
+output. Use the five Dr. Aryal downloaded, in the order they should run.
 
-1. Install vLLM and [vllm-tuner](https://github.com/kryvokhyzha/vllm-tuner) on the
-   machine (Python 3.11–3.13, `uv pip install vllm "vllm-tuner[all]"`).
-2. Tune for throughput, one model at a time:
-   `python -m vllm_tuner.cli.main run --model <hf-id> --preset high_throughput`.
-   It searches `gpu_memory_utilization`, `max_num_seqs` and
-   `max_num_batched_tokens`, restarting the server for each trial.
-3. Serve the best configuration and push a sample of real cue prompts through
-   `sequential.py --providers local` at high concurrency. Record prompts per
-   second and output tokens per second. The tuner benchmarks synthetic traffic;
-   this is the figure that counts.
+### 1. Check one model end to end
 
-`sequential.py` already has a `local` provider pointed at
-`http://localhost:8000/v1`. Before a multi-model run, its model name needs to be
-settable per run rather than fixed in the file.
+```bash
+python vllm_offline.py answer samples/prompts-2026-10-19.xlsx --identities none \
+    --models <model-1> --limit 5 --out test-answers.jsonl
+```
 
-## What to compare
+Read a few answers in `test-answers.jsonl`: thinking must not be left in
+`response`, and nothing should stop at the ceiling.
 
-Run `cue_pairs.py` on the local results and set it beside the frontier run: does
-the education gap appear, is it on Sourcing, and does race stay at zero? A local
-model reproducing the frontier pattern on the same question is the check that
-makes the 76-question local results worth reading.
+### 2. Tune for throughput
+
+Every run appends prompts/s and tokens/s to `throughput-vllm_offline.jsonl`.
+Tune on about 300 prompts (`--limit 100` with 3 replicates), changing one
+setting at a time:
+
+| setting | try | effect |
+|---|---|---|
+| `--tensor-parallel-size` | 1 vs the GPU count | a model that fits on one GPU is usually faster as one copy per GPU (below) than split across all of them |
+| `--max-num-seqs` | 128, 256, 512 | sequences decoded together; higher until memory or speed stops improving |
+| `--max-num-batched-tokens` | 8192, 16384, 32768 | prefill per step |
+| `--max-model-len` | 8192 or 16384 | a smaller ceiling leaves more memory for KV cache |
+| `--gpu-memory-utilization` | 0.90–0.95 | |
+
+[vllm-tuner](https://github.com/kryvokhyzha/vllm-tuner) (`--preset high_throughput`)
+searches the same settings automatically against a server. Its best values pass
+straight to these flags.
+
+**One copy per GPU**, for any model that fits on one:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 python vllm_offline.py answer ... --shard 0/2 &
+CUDA_VISIBLE_DEVICES=1 python vllm_offline.py answer ... --shard 1/2 &
+wait && cat responses-vllm_offline-shard*.jsonl > responses-vllm_offline.jsonl
+```
+
+### 3. The run
+
+```bash
+python vllm_offline.py answer samples/prompts-2026-10-19.xlsx --identities none \
+    --models <m1>,<m2>,<m3>,<m4>,<m5> <tuned settings>
+python vllm_offline.py judge responses-vllm_offline.jsonl --prompts samples/prompts-2026-10-19.xlsx \
+    --models <m1>,<m2>,<m3>,<m4>,<m5> <tuned settings>
+python analyze.py judgments-vllm_offline.jsonl --responses responses-vllm_offline.jsonl --out-dir analysis/vllm
+```
+
+Models run one after another, each loaded once for its whole share. An
+interrupted run resumes by running the same command again.
