@@ -43,7 +43,7 @@ about the models' handling of Black history.
 | | |
 |---|---|
 | Ready | collection, grading, cross-evaluation, cost accounting, analysis tables, run manifests, drift checks |
-| Waiting on | the 400 questions, with reference answers |
+| Waiting on | the rest of the questions: 162 written so far, 120 with gold-standard elements (`samples/prompts-2026-10-20.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
 | Not built yet | publication plots |
 | Open | whether each question is also asked in negated form |
 
@@ -633,6 +633,7 @@ current pilot uses carries question types and loaded premises, so it exercises
 premise handling and the hard-fail flag:
 
 ```bash
+python samples/make_prompts.py "<team sheet>.xlsx"   # every written question in the team sheet
 python samples/make_rubric_sample.py     # 6 questions, one per question type
 python samples/make_sample.py            # 10 generic questions from FLASK
 ```

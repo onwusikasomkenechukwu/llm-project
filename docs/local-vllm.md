@@ -13,13 +13,17 @@ resume logic with the API runners, and `check_drift.py` holds it to them.
 
 | | |
 |---|---|
-| questions | 150 (`samples/prompts-2026-10-19.xlsx`, built from the team sheet on 19 Oct) |
-| answers | 150 × 3 replicates × 5 models = **2,250** |
-| grades | 2,250 × 5 judges = **11,250** |
+| questions | 162 (`samples/prompts-2026-10-20.xlsx`, built from the team sheet on 20 Oct by `samples/make_prompts.py`) |
+| answers | 162 × 3 replicates × 5 models = **2,430** |
+| grades | 2,430 × 5 judges = **12,150** |
 
-115 of the 150 carry gold-standard elements and are graded against them; 35 do
-not yet and are graded on their own merits. Two are typed Normative, a type the
-rubric dropped; they are kept and graded without premise handling.
+120 of the 162 carry gold-standard elements and are graded against them; 42 do
+not yet and are graded on their own merits. Since 19 Oct the team rewrote the
+first ten Jim Crow questions and added ten more (so no Normative questions are
+left), and started an Environmental Justice tab (two draft questions). Voting
+Rights, the 14th Amendment and the Civil Rights Movement tabs have IDs but no
+questions yet. The 19 Oct set (150) stays in `samples/` for any run already made
+on it.
 
 "Quality" in the team sheet's rubric tab is v1. The current rubric (v2, the PDF)
 renamed it **Completeness**, so the subscores on every row are `accuracy`,
@@ -54,7 +58,7 @@ output. Use the five Dr. Aryal downloaded, in the order they should run.
 ### 1. Check one model end to end
 
 ```bash
-python vllm_offline.py answer samples/prompts-2026-10-19.xlsx --identities none \
+python vllm_offline.py answer samples/prompts-2026-10-20.xlsx --identities none \
     --models <model-1> --limit 5 --out test-answers.jsonl
 ```
 
@@ -90,9 +94,9 @@ wait && cat responses-vllm_offline-shard*.jsonl > responses-vllm_offline.jsonl
 ### 3. The run
 
 ```bash
-python vllm_offline.py answer samples/prompts-2026-10-19.xlsx --identities none \
+python vllm_offline.py answer samples/prompts-2026-10-20.xlsx --identities none \
     --models <m1>,<m2>,<m3>,<m4>,<m5> <tuned settings>
-python vllm_offline.py judge responses-vllm_offline.jsonl --prompts samples/prompts-2026-10-19.xlsx \
+python vllm_offline.py judge responses-vllm_offline.jsonl --prompts samples/prompts-2026-10-20.xlsx \
     --models <m1>,<m2>,<m3>,<m4>,<m5> <tuned settings>
 python analyze.py judgments-vllm_offline.jsonl --responses responses-vllm_offline.jsonl --out-dir analysis/vllm
 ```
