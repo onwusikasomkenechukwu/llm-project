@@ -24,7 +24,15 @@ cd "$(dirname "$0")"
 
 PROMPTS=samples/prompts-2026-10-20.xlsx
 MODELS=Qwen/Qwen3.8-27B,RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16,allenai/Olmo-3.1-32B-Instruct,google/gemma-4-31B-it,openai/gpt-oss-120b
-ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning low"
+# Throughput: every model needs both GPUs (TP=2), so the gains are in keeping
+# them full. On 20 October grading was prefill-bound (2,100 input tokens per
+# grade, under 150 out for the non-reasoners), so prefill gets a larger step,
+# KV cache gets 3 GB more per GPU, and the light-KV models (gpt-oss,
+# Llama-Scout) may run twice the sequences at once. Bigger chunks mean fewer
+# stalls while a chunk's last long answers finish. If a model fails to load
+# for memory, drop --gpu-memory-utilization back to 0.92.
+ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning low \
+    --gpu-memory-utilization 0.95 --max-num-seqs 512 --max-num-batched-tokens 32768 --chunk 10000"
 
 echo "== answering"
 python vllm_offline.py answer "$PROMPTS" --cues cues.jsonl \
