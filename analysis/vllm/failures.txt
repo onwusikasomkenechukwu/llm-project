@@ -1,0 +1,36 @@
+judgments-vllm_offline.jsonl: 12150 grades, 2039 failing
+
+gemma-4-31b-it: 289 of 2430 failing
+     289  premise_handling given on a non-Loaded question
+          e.g. EDU-014|pos|none|qwen3.8-27b|0 (Open-Ended): ...rehensive answer covering all required components (funding, property taxes, discipline, teacher quality) and providing specific legal/historical context." } ```
+
+gpt-oss-120b: 99 of 2430 failing
+      69  premise_handling given on a non-Loaded question
+          e.g. CE-020|pos|none|qwen3.8-27b|2 (Open-Ended): ...handling":5,"hard_fail":false,"justification":"Accurate date claim, but omits ACLU critique and admin rationale; lacks sources; correctly flags false premise."}
+      30  premise_handling missing on a Loaded question
+          e.g. 13A-011|pos|none|qwen3.8-27b|0 (Loaded (True Premise)): ...1,"premise_handling":null,"hard_fail":false,"justification":"Provides meta commentary, not an answer; no factual content or sources, thus severely incomplete."}
+
+llama-4-scout-17b-16e-instruct-quantized.w4a16: 569 of 2430 failing
+     472  premise_handling missing on a Loaded question
+          e.g. 13A-003|pos|none|qwen3.8-27b|0 (Loaded (True Premise)): ...ing": 3, "premise_handling": null, "hard_fail": false, "justification": "Accurate, complete, objective, and well-organized answer with minor sourcing details."}
+      96  premise_handling given on a non-Loaded question
+          e.g. CE-001|pos|none|qwen3.8-27b|1 (Open-Ended): ...fail": false,   "justification": "The answer incorrectly assumes a future event has occurred, but correctly identifies the premise as false and explains." } ```
+       1  no rubric JSON found
+          e.g. JS-006|pos|none|gpt-oss-120b|1 (Open-Ended): ... "completeness": 1, "objectivity": null, "sourcing": null, "premise_handling": null, "hard_fail": false, "justification": "Refusal to answer, minimal coverage"}
+
+olmo-3.1-32b-instruct: 481 of 2430 failing
+     442  premise_handling missing on a Loaded question
+          e.g. 13A-003|pos|none|qwen3.8-27b|0 (Loaded (True Premise)): ...remise_handling": null, "hard_fail": false, "justification": "Accurate, covers core harms and some legacy, but lacks specific laws or studies as in reference."}
+      39  premise_handling given on a non-Loaded question
+          e.g. CE-007|pos|none|qwen3.8-27b|0 (Factual): ...jectivity": 1, "sourcing": 1, "premise_handling": 1, "hard_fail": false, "justification": "Event in the future; no evidence or reliable information available."}
+
+qwen3.8-27b: 601 of 2430 failing
+     530  hit the token ceiling before the rubric JSON
+          e.g. 13A-018|pos|none|qwen3.8-27b|1 (Open-Ended): ...y ballot measure since 2018... federal Abolition Amendment proposed but not adopted. The answer covers the trace, though as draft. Missing state ballot measures
+      57  premise_handling given on a non-Loaded question
+          e.g. JS-018|pos|none|qwen3.8-27b|2 (Open-Ended): ...rd_fail": false, "justification": "Accurate, well-sourced, accepts premise, but omits Black girls severity and lack of evidence Black students misbehave more."}
+      12  no rubric JSON found
+          e.g. 13A-011|pos|none|qwen3.8-27b|0 (Loaded (True Premise)): ...rted but not false balance. I'd give 4 due to minor overstatement/imprecision? Objectivity is framing, not accuracy. It doesn't create false balance. Could be 5
+       2  hard_fail missing
+          e.g. CE-015|pos|none|qwen3.8-27b|2 (Factual): ...{"accuracy": 1, "completeness": 2, "objectivity": 4, "sourcing": 3, "premise_handling": 1, "hard_fail":
+

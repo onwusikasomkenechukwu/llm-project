@@ -1,0 +1,64 @@
+{
+  "rows_read": 12150,
+  "valid_grades": 10111,
+  "run_id": null,
+  "excluded": {
+    "provider_or_parser_error": 2039
+  },
+  "judge_models": {
+    "gemma-4-31b-it": "google/gemma-4-31B-it",
+    "gpt-oss-120b": "openai/gpt-oss-120b",
+    "llama-4-scout-17b-16e-instruct-quantized.w4a16": "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
+    "olmo-3.1-32b-instruct": "allenai/Olmo-3.1-32B-Instruct",
+    "qwen3.8-27b": "Qwen/Qwen3.8-27B"
+  },
+  "coverage": {
+    "judged_answers": 2402,
+    "answers_missing_observed_panel": 1123,
+    "observed_panel": [
+      [
+        "gemma-4-31b-it",
+        0
+      ],
+      [
+        "gpt-oss-120b",
+        0
+      ],
+      [
+        "llama-4-scout-17b-16e-instruct-quantized.w4a16",
+        0
+      ],
+      [
+        "olmo-3.1-32b-instruct",
+        0
+      ],
+      [
+        "qwen3.8-27b",
+        0
+      ]
+    ],
+    "response_rows": 2430,
+    "usable_responses": 2430,
+    "unjudged_answers": 28,
+    "failed_responses": 0,
+    "answer_models": {
+      "gemma-4-31b-it": "google/gemma-4-31B-it",
+      "gpt-oss-120b": "openai/gpt-oss-120b",
+      "llama-4-scout-17b-16e-instruct-quantized.w4a16": "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
+      "olmo-3.1-32b-instruct": "allenai/Olmo-3.1-32B-Instruct",
+      "qwen3.8-27b": "Qwen/Qwen3.8-27B"
+    }
+  },
+  "n_questions": 162,
+  "bootstrap_draws": 2000,
+  "seed": 20261002,
+  "confidence": 0.95,
+  "method": "Equal question means; percentile bootstrap resamples whole questions.",
+  "score_policy": "Raw rubric totals, including hard fails; hard_fail is a separate rate.",
+  "judgments_sha256": "0adaae50f31088f722e0e607b53a43a8bb8f37b9cf253bd48492723af30277de",
+  "responses_sha256": "2e118971e50e38162ed857da5531264de2521c785ef8c7e3cd1969647eaa3cd7",
+  "warnings": [
+    "Unusable grades excluded; inspect exclusion counts and coverage.",
+    "Incomplete observed panel or responses; comparisons may use different subsets."
+  ]
+}
