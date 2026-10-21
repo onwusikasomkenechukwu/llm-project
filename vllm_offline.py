@@ -537,16 +537,24 @@ def short_name(model):
     return re.sub(r"[^a-z0-9.-]+", "-", model.split("/")[-1].lower()).strip("-")
 
 
-def split_reasoning(text):
+REASONING_ENDS = ("</think>", "assistantfinal")
+
+
+def split_reasoning(text, marker=None):
     """Separate a reasoning model's thinking from its answer. Returns
     (answer, thinking). Handles <think> tags and gpt-oss's decoded channels;
-    anything else is all answer."""
+    anything else is all answer. `marker` is the end-of-thinking marker this
+    model uses: an output without it never finished thinking, so it is all
+    thinking and no answer (the chat template opens <think> in the prompt, so
+    an unfinished output carries no tag at all)."""
     if "</think>" in text:
         head, _, tail = text.rpartition("</think>")
         return tail.strip(), head.replace("<think>", "").strip()
     if "assistantfinal" in text:
         head, _, tail = text.rpartition("assistantfinal")
         return tail.strip(), head.strip()
+    if marker:
+        return "", text.strip()
     return text.strip(), ""
 
 
@@ -613,9 +621,15 @@ def run_model(args, stage, prov, cells, out_path, throughput_path):
         outputs = llm.chat([messages_for(c, default) for c in chunk], params, use_tqdm=True)
         seconds = time.monotonic() - t0
         rows = []
+        # a model that ends its thinking with a marker in some outputs reasons
+        # every time, so its outputs that stopped at the ceiling without one
+        # are unfinished thinking, not answers
+        texts = [o.outputs[0].text for o in outputs]
+        marker = next((m for m in REASONING_ENDS if any(m in t for t in texts)), None)
         for cell, o in zip(chunk, outputs):
             gen = o.outputs[0]
-            answer, thinking = split_reasoning(gen.text)
+            answer, thinking = split_reasoning(
+                gen.text, marker if gen.finish_reason == "length" else None)
             tin, tout = len(o.prompt_token_ids or []), len(gen.token_ids or [])
             cached = getattr(o, "num_cached_tokens", None)
             reasoning = len(tokenizer.encode(thinking, add_special_tokens=False)) if thinking else 0
