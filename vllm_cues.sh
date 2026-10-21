@@ -4,11 +4,12 @@
 #
 #     bash vllm_cues.sh
 #
-# Cues: the templated baseline plus the race x gender block -- Black/White x
-# woman/man, as an explicit label or an implicit name, in the user turn or in
-# the system prompt as saved memory, three exemplars each, as on the frontier
-# models. 17 conditions x 162 questions x 3 = 41,310 answers and 206,550
-# grades.
+# Cues: the whole law-school cue sheet (cues.jsonl, from cues.py) -- the
+# templated baseline, irrelevant-detail controls, race x gender as a label, a
+# name or a matched HBCU profile, and education (did not finish high school vs
+# doctorate) as a label or a profile, each in the user turn or in the system
+# prompt as saved memory, three exemplars each, as on the frontier models.
+# 105 answers per question per model: 85,050 answers and 425,250 grades.
 #
 # Reasoning is turned down (Dr. Aryal, 21 October): gpt-oss at low effort,
 # Qwen's thinking off, for answering and grading alike. The other three do not
@@ -25,21 +26,8 @@ PROMPTS=samples/prompts-2026-10-20.xlsx
 MODELS=Qwen/Qwen3.8-27B,RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16,allenai/Olmo-3.1-32B-Instruct,google/gemma-4-31B-it,openai/gpt-oss-120b
 ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning low"
 
-python - <<'EOF'
-import json
-keep = {"S00", "S03", "S04", "S05", "S06"}   # baseline; label/name x user/memory
-with open("cues.jsonl", encoding="utf-8") as src, \
-        open("cues-race-gender.jsonl", "w", encoding="utf-8") as out:
-    n = 0
-    for line in src:
-        if json.loads(line)["row"]["scenario"] in keep:
-            out.write(line)
-            n += 1
-print(f"{n} cues -> cues-race-gender.jsonl")
-EOF
-
 echo "== answering"
-python vllm_offline.py answer "$PROMPTS" --cues cues-race-gender.jsonl \
+python vllm_offline.py answer "$PROMPTS" --cues cues.jsonl \
     --out cues-responses.jsonl $ARGS 2>&1 | tee -a cues-answer.log
 
 # one grading pass: on 20 October the retries recovered little
