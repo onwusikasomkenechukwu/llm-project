@@ -20,7 +20,15 @@ for pass in 1 2 3; do
     [ "${PIPESTATUS[0]}" -eq 0 ] && break
 done
 
+echo "== why grades failed"
+python vllm_failures.py judgments-vllm_offline.jsonl
+
+# a retried grade leaves its failed row on disk too; keep one row per grade
+echo "== merge"
+python merge.py responses --out vllm-responses.jsonl || exit 1
+python merge.py judgments --out vllm-judgments.jsonl || exit 1
+
 echo "== analysis"
-python analyze.py judgments-vllm_offline.jsonl --responses responses-vllm_offline.jsonl \
-    --out-dir analysis/vllm
+python analyze.py vllm-judgments.jsonl --responses vllm-responses.jsonl \
+    --out-dir analysis/vllm || exit 1
 echo "done: tables in analysis/vllm"
