@@ -1141,6 +1141,26 @@ caveat 2 and graded on only the shorter half of gpt-oss's answers (caveat 3).
 Llama-Scout is most lenient on every answerer, its own included. With a spread
 this wide, a single-judge score from this panel would mostly measure the judge.
 
+### Replicates
+
+Each model answered every question three times, at its own default sampling;
+each judge graded each answer once. The spread below is the standard deviation
+of the panel's score across a question's three answers, out of 20:
+
+| model | median spread | questions with spread over 1.5 |
+|---|---|---|
+| Gemma | 0.42 | 3% |
+| gpt-oss | 0.43 | 12% |
+| Qwen | 0.55 | 11% |
+| Llama-Scout | 0.59 | 10% |
+| OLMo | 0.69 | 12% |
+
+A typical question's three answers land within about half a point, but for
+every model except Gemma about one question in ten swings by more than 1.5
+between runs, which is why three answers, not one, are collected. Qwen has all
+three usable on only 91 of its questions, since its unfinished answers were
+removed (caveat 1). Per-question figures are in `replicate_variability.csv`.
+
 ### Throughput
 
 Answering, both GPUs on one model: Llama-Scout 3.5 prompts/s,
