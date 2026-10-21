@@ -53,6 +53,14 @@ held in saved memory — on one question: 525 answers, 2,100 grades. Race and
 gender cues had no effect; education cues did. See
 [What the cue run showed](#what-the-cue-run-showed).
 
+A third, on 20 October 2026, ran the full design on five open-weight models
+served locally with vLLM: 162 questions, 2,430 answers, 12,150 grades.
+gpt-oss-120b and Gemma-4-31B tied at the top, Llama-4-Scout last. It comes with
+caveats that matter more than the ranking: Qwen never finished a third of its
+answers, gpt-oss's hard fails rest on unverified "fabricated source" calls, and
+22% of grades are excluded, unevenly. See
+[What the open-weight run showed](#what-the-open-weight-run-showed).
+
 `analyze.py` now produces scores by model, identity and question type, a judge
 matrix, matched comparisons, self-preference estimates and replicate variability.
 Intervals resample questions. The pilot figures at the bottom of this file come
@@ -1070,3 +1078,72 @@ Two cautions. Graders see only the bare question, so some of this is the rubric
 marking down simplification that may be appropriate — the tailoring problem
 described under [The identities](#the-identities). And this is one question, at
 15 answers per group: a lead for the full question set, not a finding.
+
+## What the open-weight run showed
+
+On 20 October 2026 the full design was run on five open-weight models served
+locally with vLLM (`vllm_offline.py`, run sheet in
+[docs/local-vllm.md](docs/local-vllm.md)), on two RTX A6000s: the 162 questions
+written so far, three answers each, no identities, every answer graded by all
+five models. 2,430 answers with no failures, then 12,150 grades. Raw rows are on
+the `results/vllm-2026-10-20` branch; the corrected tables below are rebuilt from
+them by `vllm_unfinished.py` and `analyze.py`.
+
+| model | total /20 | 95% interval | hard-fail rate | questions |
+|---|---|---|---|---|
+| gpt-oss-120b | **17.46** | 17.12–17.79 | 16% | 162 |
+| Gemma-4-31B | **17.24** | 17.01–17.47 | 0.3% | 158 |
+| Qwen3.8-27B | 16.97 | 16.72–17.23 | 0% | 125 |
+| OLMo-3.1-32B | 16.85 | 16.56–17.11 | 3% | 162 |
+| Llama-4-Scout (W4A16) | **15.93** | 15.64–16.22 | 4% | 160 |
+
+Matched on the same question, gpt-oss and Gemma are tied (+0.20, −0.11 to
++0.51), OLMo and Qwen are tied with each other at about 0.4 below Gemma, and
+Llama-Scout is last, 1.26 below Gemma and 1.51 below gpt-oss. Loaded (False
+Premise) questions scored highest of the four types, 17.13; none of these models
+argued for a false premise the way Meta did in the law school's testing.
+
+**Self-preference is common in this panel.** Llama-Scout grades its own answers
++2.08 above the other judges (1.74 to 2.42), Gemma +0.95 and gpt-oss +0.85; OLMo
+shows none (−0.15) and Qwen grades itself lower (−0.67). Among the frontier
+models only one of five did this, so here the cross-evaluation matters more.
+
+**Throughput** for answering, both GPUs on one model: Llama-Scout 3.5 prompts/s,
+OLMo 1.6, gpt-oss 1.2 (3,200 output tokens/s), Gemma 1.0, Qwen 0.4. As judges,
+gpt-oss was fastest at 2.5 grades/s and Qwen slowest at 0.2.
+
+### Caveats
+
+1. **Qwen's score covers only the questions it answered.** Qwen reasons before
+   answering, and on 161 of its 486 answers (33%) it was still reasoning when it
+   reached the 4,000-token answer ceiling. The runner saved that reasoning as the
+   answer and the judges graded it; Gemma caught it, hard-failing most of them as
+   "chain-of-thought instead of an answer". Fixed in `vllm_offline.py`: an output
+   that stops at the ceiling without the model's end-of-thinking marker is now no
+   answer. For this run, `vllm_unfinished.py` marks those answers and their 805
+   grades failed. The ceiling stays at 4,000 for every model, so this is a
+   result about Qwen, not something to correct: its 16.97 is for the 125
+   questions it finished, and it should not be ranked as if it answered them all.
+2. **gpt-oss's 16% hard-fail rate is unverified.** Nearly all of it is judges
+   calling a citation "likely fabricated", and they disagree completely: Qwen
+   flagged 77% of the gpt-oss answers it graded, Gemma 18%, gpt-oss itself 10%,
+   OLMo 1%, Llama-Scout none. gpt-oss also scores highest on Sourcing (3.97)
+   because it names the most specific works, which is exactly where a judge
+   cannot check. A person needs to look the cited works up before this is
+   reported as fabrication.
+3. **22% of grades are excluded** (2,679 of 12,150), and not evenly. The run kept
+   the strict rule that a grade is unusable if `premise_handling` is missing on a
+   Loaded question or given on any other, and kept one token ceiling for every
+   judge; three grading passes recovered little, since these failures repeat.
+   - About 1,150 are premise-handling format errors, mostly from Llama-Scout
+     (472) and OLMo (442) leaving it blank. Almost all of those (931) are on
+     **Loaded (True Premise)** questions, as if premise handling applied only to
+     false premises, so that type loses **41%** of its grades against 10–20% for
+     the others. Comparisons on True Premise questions rest on far fewer grades.
+   - 530 are Qwen as a judge reaching the 3,000-token grading ceiling before its
+     rubric, concentrated on gpt-oss's long answers (247 of 486 failed), so
+     Qwen's view of gpt-oss comes from the shorter half of them.
+   - 805 are the grades of Qwen's unfinished answers (caveat 1).
+4. **The judges are open-weight models grading each other.** No frontier or human
+   grades are in this run, so these are relative rankings within the panel, not
+   a check against the frontier results yet.
