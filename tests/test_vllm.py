@@ -38,6 +38,8 @@ class VllmHelperTests(unittest.TestCase):
                          {"reasoning_effort": "low"})
         self.assertEqual(v.reasoning_kwargs(T("{% if enable_thinking %}"), "medium"),
                          {"enable_thinking": False})
+        self.assertEqual(v.reasoning_kwargs(
+            T("{% if enable_thinking %}{{ reasoning_effort }}"), "low"), {"enable_thinking": False})
         self.assertEqual(v.reasoning_kwargs(T("plain"), "low"), {})
         self.assertEqual(v.reasoning_kwargs(T("{{ reasoning_effort }}"), None), {})
 

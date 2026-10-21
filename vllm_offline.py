@@ -600,10 +600,12 @@ def reasoning_kwargs(tokenizer, level):
     template = getattr(tokenizer, "chat_template", None) or ""
     if isinstance(template, dict):
         template = " ".join(template.values())
-    if "reasoning_effort" in template:
-        return {"reasoning_effort": level}
+    # the switch wins: Qwen's template also mentions reasoning_effort, and
+    # passing that left its thinking on
     if "enable_thinking" in template:
         return {"enable_thinking": False}
+    if "reasoning_effort" in template:
+        return {"reasoning_effort": level}
     return {}
 
 
