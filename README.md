@@ -1103,12 +1103,47 @@ Llama-Scout is last, 1.26 below Gemma and 1.51 below gpt-oss. Loaded (False
 Premise) questions scored highest of the four types, 17.13; none of these models
 argued for a false premise the way Meta did in the law school's testing.
 
-**Self-preference is common in this panel.** Llama-Scout grades its own answers
-+2.08 above the other judges (1.74 to 2.42), Gemma +0.95 and gpt-oss +0.85; OLMo
-shows none (−0.15) and Qwen grades itself lower (−0.67). Among the frontier
-models only one of five did this, so here the cross-evaluation matters more.
+### The open-weight cross-evaluation matrix
 
-**Throughput** for answering, both GPUs on one model: Llama-Scout 3.5 prompts/s,
+Rows are the model that answered, columns the model that graded, as for the
+frontier pilot. Each cell weights questions equally; "others only" leaves out
+the answering model's grades of itself.
+
+| answered by | Gemma | gpt-oss | Llama-Scout | OLMo | Qwen | others only |
+|---|---|---|---|---|---|---|
+| gpt-oss | 17.77 | *18.18* | 19.36 | 17.42 | 11.81 | **17.20** |
+| Qwen | 17.29 | 16.87 | 17.54 | 16.95 | *16.49* | **17.11** |
+| Gemma | *18.16* | 17.31 | 18.35 | 16.69 | 16.37 | **17.03** |
+| OLMo | 17.27 | 16.85 | 18.03 | *16.70* | 15.31 | **16.87** |
+| Llama-Scout | 16.41 | 15.77 | *17.78* | 15.82 | 14.16 | **15.56** |
+
+**Self-preference is common in this panel** — a model's grade of its own answer,
+minus the mean of the other four graders on the same answer:
+
+| | self | others | difference | 95% interval |
+|---|---|---|---|---|
+| Llama-Scout | 17.80 | 15.73 | **+2.08** | +1.74 to +2.42 |
+| Gemma | 18.19 | 17.22 | **+0.95** | +0.78 to +1.12 |
+| gpt-oss | 18.17 | 17.35 | **+0.85** | +0.56 to +1.15 |
+| OLMo | 16.74 | 16.88 | −0.15 | −0.49 to +0.17 |
+| Qwen | 16.56 | 17.19 | **−0.67** | −0.84 to −0.48 |
+
+Three of five grade themselves above the panel with intervals that exclude
+zero, against one of five frontier models; Llama-Scout's +2.08 is nearly three
+times Google's +0.75. Qwen is the only model that grades itself *below* the
+panel.
+
+**Graders differ in strictness by 3.4 points**, against under one point for the
+frontier panel: Qwen 14.83, OLMo 16.58, gpt-oss 16.93, Gemma 17.25, Llama-Scout
+18.21. Qwen is strictest on every answerer, and its 11.81 for gpt-oss is the
+single outlier in the matrix, driven by the fabricated-source hard fails in
+caveat 2 and graded on only the shorter half of gpt-oss's answers (caveat 3).
+Llama-Scout is most lenient on every answerer, its own included. With a spread
+this wide, a single-judge score from this panel would mostly measure the judge.
+
+### Throughput
+
+Answering, both GPUs on one model: Llama-Scout 3.5 prompts/s,
 OLMo 1.6, gpt-oss 1.2 (3,200 output tokens/s), Gemma 1.0, Qwen 0.4. As judges,
 gpt-oss was fastest at 2.5 grades/s and Qwen slowest at 0.2.
 
