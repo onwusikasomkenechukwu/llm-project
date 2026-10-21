@@ -8,7 +8,12 @@
 # woman/man, as an explicit label or an implicit name, in the user turn or in
 # the system prompt as saved memory, three exemplars each, as on the frontier
 # models. 17 conditions x 162 questions x 3 = 41,310 answers and 206,550
-# grades: about four days on 2x A6000.
+# grades.
+#
+# Reasoning is turned down (Dr. Aryal, 21 October): gpt-oss at low effort,
+# Qwen's thinking off, for answering and grading alike. The other three do not
+# reason. Scores therefore compare within this run, against its own baseline,
+# not with the 20 October run, which used each model's default reasoning.
 #
 # Run inside tmux and the llm conda env. Writes to its own files, so it never
 # mixes with the 20 October run, whose bare-question baseline shares the id
@@ -18,7 +23,7 @@ cd "$(dirname "$0")"
 
 PROMPTS=samples/prompts-2026-10-20.xlsx
 MODELS=Qwen/Qwen3.8-27B,RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16,allenai/Olmo-3.1-32B-Instruct,google/gemma-4-31B-it,openai/gpt-oss-120b
-ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192"
+ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning low"
 
 python - <<'EOF'
 import json

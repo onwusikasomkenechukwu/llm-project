@@ -590,6 +590,23 @@ def messages_for(cell, default):
     return [{"role": "system", "content": system}, {"role": "user", "content": cell["user"]}]
 
 
+def reasoning_kwargs(tokenizer, level):
+    """Chat-template arguments that turn a model's reasoning down to `level`,
+    or {} for the model's default. gpt-oss takes an effort level; templates
+    with only an on/off switch (Qwen's enable_thinking) are switched off for
+    any level, since they have nothing in between; others have no setting."""
+    if not level:
+        return {}
+    template = getattr(tokenizer, "chat_template", None) or ""
+    if isinstance(template, dict):
+        template = " ".join(template.values())
+    if "reasoning_effort" in template:
+        return {"reasoning_effort": level}
+    if "enable_thinking" in template:
+        return {"enable_thinking": False}
+    return {}
+
+
 def load_model(name, args):
     from vllm import LLM
     engine = dict(model=name, tensor_parallel_size=args.tensor_parallel_size,
@@ -612,13 +629,16 @@ def run_model(args, stage, prov, cells, out_path, throughput_path):
     default = default_system(tokenizer) if any(c["system"] for c in cells) else ""
     params = llm.get_default_sampling_params()
     params.max_tokens = (args.judge_tokens or JUDGE_TOKENS) if stage == "judge" else ANSWER_TOKENS
-    print(f"{prov}: loaded in {loaded:.0f}s; sampling {params}")
+    template_kwargs = reasoning_kwargs(tokenizer, args.reasoning)
+    print(f"{prov}: loaded in {loaded:.0f}s; reasoning {template_kwargs or 'default'}; "
+          f"sampling {params}")
 
     totals = {"prompts": 0, "in": 0, "out": 0, "cached": 0, "seconds": 0.0, "fail": 0}
     for i in range(0, len(cells), args.chunk):
         chunk = cells[i:i + args.chunk]
         t0 = time.monotonic()
-        outputs = llm.chat([messages_for(c, default) for c in chunk], params, use_tqdm=True)
+        outputs = llm.chat([messages_for(c, default) for c in chunk], params, use_tqdm=True,
+                           chat_template_kwargs=template_kwargs or None)
         seconds = time.monotonic() - t0
         rows = []
         # a model that ends its thinking with a marker in some outputs reasons
@@ -650,6 +670,7 @@ def run_model(args, stage, prov, cells, out_path, throughput_path):
     s = totals["seconds"] or 1e-9
     record = {"ts": datetime.now(timezone.utc).isoformat(), "stage": stage, "model": cfg["model"],
               "provider": prov, "engine": {k: v for k, v in engine.items() if k != "model"},
+              "reasoning": template_kwargs or "default",
               "shard": args.shard, "load_seconds": round(loaded, 1),
               "prompts": totals["prompts"], "failed": totals["fail"], "seconds": round(s, 1),
               "prompts_per_second": round(totals["prompts"] / s, 3),
@@ -703,6 +724,8 @@ def main():
     p.add_argument("--cues", help="cues.jsonl from cues.py, in place of the identities")
     p.add_argument("--shard", default="0/1", help="i/n: this process takes every n-th cell")
     p.add_argument("--chunk", type=int, default=5000, help="cells per batch handed to vLLM")
+    p.add_argument("--reasoning", choices=["low", "medium"],
+                   help="turn reasoning down: gpt-oss effort level; on/off models switched off")
     p.add_argument("--judge-tokens", type=int, help=f"grading ceiling, default {JUDGE_TOKENS}")
     p.add_argument("--dry-run", action="store_true", help="print the plan, load nothing")
     p.add_argument("--sheet", default=0)

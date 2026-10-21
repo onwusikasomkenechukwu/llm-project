@@ -26,6 +26,20 @@ class VllmHelperTests(unittest.TestCase):
         self.assertEqual(v.split_reasoning("analysis stuff assistantfinal Answer."),
                          ("Answer.", "analysis stuff"))
         self.assertEqual(v.split_reasoning(" Plain. "), ("Plain.", ""))
+        # stopped at the ceiling before closing its thinking: no answer at all
+        self.assertEqual(v.split_reasoning("We need answer user...", "</think>"),
+                         ("", "We need answer user..."))
+
+    def test_reasoning_kwargs(self):
+        class T:
+            def __init__(self, template):
+                self.chat_template = template
+        self.assertEqual(v.reasoning_kwargs(T("{{ reasoning_effort }}"), "low"),
+                         {"reasoning_effort": "low"})
+        self.assertEqual(v.reasoning_kwargs(T("{% if enable_thinking %}"), "medium"),
+                         {"enable_thinking": False})
+        self.assertEqual(v.reasoning_kwargs(T("plain"), "low"), {})
+        self.assertEqual(v.reasoning_kwargs(T("{{ reasoning_effort }}"), None), {})
 
     def test_default_system_found_and_kept(self):
         tok = FakeTokenizer("You are a helpful assistant.")
