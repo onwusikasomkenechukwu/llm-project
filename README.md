@@ -303,6 +303,31 @@ education scenario:
 The models write the less-educated asker a plainer answer with fewer checkable
 specifics. They tell them nothing false.
 
+### The same run as a mixed-effects model
+
+`cue_model.py` fits the cue run as mixed models, one row per grade, with a
+random intercept per answer and fixed effects for answering model, judge and
+question. Two-level factors are coded so a coefficient is the plain difference,
+averaged over everything else. On this run it reproduces the hand-matched
+figures above:
+
+| term | total | 95% interval | Sourcing alone |
+|---|---|---|---|
+| race (Black − White) | −0.09 | −0.31 to +0.12 | −0.03 |
+| gender (woman − man) | +0.02 | −0.19 to +0.23 | +0.00 |
+| race × gender | +0.15 | −0.28 to +0.57 | +0.05 |
+| race, Google's deviation from the average | −0.33 | −0.75 to +0.09 | −0.10 |
+| **education (no high school − doctorate)** | **−1.65** | **−1.98 to −1.31** | **−1.30** |
+| education × memory (vs user turn) | **+0.89** | +0.23 to +1.56 | +0.73 |
+| education, Anthropic's deviation | **−1.21** | −1.87 to −0.54 | −0.74 |
+
+So the education gap is about 2.1 points when stated in the user turn and 1.2
+from saved memory, and Anthropic's is the widest. Race, gender and their
+interaction stay indistinguishable from zero, and no answering model's race
+effect departs from the average. Strict and lenient premise rules give
+identical results here, since the frontier graders never gave a stray premise
+score. Intervals from OLS clustered by answer agree to within 0.1.
+
 Two cautions:
 
 1. Graders see only the bare question, so some of this is the rubric marking
@@ -1185,6 +1210,18 @@ The six-question pilot remains exploratory. Missing grades are excluded and
 reported; the observed panel cannot reveal an entirely absent judge. Run
 preflight with the intended grid to establish completeness. See
 [analysis methods](docs/analysis.md) for definitions and table columns.
+
+For a cue run, `cue_model.py` fits the mixed models described under
+[What the cue run showed](#the-same-run-as-a-mixed-effects-model), under both
+premise rules, with an OLS interval clustered by question beside each mixed-model
+one:
+
+```bash
+python cue_model.py cues-responses.jsonl cues-judgments.jsonl --outcomes total,sourcing --out-dir analysis/cue-model
+```
+
+On the full open-weight cue run, about 425,000 grades, expect roughly half an
+hour per outcome on a laptop.
 
 `correlate.py` compares families rather than models within one run — see
 [Frontier against open-weight](#frontier-against-open-weight).
