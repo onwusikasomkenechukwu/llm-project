@@ -1176,6 +1176,10 @@ counts, observed panel coverage, model versions and analysis settings.
 - Hard fails retain their raw rubric total and are reported separately as a
   rate.
 - Duplicate keys and mixed run IDs or model versions are rejected.
+- `--ignore-stray-premise` keeps grades whose only fault is a premise-handling
+  score on a non-Loaded question, dropping that score instead of the grade. It
+  never touches the total. On the 20 October open-weight run it kept 497 more
+  grades and moved no model's mean by more than 0.12. Report both.
 
 The six-question pilot remains exploratory. Missing grades are excluded and
 reported; the observed panel cannot reveal an entirely absent judge. Run

@@ -55,6 +55,10 @@ def answer_key(row: dict) -> tuple:
     return (*parts[:4], int(parts[4]))
 
 
+# what every runner writes when a reply parses but breaks the rubric contract
+RUNNER_INVALID = "Empty answer or invalid rubric result; raw output retained."
+
+
 def invalid_grade(row: dict) -> str | None:
     if row.get("error") is not None:
         return "provider_or_parser_error"
@@ -73,12 +77,16 @@ def invalid_grade(row: dict) -> str | None:
     return None
 
 
-def load_grades(path: Path) -> tuple[list[dict], dict]:
+def load_grades(path: Path, ignore_stray_premise: bool = False,
+                failed_answers: frozenset = frozenset()) -> tuple[list[dict], dict]:
+    """ignore_stray_premise keeps a grade whose only fault is a premise_handling
+    score on a non-Loaded question, dropping that score instead of the grade.
+    A grade of an answer in failed_answers is never kept that way."""
     source = read_rows(path)
     run_ids = {row.get("run_id") for row in source}
     if len(run_ids) > 1:
         raise ValueError("mixed run IDs or tagged and untagged rows; analyze runs separately")
-    valid, excluded, seen = [], Counter(), set()
+    valid, excluded, seen, ignored = [], Counter(), set(), 0
     models, types = defaultdict(set), defaultdict(set)
     for row in source:
         answer_key(row)
@@ -92,6 +100,15 @@ def load_grades(path: Path) -> tuple[list[dict], dict]:
             raise ValueError(f"duplicate judgment {key}; merge retries before analysis")
         seen.add(key)
         reason = invalid_grade(row)
+        if ignore_stray_premise and row.get("error") == RUNNER_INVALID and row["id"] not in failed_answers:
+            # the runners mark a grade failed for this too; look past that mark
+            reason = invalid_grade({**row, "error": None})
+            row = {**row, "error": None} if reason == "unexpected_premise_handling" else row
+            reason = reason if reason == "unexpected_premise_handling" else "provider_or_parser_error"
+        if reason == "unexpected_premise_handling" and ignore_stray_premise:
+            row = {**row, "premise_handling": None}
+            ignored += 1
+            reason = None
         if reason:
             excluded[reason] += 1
             continue
@@ -105,7 +122,8 @@ def load_grades(path: Path) -> tuple[list[dict], dict]:
     if not valid:
         raise ValueError("no usable judgments")
     return valid, {"rows_read": len(source), "valid_grades": len(valid), "run_id": next(iter(run_ids)),
-                   "excluded": dict(excluded), "judge_models": {k: next(iter(v)) for k, v in models.items()}}
+                   "excluded": dict(excluded), "stray_premise_ignored": ignored,
+                   "judge_models": {k: next(iter(v)) for k, v in models.items()}}
 
 
 def estimate(clusters: dict[str, list[float]], draws: int, seed: int) -> dict:
@@ -249,11 +267,16 @@ def main() -> int:
     parser.add_argument("--out-dir", type=Path, default=Path("analysis"))
     parser.add_argument("--bootstrap", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=20261002)
+    parser.add_argument("--ignore-stray-premise", action="store_true",
+                        help="keep grades that give premise_handling on a non-Loaded question, "
+                             "dropping only that score")
     args = parser.parse_args()
     if args.bootstrap < 100:
         parser.error("--bootstrap must be at least 100")
     try:
-        rows, summary = load_grades(args.judgments)
+        failed = frozenset(r["id"] for r in read_rows(args.responses) if r.get("error") is not None
+                           ) if args.responses else frozenset()
+        rows, summary = load_grades(args.judgments, args.ignore_stray_premise, failed)
         summary["coverage"] = coverage(rows, args.responses)
         summary.update(n_questions=len({r["qid"] for r in rows}), bootstrap_draws=args.bootstrap,
                        seed=args.seed, confidence=.95,

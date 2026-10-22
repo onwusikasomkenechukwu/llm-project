@@ -68,6 +68,17 @@ class AnalysisTests(unittest.TestCase):
             rows, report = analyze.load_grades(path)
             self.assertEqual(len(rows), 1)
             self.assertEqual(report["excluded"], {"invalid_scores": 1})
+            save([grade(), grade("q2", premise_handling=5)])
+            rows, report = analyze.load_grades(path)
+            self.assertEqual(report["excluded"], {"unexpected_premise_handling": 1})
+            rows, report = analyze.load_grades(path, ignore_stray_premise=True)
+            self.assertEqual((len(rows), report["stray_premise_ignored"]), (2, 1))
+            self.assertIsNone(rows[1]["premise_handling"])
+            save([grade(), grade("q2", premise_handling=5, error=analyze.RUNNER_INVALID),
+                  grade("q3", accuracy=None, error=analyze.RUNNER_INVALID)])
+            rows, report = analyze.load_grades(path, ignore_stray_premise=True)
+            self.assertEqual((len(rows), report["stray_premise_ignored"]), (2, 1))
+            self.assertEqual(report["excluded"], {"provider_or_parser_error": 1})
             save([grade(), grade()])
             with self.assertRaisesRegex(ValueError, "duplicate"):
                 analyze.load_grades(path)
