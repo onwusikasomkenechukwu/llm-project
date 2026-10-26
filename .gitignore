@@ -20,3 +20,10 @@ samples/rubric_pilot.xlsx
 # Local analysis exports and manifest-owned run artifacts.
 analysis/
 runs/
+
+# The law school's own documents and cue templates: kept locally, never committed.
+# cues.jsonl, built from the templates by cues.py, is what the runs use.
+/*.pdf
+/*.docx
+/*.xlsx
+/cue_prompt_templates*.csv

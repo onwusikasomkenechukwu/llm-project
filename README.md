@@ -350,8 +350,8 @@ locally with vLLM, on two RTX A6000s:
 **2,430 answers with no failures, then 12,150 grades.**
 
 The runner is `vllm_offline.py`, with a run sheet in
-[docs/local-vllm.md](docs/local-vllm.md). Raw rows are on the
-`results/vllm-2026-10-20` branch; the corrected tables below are rebuilt from
+[docs/local-vllm.md](docs/local-vllm.md). Raw rows are under the
+`results/vllm-2026-10-20` tag; the corrected tables below are rebuilt from
 them by `vllm_unfinished.py` and `analyze.py`.
 
 | model | total /20 | 95% interval | hard-fail rate | questions |
@@ -522,7 +522,9 @@ separate experiment from the 20 October run, compared only against its own
 baseline.
 
 The scripts are `vllm_cues.sh` and `vllm_cues_finish.sh`. Raw rows, compressed
-and split, and every table are on the `results/cues-2026-10-21` branch.
+and split, and every table are under the `results/cues-2026-10-21` tag
+(`git fetch origin tag results/cues-2026-10-21`, then
+`git archive results/cues-2026-10-21 | tar -x -C <folder>`).
 
 > **Read with the [caveats](#cue-run-caveats).** 18% of grades are unusable
 > under the strict rule, and the judges agree only moderately.
