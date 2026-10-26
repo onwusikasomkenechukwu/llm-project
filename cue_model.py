@@ -31,6 +31,7 @@ one question).
 
 import argparse
 import json
+import math
 import re
 import warnings
 from pathlib import Path
@@ -87,6 +88,7 @@ def frame(responses, judgments, lenient):
             "id": g["id"], "qid": a["qid"], "provider": a["provider"], "judge": g["judge"],
             "block": a.get("block"), "cue_type": a.get("cue_type"), "channel": a.get("channel"),
             "exemplar": a.get("exemplar") or "0", "group": group,
+            "log2_words": math.log2(max(1, len(a["response"].split()))),
             "total": g["total"], **{k: g[k] for k in CRITERIA},
         })
     df = pd.DataFrame(rows)
@@ -101,9 +103,9 @@ def frame(responses, judgments, lenient):
     return df
 
 
-def formulas(outcome, one_question):
+def formulas(outcome, one_question, length=False):
     q = "" if one_question else " + C(qid)"
-    common = " + C(provider, Sum) + C(judge)" + q
+    common = " + C(provider, Sum) + C(judge)" + q + (" + log2_words" if length else "")
     return {
         "vs baseline": (None, f"{outcome} ~ C(group, Treatment('baseline'))" + common),
         "race-gender": ("race_gender",
@@ -178,6 +180,10 @@ def main():
     ap.add_argument("judgments", type=Path)
     ap.add_argument("--out-dir", type=Path)
     ap.add_argument("--outcomes", default="total", help=f"comma-separated: total,{','.join(CRITERIA)}")
+    ap.add_argument("--models", help="comma-separated subset: vs baseline, race-gender, education")
+    ap.add_argument("--control-length", action="store_true",
+                    help="add log2 of the answer's word count, so log2_words is points per doubling "
+                         "of length and the cue terms are net of length")
     args = ap.parse_args()
     responses, judgments = read(args.responses), read(args.judgments)
 
@@ -186,7 +192,9 @@ def main():
         df = frame(responses, judgments, rule == "lenient")
         one_question = df["qid"].nunique() == 1
         for outcome in args.outcomes.split(","):
-            for model, (block, formula) in formulas(outcome, one_question).items():
+            for model, (block, formula) in formulas(outcome, one_question, args.control_length).items():
+                if args.models and model not in args.models.split(","):
+                    continue
                 data = df if block is None else df[df["block"] == block]
                 rows, info = fit(data, formula, one_question)
                 fits.append({"rule": rule, "outcome": outcome, "model": model, "grades": len(data),
