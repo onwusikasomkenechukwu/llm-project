@@ -2,7 +2,7 @@
 
 The law school's budget is **$30,000**; the request on the table is **$15,000**.
 This document keeps the method behind the figures. The figures themselves, with
-every table, are in the README's [Costs](../README.md#costs) section, and this
+every table, are in the technical documentation's [Costs](technical.md#costs) section, and this
 file deliberately does not repeat them so the two cannot drift apart.
 
 **Headline, five providers, 18 identities, 400 questions, D=3, all five
@@ -43,7 +43,7 @@ The intervals come from resampling the six pilot **questions**, 20,000 times,
 because every pair from one question shares its answer lengths. Resampling the
 450 pairs individually would treat correlated observations as independent and
 give intervals far too narrow. Six clusters still under-cover, which is why the
-README quotes the 99% upper bound as the planning ceiling.
+The technical documentation quotes the 99% upper bound as the planning ceiling.
 
 ## Checked against the invoices
 
