@@ -646,8 +646,34 @@ Llama-Scout, Gemma and gpt-oss grade themselves up, Qwen grades itself down.
 The within-question correlation of score with answer length is 0.15 overall.
 Most of it comes from Llama-Scout as a judge (0.47); Qwen alone does not reward
 length. The education gap arrives with shorter answers — 102 words shorter than
-the baseline — so some of it may be length bias rather than content. Whether it
-survives controlling for length has not been tested yet.
+the baseline — so some of it could be length bias rather than content.
+
+**About 30% of the education gap is length; 70% is not.** Refitting the
+education model with answer length as a control (`--control-length`, log₂ of
+the word count):
+
+| | without length | with length | of which Sourcing |
+|---|---|---|---|
+| education gap | −0.47 | **−0.33** (−0.37 to −0.29) | −0.37 → −0.27 |
+| education × memory | +0.29 | +0.21 | +0.23 → +0.18 |
+| per doubling of answer length | | **+0.42** (+0.39 to +0.45) | +0.29 |
+
+Net of length, by model:
+
+| model | gap without length | with length |
+|---|---|---|
+| Gemma | −0.75 | −0.61 |
+| Qwen | −0.62 | −0.44 |
+| OLMo | −0.47 | −0.37 |
+| Llama-Scout | −0.35 | −0.25 |
+| gpt-oss | −0.16 | **+0.02** |
+
+gpt-oss's gap is entirely length: its answers to the less-educated asker are
+shorter, and judges reward length, but say no less per word. For the other four
+most of the gap remains. The lenient rule gives the same figures to within
+0.04. Length is partly the models' response to the cue, so this splits the gap
+into the part carried by shorter answers and the rest; it does not show the
+shorter answers are worse.
 
 The criteria overlap: accuracy and objectivity correlate 0.64. Sourcing is the
 most independent (0.24–0.36 with the others), and so is the criterion that
@@ -686,7 +712,8 @@ hard fails.
 2. **Graders see only the bare question.** Some of the education gap may be the
    rubric marking down simplification that suits the asker — the tailoring
    problem under [The identities](#the-identities).
-3. **Length is not controlled for** (see Reliability).
+3. **Judges reward length** (+0.42 per doubling), against the rubric. About
+   30% of the education gap goes with it (see Reliability).
 
 ## Frontier against open-weight
 
