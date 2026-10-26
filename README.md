@@ -36,6 +36,7 @@ A smaller judge panel brings it down further. See [Costs](#costs).
   - [Frontier pilot, 2 October](#what-the-pilot-showed)
   - [Identity cues, 15 October](#what-the-cue-run-showed)
   - [Open-weight models, 20 October](#what-the-open-weight-run-showed)
+  - [Identity cues on the open-weight models, 21–26 October](#what-the-open-weight-cue-run-showed)
   - [Frontier against open-weight](#frontier-against-open-weight)
 - **Method**
   - [How grading works](#how-grading-works)
@@ -55,13 +56,14 @@ A smaller judge panel brings it down further. See [Costs](#costs).
 | Not built yet | publication plots |
 | Open | whether each question is also asked in negated form |
 
-Three runs so far:
+Four runs so far:
 
 | date | what | size | headline |
 |---|---|---|---|
 | 2 Oct 2026 | [frontier pilot](#what-the-pilot-showed) | 6 questions, 90 answers, 450 grades | the pipeline works end to end; Google prefers its own answers |
 | 15 Oct 2026 | [identity cues](#what-the-cue-run-showed) | 1 question, 525 answers, 2,100 grades | race and gender cues had no effect; education cues did |
 | 20 Oct 2026 | [open-weight models](#what-the-open-weight-run-showed) | 162 questions, 2,430 answers, 12,150 grades | gpt-oss-120b and Gemma-4-31B tied at the top, Llama-4-Scout last |
+| 21–26 Oct 2026 | [identity cues, open-weight](#what-the-open-weight-cue-run-showed) | 162 questions × 105 cues, 85,050 answers, 425,250 grades | education lowers scores by 0.47 on 91% of questions; race has no effect |
 
 The pilot used six questions, one of each type, taken from the worked examples
 in the project's own rubric document. That is enough to confirm the rubric
@@ -508,6 +510,183 @@ repeat.
 **4. The judges are open-weight models grading each other.**
 No frontier or human grades are in this run, so these are relative rankings
 within the panel, not a check against the frontier results yet.
+
+## What the open-weight cue run showed
+
+From 21 to 26 October the whole cue sheet ran on the five open-weight models,
+on all 162 questions: **85,050 answers, every one finished, and 425,250
+grades.** Reasoning was turned down for both answering and grading — gpt-oss and
+Qwen at `reasoning_effort=low` (Qwen's template took the effort level rather
+than its thinking switch); the other three do not reason. That makes it a
+separate experiment from the 20 October run, compared only against its own
+baseline.
+
+The scripts are `vllm_cues.sh` and `vllm_cues_finish.sh`. Raw rows, compressed
+and split, and every table are on the `results/cues-2026-10-21` branch.
+
+> **Read with the [caveats](#cue-run-caveats).** 18% of grades are unusable
+> under the strict rule, and the judges agree only moderately.
+
+### Education moves scores; race does not
+
+From the mixed model (`cue_model.py`), one row per grade, strict rule. Each
+coefficient is a plain difference averaged over everything else; `q` is
+Benjamini–Hochberg across the model's terms.
+
+| | difference | 95% interval | q | lenient rule |
+|---|---|---|---|---|
+| race (Black − White) | +0.01 | −0.01 to +0.03 | 0.48 | +0.01 |
+| gender (woman − man) | −0.04 | −0.06 to −0.01 | 0.006 | −0.03 |
+| race × gender | +0.01 | −0.03 to +0.06 | 0.76 | +0.00 |
+| **education (no high school − doctorate)** | **−0.47** | **−0.51 to −0.43** | **<0.001** | −0.47 |
+| education × memory (vs user turn) | +0.29 | +0.21 to +0.37 | <0.001 | +0.28 |
+
+- **Race has no effect**, in total or on Sourcing, under any cue form, channel
+  or model. The largest model deviation is gpt-oss's +0.05 (q 0.08).
+- **Gender has a tiny one**: answers to women score 0.04 lower, which
+  survives correction but is a twentieth of the education gap.
+- **Education is the effect.** Answers to someone who did not finish high
+  school score 0.47 below those to someone with a doctorate, 0.37 of it on
+  Sourcing. Stated in the user turn the gap is about 0.62; from saved memory,
+  about 0.33.
+- **It is a penalty, not a bonus.** Against the baseline, the doctorate scores
+  +0.04 (q 0.16, no difference); not finishing high school scores −0.43.
+
+The gap by answering model (the average plus each model's deviation):
+
+| model | education gap |
+|---|---|
+| Gemma | −0.75 |
+| Qwen | −0.62 |
+| OLMo | −0.47 |
+| Llama-Scout | −0.35 |
+| gpt-oss | −0.16 |
+
+Every model shows it, and every deviation except OLMo's is distinguishable from
+the average. It is a third the size of the frontier models' −1.65 on 13A-002,
+though that was one question.
+
+### Any personal detail costs a little
+
+Against the templated baseline ("Answer the following question."), every
+identity group scores lower and gets a shorter answer — including the
+irrelevant-detail controls:
+
+| group | score − baseline | words | words − baseline | addresses the asker |
+|---|---|---|---|---|
+| baseline | | 514 | | 23% |
+| doctorate | +0.05 | 533 | +18 | 39% |
+| Black man | −0.13 | 457 | −58 | 39% |
+| White man | −0.13 | 450 | −64 | 34% |
+| Black woman | −0.16 | 455 | −59 | 39% |
+| White woman | −0.18 | 438 | −76 | 36% |
+| irrelevant detail | −0.30 | 399 | −115 | 36% |
+| did not finish high school | −0.43 | 412 | −102 | 43% |
+
+So the race and gender groups' −0.13 to −0.18 is the cost of mentioning
+anything about the asker, not of race: the irrelevant controls cost twice as
+much. Black askers' answers run 7–17 words longer than White askers'.
+
+Majority hard-fail rates sit at 2–3% in every group, against 2.2% for the
+baseline.
+
+### The education gap is general, not tied to particular questions
+
+| | education gap | race gap |
+|---|---|---|
+| mean over questions | −0.48 | +0.01 |
+| SD across questions | 0.41 | 0.14 |
+| questions where it is negative | **91%** | 47% |
+| range | −1.57 to +1.14 | −0.32 to +0.52 |
+| correlation with the question's baseline score | −0.14 (−0.29 to +0.02) | −0.09 (−0.24 to +0.07) |
+
+The education gap appears on 147 of 162 questions. But the models barely agree
+on *which* questions show it most: pairwise correlations of their
+per-question gaps run 0.02 to 0.30. It is a broad shift, not a property of
+certain topics. The race gap is centred on zero with no agreement between
+models (−0.13 to +0.14).
+
+### Reliability
+
+**Replicates repeat moderately.** The baseline's three answers to the same
+question from the same model correlate 0.77–0.80 across 791 question-model
+pairs, and differ by 0.9–1.0 points on average.
+
+**Models find the same questions hard.** Per-question scores correlate 0.59 to
+0.86 between answering models; Gemma and Qwen agree most (0.86).
+
+**The judges agree only moderately.**
+
+| | Krippendorff's α |
+|---|---|
+| total | 0.42 |
+| completeness | 0.52 |
+| sourcing | 0.44 |
+| objectivity | 0.29 |
+| accuracy | 0.29 |
+
+Pairwise correlations between judges run from 0.26 (Llama-Scout and Qwen) to
+0.70 (Gemma with gpt-oss, and with Qwen). On hard fails they barely agree at
+all: Cohen's κ is under 0.2 for every pair except Gemma and Qwen (0.47). Alpha
+under 0.67 is conventionally too low for any single judge to stand alone. That
+is why every result above uses the panel and the mixed model's judge effects.
+
+| judge | mean total given | self − others | length bias (within question) |
+|---|---|---|---|
+| Llama-Scout | 17.88 | **+2.22** (+1.90 to +2.57) | **0.47** |
+| Gemma | 16.93 | +0.89 (+0.74 to +1.05) | 0.15 |
+| gpt-oss | 16.59 | +0.64 (+0.38 to +0.88) | 0.26 |
+| OLMo | 15.85 | +0.01 (−0.29 to +0.28) | 0.12 |
+| Qwen | 14.92 | −0.93 (−1.11 to −0.77) | −0.07 |
+
+The self-preference pattern repeats the 20 October run almost exactly:
+Llama-Scout, Gemma and gpt-oss grade themselves up, Qwen grades itself down.
+
+**Longer answers score higher**, though the rubric says length earns nothing.
+The within-question correlation of score with answer length is 0.15 overall.
+Most of it comes from Llama-Scout as a judge (0.47); Qwen alone does not reward
+length. The education gap arrives with shorter answers — 102 words shorter than
+the baseline — so some of it may be length bias rather than content. Whether it
+survives controlling for length has not been tested yet.
+
+The criteria overlap: accuracy and objectivity correlate 0.64. Sourcing is the
+most independent (0.24–0.36 with the others), and so is the criterion that
+carries the education gap.
+
+### Scores by answering model
+
+| model | mean /20 | hard-fail rate |
+|---|---|---|
+| Qwen | 17.04 | 1% |
+| gpt-oss | 16.95 | 12% |
+| Gemma | 16.90 | 0% |
+| OLMo | 16.17 | 3% |
+| Llama-Scout | 15.39 | 4% |
+
+With reasoning turned down and every answer finished, Qwen moves from fourth on
+20 October to first. gpt-oss still carries the unverified "fabricated source"
+hard fails.
+
+### Cue run caveats
+
+1. **18% of grades are unusable under the strict rule** (77,121 of 425,250).
+   They are almost all format errors:
+   - **44,564 leave `premise_handling` blank on a Loaded question**: gpt-oss
+     11,873, Llama-Scout 16,876, OLMo 15,815. Loaded (True Premise) questions
+     lose the most, as on 20 October.
+   - **31,072 give `premise_handling` on a non-Loaded question**, mostly Gemma
+     (11,320) and Qwen (12,678). The lenient rule keeps these, and moves no
+     reported effect by more than 0.03.
+   - **1,485 are real losses**: 1,215 empty Qwen replies, 94 Qwen grades cut
+     off at the ceiling, 139 with no parsable JSON and 37 missing the hard-fail
+     flag.
+
+   Under the strict rule 1,126 answers have no usable grade at all; under the
+   lenient rule none do.
+2. **Graders see only the bare question.** Some of the education gap may be the
+   rubric marking down simplification that suits the asker — the tailoring
+   problem under [The identities](#the-identities).
+3. **Length is not controlled for** (see Reliability).
 
 ## Frontier against open-weight
 
