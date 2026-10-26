@@ -19,6 +19,12 @@ echo "== analyze.py, strict and lenient"
 python analyze.py $J --responses $R --out-dir analysis/cues-strict
 python analyze.py $J --responses $R --out-dir analysis/cues-lenient --ignore-stray-premise
 
+echo "== cue_stats.py: agreement, correlations, length, test-retest, per-question gaps"
+python cue_stats.py $R $J --out-dir analysis/cue-stats-strict > /dev/null
+python cue_stats.py $R $J --out-dir analysis/cue-stats-lenient --lenient > /dev/null
+python cue_report.py $R $J > analysis/cue-report.txt
+echo "   analysis/cue-stats-strict/report.md, analysis/cue-stats-lenient/report.md"
+
 echo "== cue_model.py (about an hour)"
 mkdir -p analysis/cue-model
 python cue_model.py $R $J --outcomes total,sourcing --out-dir analysis/cue-model \
@@ -37,6 +43,7 @@ Done. To push, from ~/llm-project:
 
   git checkout -b results/cues-2026-10-21
   git add -f analysis/cues-strict analysis/cues-lenient analysis/cue-model results-cues \
+      analysis/cue-stats-strict analysis/cue-stats-lenient analysis/cue-report.txt \
       cues-failures.txt cues-answer.log cues-judge.log throughput-vllm_offline.jsonl
   git commit -m "Open-weight cue run results, 21-26 October"
   gh auth login

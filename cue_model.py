@@ -157,6 +157,13 @@ def fit(df, formula, one_question):
                      "ci_low": b - 1.96 * se, "ci_high": b + 1.96 * se, "p": 2 * norm.sf(abs(b / se)),
                      "robust_ci_low": rb - 1.96 * rse, "robust_ci_high": rb + 1.96 * rse,
                      "robust_p": 2 * norm.sf(abs(rb / rse))})
+    # Benjamini-Hochberg across this model's reported terms
+    for key, name in (("p", "q"), ("robust_p", "robust_q")):
+        order = sorted(range(len(rows)), key=lambda i: rows[i][key])
+        q, m = 1.0, len(rows)
+        for rank, i in reversed(list(enumerate(order, 1))):
+            q = min(q, rows[i][key] * m / rank)
+            rows[i][name] = q
     # each left-out level next to its siblings
     family = [re.sub(r"=.*", "", r["term"]) for r in rows]
     rows = [r for _, r in sorted(enumerate(rows), key=lambda x: (family.index(family[x[0]]), x[0]))]
@@ -191,11 +198,12 @@ def main():
         print(f"\n## {model}: {outcome}\n")
         wide = part.pivot_table(index="term", columns="rule", values="estimate", sort=False)
         strict = part[part["rule"] == "strict"].set_index("term")
-        print("| term | strict | 95% CI | robust CI | lenient |")
-        print("|---|---|---|---|---|")
+        print("| term | strict | 95% CI | q | robust CI | robust q | lenient |")
+        print("|---|---|---|---|---|---|---|")
         for term, r in strict.iterrows():
-            print(f"| {term} | {r.estimate:+.2f} | {r.ci_low:+.2f} to {r.ci_high:+.2f} | "
-                  f"{r.robust_ci_low:+.2f} to {r.robust_ci_high:+.2f} | {wide.loc[term, 'lenient']:+.2f} |")
+            print(f"| {term} | {r.estimate:+.2f} | {r.ci_low:+.2f} to {r.ci_high:+.2f} | {r.q:.3f} | "
+                  f"{r.robust_ci_low:+.2f} to {r.robust_ci_high:+.2f} | {r.robust_q:.3f} | "
+                  f"{wide.loc[term, 'lenient']:+.2f} |")
     print()
     for f in fits:
         flag = "" if f["converged"] and not f["warnings"] else f"  (check: {'; '.join(f['warnings']) or 'not converged'})"

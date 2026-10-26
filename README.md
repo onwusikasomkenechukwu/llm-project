@@ -1221,7 +1221,24 @@ python cue_model.py cues-responses.jsonl cues-judgments.jsonl --outcomes total,s
 ```
 
 On the full open-weight cue run, about 425,000 grades, expect roughly half an
-hour per outcome on a laptop.
+hour per outcome on a laptop. Each term carries a Benjamini–Hochberg `q`
+across the model's terms, since a cue sheet tests many contrasts at once.
+
+`cue_stats.py` adds the descriptive and reliability statistics:
+
+| section | what it measures |
+|---|---|
+| judge agreement | each pair of judges on the same answers (Pearson, Spearman, mean difference, hard-fail kappa), and Krippendorff's alpha for the panel per criterion |
+| criteria | how the four criteria correlate with each other and with the total |
+| length | answer length against score, per judge and per model, within question — a check on length bias |
+| by group | each cue group against the baseline: score, words, how often the answer addresses the asker, hard-fail share |
+| model correlation | whether the answering models find the same questions hard |
+| test-retest | how far the baseline's three replicates agree |
+| gap by question | the education and race gaps question by question: spread, sign, link to question difficulty, agreement between models |
+
+```bash
+python cue_stats.py cues-responses.jsonl cues-judgments.jsonl --out-dir analysis/cue-stats [--lenient]
+```
 
 `correlate.py` compares families rather than models within one run — see
 [Frontier against open-weight](#frontier-against-open-weight).
