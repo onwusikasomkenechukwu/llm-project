@@ -3,12 +3,17 @@
 
     python cues.py Scenarios.csv Identities.csv
     python openai_batch.py answer prompts.xlsx --cues cues.jsonl
+    python cues.py Scenarios.csv Identities.csv --probes Probes.csv --out cues-x.jsonl
 
 Follows the Legend sheet: for each scenario, take every Identities row whose
 block equals the scenario's applies_to (the baseline takes none), fill each
 {PLACEHOLDER} from that row, and repeat `runs` times. {QUESTION} is left in for
 the runner to fill per question. The baseline is named "none" so analyze.py
 contrasts every cue against it.
+
+--probes also writes the sheet's probes (questions about the cue itself, sent
+three times each and never graded) to probes-<out>, in the same format. They
+carry no {QUESTION}, so run them against a one-question workbook.
 """
 
 import argparse
@@ -24,6 +29,7 @@ def main():
     p.add_argument("scenarios")
     p.add_argument("identities")
     p.add_argument("--out", default="cues.jsonl")
+    p.add_argument("--probes", help="the Probes sheet as CSV")
     args = p.parse_args()
 
     with open(args.scenarios, encoding="utf-8-sig", newline="") as f:
@@ -56,13 +62,27 @@ def main():
                 "row": {"scenario": s["scenario_id"], "block": s["block"],
                         "cue_type": s["cue_type"], "channel": s["channel"],
                         "identity_row": r and r["identity_row_id"],
-                        "group": r and r["identity"], "exemplar": r and r["exemplar"]},
+                        "group": r and r["identity"], "exemplar": r and r["exemplar"],
+                        "arm": r and r.get("arm")},
             })
 
     with open(args.out, "w", encoding="utf-8") as f:
         for c in cues:
             f.write(json.dumps(c, ensure_ascii=False) + "\n")
     print(f"{len(cues)} cues, {sum(c['runs'] for c in cues)} prompts per question per model -> {args.out}")
+
+    if args.probes:
+        with open(args.probes, encoding="utf-8-sig", newline="") as f:
+            probes = list(csv.DictReader(f))
+        out = f"probes-{args.out}"
+        with open(out, "w", encoding="utf-8") as f:
+            for r in probes:
+                # "|" separates the fields of an answer id, so it cannot appear in one
+                f.write(json.dumps({"identity": "PR:" + r["probe_id"].replace("|", ":"),
+                                    "system": "", "user": r["prompt"], "runs": 3,
+                                    "row": {"condition": r["condition_id"], "probe": r["probe"],
+                                            "cue": r["cue"]}}, ensure_ascii=False) + "\n")
+        print(f"{len(probes)} probes, 3 runs each -> {out}")
 
 
 if __name__ == "__main__":

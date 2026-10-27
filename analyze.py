@@ -2,6 +2,7 @@
 """Analyze merged grades without calling APIs.
 
     python analyze.py judgments.jsonl --responses responses.jsonl --out-dir analysis
+    python analyze.py judgments.jsonl --prompts prompts.xlsx    # adds the by-topic tables
 
 Means weight each question equally. Intervals resample whole questions.
 Hard fails remain in raw score summaries and have a separate failure rate.
@@ -144,6 +145,18 @@ def estimate(clusters: dict[str, list[float]], draws: int, seed: int) -> dict:
     return result
 
 
+def topics(path: Path) -> dict[str, str]:
+    """Prompt ID -> Topic, from the prompts workbook."""
+    import openpyxl
+    rows = list(openpyxl.load_workbook(path, read_only=True, data_only=True).worksheets[0]
+                .iter_rows(values_only=True))
+    head = [str(c).strip().lower() if c else "" for c in rows[0]]
+    if "prompt id" not in head or "topic" not in head:
+        raise ValueError(f"{path}: needs Prompt ID and Topic columns")
+    pid, topic = head.index("prompt id"), head.index("topic")
+    return {str(r[pid]).strip(): str(r[topic]).strip() for r in rows[1:] if r[pid] and r[topic]}
+
+
 def group_summary(rows: list[dict], fields: tuple[str, ...], draws: int, seed: int) -> list[dict]:
     groups = defaultdict(list)
     for row in rows:
@@ -265,6 +278,7 @@ def main() -> int:
     parser.add_argument("judgments", type=Path)
     parser.add_argument("--responses", type=Path)
     parser.add_argument("--out-dir", type=Path, default=Path("analysis"))
+    parser.add_argument("--prompts", type=Path, help="prompts workbook, for tables by topic")
     parser.add_argument("--bootstrap", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=20261002)
     parser.add_argument("--ignore-stray-premise", action="store_true",
@@ -299,6 +313,13 @@ def main() -> int:
             summary["warnings"].append("No control identity; identity contrasts are unavailable.")
         tables = {f"by_{field}.csv": group_summary(rows, (field,), args.bootstrap, args.seed)
                   for field in ("provider", "identity", "question_type", "judge", "polarity")}
+        if args.prompts:
+            topic = topics(args.prompts)
+            for row in rows:
+                row["topic"] = topic.get(row["qid"])
+            for fields in (("topic",), ("topic", "question_type"), ("provider", "topic"),
+                           ("provider", "question_type")):
+                tables[f"by_{'_'.join(fields)}.csv"] = group_summary(rows, fields, args.bootstrap, args.seed)
         tables["judge_matrix.csv"] = group_summary(rows, ("provider", "judge"), args.bootstrap, args.seed)
         tables["identity_differences.csv"] = paired_comparisons(rows, "identity", args.bootstrap, args.seed)
         tables["model_differences.csv"] = paired_comparisons(rows, "provider", args.bootstrap, args.seed)

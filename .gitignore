@@ -27,3 +27,4 @@ runs/
 /*.docx
 /*.xlsx
 /cue_prompt_templates*.csv
+/cue_templates*.csv

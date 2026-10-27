@@ -103,3 +103,36 @@ python analyze.py judgments-vllm_offline.jsonl --responses responses-vllm_offlin
 
 Models run one after another, each loaded once for its whole share. An
 interrupted run resumes by running the same command again.
+
+## The demographic cue screen (from 28 October)
+
+Dr. Aryal's `cue_templates_demographics.xlsx`: 16 dimensions beyond race,
+gender and education (politics, religion, disability, income, occupation,
+place, citizenship, criminal record, writing style and more), each in the user
+turn and as saved memory, on a balanced half of the questions. That is 312
+prompts per question per model, 126,360 answers and 631,800 grades, about seven
+days on the Dell.
+
+```bash
+git pull
+python samples/half_prompts.py samples/prompts-2026-10-20.xlsx   # only if the half is missing
+tmux new -s demo
+conda activate llm
+bash vllm_demographics.sh
+```
+
+It runs in six waves, user-turn cues first and politics in the first wave
+(about 14 hours). Each wave is graded and analysed before the next begins:
+`runs/demographics/analysis/screen-strict/report.md` gives each focal contrast's
+gap per model and whether it passes the gate to the frontier pilot (0.2 points
+in at least two of five models). `scores/by_topic*.csv` and
+`scores/by_provider_question_type.csv` show which kinds of question score
+lowest, and `probes/report.md` what race, gender and schooling the models read
+into each cue.
+
+The cue files are built on the laptop, where the law school's sheet is kept:
+
+```bash
+python cues.py "cue_templates_demographics(Scenarios).csv" "cue_templates_demographics(Identities).csv" \
+    --probes "cue_templates_demographics(Probes).csv" --out cues-demographics.jsonl
+```
