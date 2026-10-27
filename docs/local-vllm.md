@@ -109,20 +109,21 @@ interrupted run resumes by running the same command again.
 Dr. Aryal's `cue_templates_demographics.xlsx`: 16 dimensions beyond race,
 gender and education (politics, religion, disability, income, occupation,
 place, citizenship, criminal record, writing style and more), each in the user
-turn and as saved memory, on a balanced half of the questions. That is 312
-prompts per question per model, 126,360 answers and 631,800 grades, about seven
-days on the Dell.
+turn and as saved memory, on all 162 questions, three runs of each cue. That
+is 930 prompts per question per model, 753,300 answers and 3,766,500 grades,
+about 42 days on the Dell. It goes through the waves twice: pass 1 gives every
+cue one run (about 14 days) so the whole screen can be read early, and pass 2
+adds runs 2 and 3.
 
 ```bash
 git pull
-python samples/half_prompts.py samples/prompts-2026-10-20.xlsx   # only if the half is missing
 tmux new -s demo
 conda activate llm
 bash vllm_demographics.sh
 ```
 
 It runs in six waves, user-turn cues first and politics in the first wave
-(about 14 hours). Each wave is graded and analysed before the next begins:
+(about 28 hours per run). Each wave is graded and analysed before the next begins:
 `runs/demographics/analysis/screen-strict/report.md` gives each focal contrast's
 gap per model and whether it passes the gate to the frontier pilot (0.2 points
 in at least two of five models). `scores/by_topic*.csv` and

@@ -2,15 +2,20 @@
 # The demographic cue screen (cue_templates_demographics.xlsx, 27 October) on the
 # open-weight models, in waves, each analysed as soon as it is graded.
 #
-#     bash vllm_demographics.sh               # probes, then every wave in order
-#     bash vllm_demographics.sh 3-disability  # one wave
+#     bash vllm_demographics.sh               # probes, then every wave, twice
+#     bash vllm_demographics.sh 3-disability  # one wave, all three runs (or: 3-disability 1)
 #     bash vllm_demographics.sh evaluate      # just re-analyse what is finished
 #
-# 312 prompts per question per model on a balanced half of the questions (81,
-# samples/prompts-half.xlsx): 126,360 answers and 631,800 grades. At the 21
-# October run's rates (0.46 s to answer, 4.4 s to grade five times, per answer;
-# Qwen is half the grading) that is about 7 days. Settings are frozen from that
-# run (vllm_cues.sh), as the sheet's Legend asks.
+# Every question (162), every cue (310), three runs of each: 930 prompts per
+# question per model, 753,300 answers and 3,766,500 grades. At the 21 October
+# run's rates (0.46 s to answer, 4.4 s to grade five times, per answer; Qwen is
+# half the grading) that is about 42 days. Settings are frozen from that run
+# (vllm_cues.sh), as the sheet's Legend asks.
+#
+# It goes through the waves twice. Pass 1 gives every cue one run on every
+# question (about 14 days), so the whole screen is readable early. Pass 2 adds
+# runs 2 and 3 (about 28 days); answer ids carry the run number, so pass 2
+# skips what pass 1 saved.
 #
 # A wave answers its cues, grades them with all five judges, then reruns the
 # screen (cue_screen.py), the probe tally and the score tables by topic and
@@ -28,21 +33,22 @@
 set -uo pipefail
 cd "$(dirname "$0")"
 
-PROMPTS=samples/prompts-half.xlsx
+PROMPTS=samples/prompts-2026-10-20.xlsx
 CUES=cues-demographics.jsonl
+RUNS=3
 D=runs/demographics
 MODELS=Qwen/Qwen3.8-27B,RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16,allenai/Olmo-3.1-32B-Instruct,google/gemma-4-31B-it,openai/gpt-oss-120b
 ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning low \
     --gpu-memory-utilization 0.95 --max-num-seqs 512 --max-num-batched-tokens 32768 --chunk 10000"
 
-# name:scenario ids, from the Scenarios sheet. Hours at 21 October rates.
+# name:scenario ids, from the Scenarios sheet. Hours per run at 21 October rates.
 WAVES=(
-    "1-politics:D-S00|D-S01|D-M01|D-S07"                     # anchors and politics, ~14 h
-    "2-identity:D-S02|D-S03|D-S04|D-S05|D-S06|D-S08"           # race, color, gender, orientation, religion, citizenship, ~30 h
-    "3-disability:D-S09|D-S10|D-S11"                           # disability, income, occupation, ~28 h
-    "4-place:D-S12|D-S13|D-S14|D-S15|D-S16"                    # geography, family, veteran, record, writing, ~20 h
-    "5-memory:D-M02|D-M03|D-M04|D-M05|D-M06|D-M07|D-M08"       # saved memory, first half, ~38 h
-    "6-memory:D-M09|D-M10|D-M11|D-M12|D-M13|D-M14|D-M15"       # saved memory, second half, ~43 h
+    "1-politics:D-S00|D-S01|D-M01|D-S07"                     # anchors and politics, ~28 h
+    "2-identity:D-S02|D-S03|D-S04|D-S05|D-S06|D-S08"           # race, color, gender, orientation, religion, citizenship, ~60 h
+    "3-disability:D-S09|D-S10|D-S11"                           # disability, income, occupation, ~56 h
+    "4-place:D-S12|D-S13|D-S14|D-S15|D-S16"                    # geography, family, veteran, record, writing, ~40 h
+    "5-memory:D-M02|D-M03|D-M04|D-M05|D-M06|D-M07|D-M08"       # saved memory, first half, ~76 h
+    "6-memory:D-M09|D-M10|D-M11|D-M12|D-M13|D-M14|D-M15"       # saved memory, second half, ~86 h
 )
 mkdir -p "$D/analysis"
 
@@ -52,11 +58,11 @@ probes() {
         --out "$D/probes-responses.jsonl" $ARGS 2>&1 | tee -a "$D/answer.log"
 }
 
-wave() {
-    local name=${1%%:*} ids=${1#*:}
+wave() {   # wave runs: answer and grade runs 1..runs of the wave's cues
+    local name=${1%%:*} ids=${1#*:} runs=$2
     local cues="$D/cues-$name.jsonl"
-    grep -E "\"scenario\": \"($ids)\"" "$CUES" > "$cues"
-    echo "== wave $name: $(wc -l < "$cues") cues"
+    grep -E "\"scenario\": \"($ids)\"" "$CUES" | sed -E "s/\"runs\": [0-9]+/\"runs\": $runs/" > "$cues"
+    echo "== wave $name, runs 1-$runs: $(wc -l < "$cues") cues"
     python vllm_offline.py answer "$PROMPTS" --cues "$cues" \
         --out "$D/responses-$name.jsonl" $ARGS 2>&1 | tee -a "$D/answer.log"
     # one grading pass, as on 21 October
@@ -101,9 +107,11 @@ publish() {
 case "${1:-all}" in
     all)
         [ -s "$D/probes-responses.jsonl" ] || probes
-        for w in "${WAVES[@]}"; do
-            wave "$w"
-            evaluate "${w%%:*}"
+        for runs in 1 "$RUNS"; do
+            for w in "${WAVES[@]}"; do
+                wave "$w" "$runs"
+                evaluate "${w%%:*}, runs 1-$runs"
+            done
         done
         wait
         echo "done: $D/analysis/screen-strict/report.md" ;;
@@ -114,7 +122,7 @@ case "${1:-all}" in
         probes ;;
     *)
         w=$(printf '%s\n' "${WAVES[@]}" | grep "^$1:") || { echo "no wave $1"; exit 1; }
-        wave "$w"
-        evaluate "$1"
+        wave "$w" "${2:-$RUNS}"
+        evaluate "$1, runs 1-${2:-$RUNS}"
         wait ;;
 esac
