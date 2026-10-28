@@ -1,0 +1,41 @@
+metric,channel,dimension,contrast,model,gap,low,high,n_questions
+total,user,politics,moderate - placebo,gemma-4-31b-it,0.4157750342935528,0.23916323731138533,0.5979423868312757,81
+total,user,politics,moderate - placebo,gpt-oss-120b,0.03751714677640601,-0.23024691358024713,0.3024005486968452,81
+total,user,politics,moderate - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.26193415637860085,-0.0008916323731137746,0.5473936899862828,81
+total,user,politics,moderate - placebo,olmo-3.1-32b-instruct,0.17688614540466388,0.017764060356652896,0.3491769547325099,81
+total,user,politics,moderate - placebo,qwen3.8-27b,0.09705075445816186,-0.05116598079561057,0.24382716049382708,81
+total,user,politics,Black conservative - Black progressive,gemma-4-31b-it,-0.3183813443072704,-0.5222908093278464,-0.11886145404663948,81
+total,user,politics,Black conservative - Black progressive,gpt-oss-120b,-0.18251028806584385,-0.47331961591220884,0.10130315500685853,81
+total,user,politics,Black conservative - Black progressive,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.5855281207133058,-0.8333333333333331,-0.34231824417009593,81
+total,user,politics,Black conservative - Black progressive,olmo-3.1-32b-instruct,0.028189300411522678,-0.17201646090534972,0.23998628257887544,81
+total,user,politics,Black conservative - Black progressive,qwen3.8-27b,-0.07078189300411492,-0.24711934156378573,0.09609053497942431,81
+total,user,politics,White conservative - White progressive,gemma-4-31b-it,-0.2279149519890259,-0.3705075445816178,-0.09417009602194831,81
+total,user,politics,White conservative - White progressive,gpt-oss-120b,0.1430727023319616,-0.11577503429355271,0.39074074074074094,81
+total,user,politics,White conservative - White progressive,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.08689986282578867,-0.2867626886145406,0.12585733882030187,81
+total,user,politics,White conservative - White progressive,olmo-3.1-32b-instruct,-0.1693415637860081,-0.3499314128943756,0.0018518518518521195,81
+total,user,politics,White conservative - White progressive,qwen3.8-27b,-0.028532235939643092,-0.1456790123456787,0.08676268861454052,81
+total,user,politics,"conservative - progressive, Black minus White",gemma-4-31b-it,-0.09046639231824449,-0.29917695473251055,0.09170096021947875,81
+total,user,politics,"conservative - progressive, Black minus White",gpt-oss-120b,-0.32558299039780547,-0.6462277091906723,0.017352537722907933,81
+total,user,politics,"conservative - progressive, Black minus White",llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.4986282578875172,-0.8308641975308647,-0.18299039780521262,81
+total,user,politics,"conservative - progressive, Black minus White",olmo-3.1-32b-instruct,0.19753086419753077,-0.05411522633744853,0.4708504801097394,81
+total,user,politics,"conservative - progressive, Black minus White",qwen3.8-27b,-0.04224965706447182,-0.2814814814814816,0.1869684499314132,81
+premise,user,politics,moderate - placebo,gemma-4-31b-it,0.02032163742690043,-0.04985380116959077,0.09766081871345018,38
+premise,user,politics,moderate - placebo,gpt-oss-120b,-0.09956140350877192,-0.2456140350877193,0.025438596491228115,38
+premise,user,politics,moderate - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.11842105263157893,-0.04166666666666661,0.28245614035087724,38
+premise,user,politics,moderate - placebo,olmo-3.1-32b-instruct,-0.019298245614035172,-0.15511695906432757,0.1097953216374268,38
+premise,user,politics,moderate - placebo,qwen3.8-27b,-0.03757309941520473,-0.12573099415204683,0.04078947368421045,38
+premise,user,politics,Black conservative - Black progressive,gemma-4-31b-it,-0.29912280701754385,-0.48464912280701755,-0.13070175438596487,38
+premise,user,politics,Black conservative - Black progressive,gpt-oss-120b,-0.1742690058479532,-0.379093567251462,-0.006140350877192984,38
+premise,user,politics,Black conservative - Black progressive,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.21418128654970767,-0.3698830409356726,-0.08347953216374267,38
+premise,user,politics,Black conservative - Black progressive,olmo-3.1-32b-instruct,-0.07251461988304095,-0.18538011695906437,0.03771929824561401,38
+premise,user,politics,Black conservative - Black progressive,qwen3.8-27b,-0.12061403508771927,-0.26315789473684204,-0.011403508771929749,38
+premise,user,politics,White conservative - White progressive,gemma-4-31b-it,-0.16403508771929826,-0.2833333333333334,-0.05789473684210527,38
+premise,user,politics,White conservative - White progressive,gpt-oss-120b,-0.06842105263157894,-0.23713450292397664,0.08362573099415205,38
+premise,user,politics,White conservative - White progressive,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.16900584795321633,-0.32324561403508767,-0.024707602339181303,38
+premise,user,politics,White conservative - White progressive,olmo-3.1-32b-instruct,-0.05365497076023383,-0.15292397660818702,0.03362573099415215,38
+premise,user,politics,White conservative - White progressive,qwen3.8-27b,-0.06096491228070177,-0.1403508771929825,0.004385964912280651,38
+premise,user,politics,"conservative - progressive, Black minus White",gemma-4-31b-it,-0.1350877192982456,-0.262280701754386,-0.01710526315789471,38
+premise,user,politics,"conservative - progressive, Black minus White",gpt-oss-120b,-0.10584795321637429,-0.2673976608187135,0.04195906432748531,38
+premise,user,politics,"conservative - progressive, Black minus White",llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.04517543859649131,-0.19342105263157885,0.10131578947368412,38
+premise,user,politics,"conservative - progressive, Black minus White",olmo-3.1-32b-instruct,-0.018859649122807114,-0.1498538011695906,0.12880116959064317,38
+premise,user,politics,"conservative - progressive, Black minus White",qwen3.8-27b,-0.05964912280701749,-0.181578947368421,0.0552631578947369,38
