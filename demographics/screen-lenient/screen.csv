@@ -1,4 +1,79 @@
 metric,channel,dimension,contrast,model,gap,low,high,n_questions
+total,user,race_ethnicity,Black American - White American,gemma-4-31b-it,-0.08998628257887531,-0.1938957475994518,0.020713305898490814,81
+total,user,race_ethnicity,Black American - White American,gpt-oss-120b,0.0417009602194787,-0.2220164609053498,0.3366941015089162,81
+total,user,race_ethnicity,Black American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.029218106995884712,-0.17695473251028798,0.2500685871056239,81
+total,user,race_ethnicity,Black American - White American,olmo-3.1-32b-instruct,-0.05089163237311385,-0.19739368998628254,0.09965706447187962,81
+total,user,race_ethnicity,Black American - White American,qwen3.8-27b,-0.038545953360768104,-0.21248285322359367,0.13100137174211252,81
+total,user,race_ethnicity,Black ethnic origin - Black American,gemma-4-31b-it,-0.026406035665294602,-0.17139917695473209,0.10754458161865602,81
+total,user,race_ethnicity,Black ethnic origin - Black American,gpt-oss-120b,-0.15123456790123474,-0.37222222222222223,0.0855281207133058,81
+total,user,race_ethnicity,Black ethnic origin - Black American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.45562414266117984,-0.6659122085048012,-0.2558299039780523,81
+total,user,race_ethnicity,Black ethnic origin - Black American,olmo-3.1-32b-instruct,-0.12839506172839496,-0.28511659807956097,0.019684499314128908,81
+total,user,race_ethnicity,Black ethnic origin - Black American,qwen3.8-27b,0.05994513031550091,-0.06364883401920401,0.19753086419753105,81
+total,user,race_ethnicity,Afro-Latino - Black American,gemma-4-31b-it,-0.06385459533607667,-0.19835390946502043,0.057475994513031765,81
+total,user,race_ethnicity,Afro-Latino - Black American,gpt-oss-120b,-0.13251028806584364,-0.34170096021947893,0.09176954732510265,81
+total,user,race_ethnicity,Afro-Latino - Black American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.3371742112482853,-0.5476680384087792,-0.1281207133058987,81
+total,user,race_ethnicity,Afro-Latino - Black American,olmo-3.1-32b-instruct,-0.25877914951989023,-0.41968449931412943,-0.09519890260630993,81
+total,user,race_ethnicity,Afro-Latino - Black American,qwen3.8-27b,0.06858710562414294,-0.07592592592592569,0.2126200274348426,81
+total,user,race_ethnicity,Asian American - White American,gemma-4-31b-it,-0.048628257887517116,-0.19156378600823043,0.09588477366255158,81
+total,user,race_ethnicity,Asian American - White American,gpt-oss-120b,0.1684499314128942,-0.08155006858710605,0.43045267489711925,81
+total,user,race_ethnicity,Asian American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.19053497942386846,-0.3745541838134434,0.006310013717421015,81
+total,user,race_ethnicity,Asian American - White American,olmo-3.1-32b-instruct,-0.30322359396433474,-0.46728395061728406,-0.1363511659807954,81
+total,user,race_ethnicity,Asian American - White American,qwen3.8-27b,0.011659807956104277,-0.1373113854595333,0.15528120713305918,81
+total,user,race_ethnicity,Arab American - White American,gemma-4-31b-it,-0.14183813443072718,-0.2747599451303154,-0.0047325102880659475,81
+total,user,race_ethnicity,Arab American - White American,gpt-oss-120b,0.10637860082304519,-0.18203017832647467,0.36550068587105594,81
+total,user,race_ethnicity,Arab American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.22434842249657064,-0.4262688614540466,-0.015843621399176604,81
+total,user,race_ethnicity,Arab American - White American,olmo-3.1-32b-instruct,-0.1425240054869684,-0.31694101508916317,0.03292181069958876,81
+total,user,race_ethnicity,Arab American - White American,qwen3.8-27b,0.034087791495199124,-0.1260631001371737,0.20877914951989043,81
+total,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,gemma-4-31b-it,-0.08113854595336051,-0.2364883401920436,0.07489711934156436,81
+total,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,gpt-oss-120b,-0.07187928669410161,-0.32263374485596696,0.1779149519890258,81
+total,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.4692729766803841,-0.6982853223593964,-0.2368312757201646,81
+total,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,olmo-3.1-32b-instruct,-0.4381344307270233,-0.5945130315500685,-0.29259259259259246,81
+total,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,qwen3.8-27b,-0.005281207133058801,-0.15775034293552762,0.16351165980795576,81
+total,user,race_ethnicity,multiracial - White American,gemma-4-31b-it,-0.1083676268861453,-0.23525377229080907,0.0012345679012346952,81
+total,user,race_ethnicity,multiracial - White American,gpt-oss-120b,0.021330589849108083,-0.18772290809327885,0.26351165980795616,81
+total,user,race_ethnicity,multiracial - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.27283950617283953,-0.473936899862826,-0.08052126200274326,81
+total,user,race_ethnicity,multiracial - White American,olmo-3.1-32b-instruct,-0.22640603566529482,-0.3768175582990396,-0.06721536351165973,81
+total,user,race_ethnicity,multiracial - White American,qwen3.8-27b,-0.05727023319615867,-0.2337448559670777,0.13449931412894411,81
+total,user,skin_color,dark-skinned Black American - light-skinned Black American,gemma-4-31b-it,-0.0028120713305900256,-0.17414266117969848,0.12908093278463603,81
+total,user,skin_color,dark-skinned Black American - light-skinned Black American,gpt-oss-120b,0.09224965706447173,-0.13813443072702355,0.2947873799725654,81
+total,user,skin_color,dark-skinned Black American - light-skinned Black American,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.036899862825788686,-0.13628257887517178,0.21282578875171465,81
+total,user,skin_color,dark-skinned Black American - light-skinned Black American,olmo-3.1-32b-instruct,0.10445816186556893,-0.08882030178326525,0.29396433470507505,81
+total,user,skin_color,dark-skinned Black American - light-skinned Black American,qwen3.8-27b,0.16262002743484177,-0.02249657064471915,0.3484224965706446,81
+total,user,gender_identity,transgender man - placebo,gemma-4-31b-it,0.40459533607681736,0.22373113854595333,0.5706447187928665,81
+total,user,gender_identity,transgender man - placebo,gpt-oss-120b,0.09567901234567881,-0.13676268861454097,0.34266117969821636,81
+total,user,gender_identity,transgender man - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.030178326474622937,-0.30925925925925946,0.2258573388203015,81
+total,user,gender_identity,transgender man - placebo,olmo-3.1-32b-instruct,0.11543209876543194,-0.10246913580246923,0.32160493827160463,81
+total,user,gender_identity,transgender man - placebo,qwen3.8-27b,0.1960219478737996,0.015157750342935594,0.3665294924554184,81
+total,user,orientation,gay man - straight,gemma-4-31b-it,0.03196159122085041,-0.19801097393689973,0.22030178326474598,81
+total,user,orientation,gay man - straight,gpt-oss-120b,0.23799725651577505,-0.14794238683127586,0.649588477366255,81
+total,user,orientation,gay man - straight,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.3777777777777777,-0.6353223593964337,-0.11989026063100103,81
+total,user,orientation,gay man - straight,olmo-3.1-32b-instruct,-0.15061728395061738,-0.3644718792866942,0.04218106995884795,81
+total,user,orientation,gay man - straight,qwen3.8-27b,0.17366255144032935,-0.03909465020576124,0.3946502057613171,81
+total,user,orientation,lesbian - straight,gemma-4-31b-it,0.13484224965706448,-0.01213991769547311,0.2816872427983538,81
+total,user,orientation,lesbian - straight,gpt-oss-120b,0.008161865569273188,-0.27311385459533594,0.3702331961591221,81
+total,user,orientation,lesbian - straight,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.3825102880658436,-0.6655006858710562,-0.10274348422496547,81
+total,user,orientation,lesbian - straight,olmo-3.1-32b-instruct,-0.14753086419753086,-0.36975308641975274,0.057475994513031696,81
+total,user,orientation,lesbian - straight,qwen3.8-27b,0.1016460905349795,-0.11673525377229085,0.3064471879286696,81
+total,user,orientation,bisexual - straight,gemma-4-31b-it,-0.036968449931412926,-0.21165980795610417,0.12366255144032907,81
+total,user,orientation,bisexual - straight,gpt-oss-120b,-0.010768175582990447,-0.3524691358024691,0.3170096021947876,81
+total,user,orientation,bisexual - straight,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.36563786008230453,-0.5670096021947872,-0.16934156378600818,81
+total,user,orientation,bisexual - straight,olmo-3.1-32b-instruct,-0.12016460905349802,-0.2995884773662554,0.06851851851851827,81
+total,user,orientation,bisexual - straight,qwen3.8-27b,0.03086419753086422,-0.19794238683127552,0.2718792866941015,81
+total,user,religion,nonreligious - placebo,gemma-4-31b-it,0.4358024691358023,0.2718106995884769,0.6107681755829902,81
+total,user,religion,nonreligious - placebo,gpt-oss-120b,0.24300411522633755,0.048079561042524185,0.45150891632373114,81
+total,user,religion,nonreligious - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.3405349794238681,0.08991769547325099,0.6051440329218104,81
+total,user,religion,nonreligious - placebo,olmo-3.1-32b-instruct,0.2772290809327845,0.1078875171467761,0.4628257887517145,81
+total,user,religion,nonreligious - placebo,qwen3.8-27b,0.20980795610425235,0.0596707818930041,0.3486968449931415,81
+total,user,religion,evangelical - placebo,gemma-4-31b-it,0.07736625514403304,-0.1155006858710562,0.27510288065843636,81
+total,user,religion,evangelical - placebo,gpt-oss-120b,-0.9647462277091907,-1.3279149519890256,-0.6771604938271604,81
+total,user,religion,evangelical - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.3679698216735256,-0.6061728395061735,-0.10246913580246912,81
+total,user,religion,evangelical - placebo,olmo-3.1-32b-instruct,0.31563786008230443,0.11234567901234543,0.542729766803841,81
+total,user,religion,evangelical - placebo,qwen3.8-27b,0.1587105624142661,-0.02290809327846363,0.31680384087791513,81
+total,user,religion,Black church - placebo,gemma-4-31b-it,0.1815500685871058,0.006172839506172993,0.35041152263374514,81
+total,user,religion,Black church - placebo,gpt-oss-120b,-0.35871056241426624,-0.6460905349794236,-0.06694101508916353,81
+total,user,religion,Black church - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.04506172839506147,-0.3209876543209872,0.27482853223594006,81
+total,user,religion,Black church - placebo,olmo-3.1-32b-instruct,0.2150891632373113,-0.001851851851852251,0.4517146776406036,81
+total,user,religion,Black church - placebo,qwen3.8-27b,0.10336076817558296,-0.05829903978052136,0.2637860082304526,81
 total,user,politics,moderate - placebo,gemma-4-31b-it,0.4157750342935528,0.23916323731138533,0.5979423868312757,81
 total,user,politics,moderate - placebo,gpt-oss-120b,0.03751714677640601,-0.23024691358024713,0.3024005486968452,81
 total,user,politics,moderate - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.26193415637860085,-0.0008916323731137746,0.5473936899862828,81
@@ -19,6 +94,86 @@ total,user,politics,"conservative - progressive, Black minus White",gpt-oss-120b
 total,user,politics,"conservative - progressive, Black minus White",llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.4986282578875172,-0.8308641975308647,-0.18299039780521262,81
 total,user,politics,"conservative - progressive, Black minus White",olmo-3.1-32b-instruct,0.19753086419753077,-0.05411522633744853,0.4708504801097394,81
 total,user,politics,"conservative - progressive, Black minus White",qwen3.8-27b,-0.04224965706447182,-0.2814814814814816,0.1869684499314132,81
+total,user,citizenship,noncitizen - U.S. citizen,gemma-4-31b-it,-0.10713305898491099,-0.24705075445816208,0.042249657064471334,81
+total,user,citizenship,noncitizen - U.S. citizen,gpt-oss-120b,0.02901234567901268,-0.16316872427983528,0.22578875171467777,81
+total,user,citizenship,noncitizen - U.S. citizen,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.46440329218107007,-0.6357338820301781,-0.2975994513031548,81
+total,user,citizenship,noncitizen - U.S. citizen,olmo-3.1-32b-instruct,-0.24897119341563806,-0.4305898491083677,-0.06515775034293536,81
+total,user,citizenship,noncitizen - U.S. citizen,qwen3.8-27b,-0.06474622770919099,-0.18984910836762725,0.0672153635116595,81
+premise,user,race_ethnicity,Black American - White American,gemma-4-31b-it,0.010964912280701681,-0.054824561403508894,0.08157894736842092,38
+premise,user,race_ethnicity,Black American - White American,gpt-oss-120b,0.021198830409356727,-0.13494152046783622,0.18391812865497076,38
+premise,user,race_ethnicity,Black American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.041520467836257346,-0.19400584795321632,0.1102339181286549,38
+premise,user,race_ethnicity,Black American - White American,olmo-3.1-32b-instruct,-0.03801169590643279,-0.162280701754386,0.07149122807017538,38
+premise,user,race_ethnicity,Black American - White American,qwen3.8-27b,-0.0059941520467836394,-0.11140350877192985,0.12105263157894731,38
+premise,user,race_ethnicity,Black ethnic origin - Black American,gemma-4-31b-it,-0.042982456140350796,-0.13070175438596476,0.03421052631578956,38
+premise,user,race_ethnicity,Black ethnic origin - Black American,gpt-oss-120b,-0.07426900584795319,-0.19400584795321635,0.01944444444444442,38
+premise,user,race_ethnicity,Black ethnic origin - Black American,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.035818713450292326,-0.0896198830409358,0.16067251461988297,38
+premise,user,race_ethnicity,Black ethnic origin - Black American,olmo-3.1-32b-instruct,0.020321637426900605,-0.06915204678362565,0.1128654970760234,38
+premise,user,race_ethnicity,Black ethnic origin - Black American,qwen3.8-27b,0.015643274853801136,-0.031140350877193034,0.05906432748538008,38
+premise,user,race_ethnicity,Afro-Latino - Black American,gemma-4-31b-it,-0.050730994152046766,-0.12880116959064325,0.025438596491228063,38
+premise,user,race_ethnicity,Afro-Latino - Black American,gpt-oss-120b,-0.024561403508771913,-0.10599415204678363,0.05409356725146206,38
+premise,user,race_ethnicity,Afro-Latino - Black American,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.08040935672514621,-0.049415204678362516,0.21798245614035086,38
+premise,user,race_ethnicity,Afro-Latino - Black American,olmo-3.1-32b-instruct,-0.06637426900584796,-0.19751461988304095,0.05760233918128652,38
+premise,user,race_ethnicity,Afro-Latino - Black American,qwen3.8-27b,0.0011695906432748029,-0.06315789473684214,0.05994152046783624,38
+premise,user,race_ethnicity,Asian American - White American,gemma-4-31b-it,-0.01885964912280703,-0.10789473684210521,0.06754385964912273,38
+premise,user,race_ethnicity,Asian American - White American,gpt-oss-120b,0.0735380116959064,-0.06271929824561405,0.2171052631578947,38
+premise,user,race_ethnicity,Asian American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.009210526315789587,-0.12061403508771952,0.1052631578947368,38
+premise,user,race_ethnicity,Asian American - White American,olmo-3.1-32b-instruct,-0.11111111111111119,-0.2070175438596492,-0.032163742690058506,38
+premise,user,race_ethnicity,Asian American - White American,qwen3.8-27b,0.007309941520467764,-0.08070175438596498,0.09883040935672503,38
+premise,user,race_ethnicity,Arab American - White American,gemma-4-31b-it,-0.03552631578947373,-0.12543859649122818,0.04298245614035076,38
+premise,user,race_ethnicity,Arab American - White American,gpt-oss-120b,-0.04444444444444441,-0.1986842105263157,0.10365497076023399,38
+premise,user,race_ethnicity,Arab American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.030409356725146264,-0.17500000000000016,0.13362573099415204,38
+premise,user,race_ethnicity,Arab American - White American,olmo-3.1-32b-instruct,-0.07017543859649125,-0.21169590643274858,0.06915204678362566,38
+premise,user,race_ethnicity,Arab American - White American,qwen3.8-27b,0.03932748538011689,-0.044736842105263186,0.1546783625730994,38
+premise,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,gemma-4-31b-it,-0.007894736842105282,-0.09035087719298246,0.06140350877192983,38
+premise,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,gpt-oss-120b,0.09035087719298242,-0.029385964912280738,0.2364035087719297,38
+premise,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.012134502923976541,-0.1593567251461989,0.22105263157894728,38
+premise,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,olmo-3.1-32b-instruct,-0.09956140350877195,-0.20394736842105274,-0.0026315789473684,38
+premise,user,race_ethnicity,Native Hawaiian or Pacific Islander - White American,qwen3.8-27b,0.029824561403508677,-0.06929824561403516,0.14707602339181272,38
+premise,user,race_ethnicity,multiracial - White American,gemma-4-31b-it,0.017105263157894735,-0.07017543859649125,0.10614035087719301,38
+premise,user,race_ethnicity,multiracial - White American,gpt-oss-120b,-0.06754385964912278,-0.2026315789473684,0.05350877192982458,38
+premise,user,race_ethnicity,multiracial - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.039035087719298166,-0.08391812865497081,0.16681286549707597,38
+premise,user,race_ethnicity,multiracial - White American,olmo-3.1-32b-instruct,-0.0902046783625732,-0.21535087719298254,0.018128654970760147,38
+premise,user,race_ethnicity,multiracial - White American,qwen3.8-27b,-0.024707602339181338,-0.12061403508771927,0.08830409356725141,38
+premise,user,skin_color,dark-skinned Black American - light-skinned Black American,gemma-4-31b-it,0.026900584795321612,-0.09707602339181291,0.1333333333333334,38
+premise,user,skin_color,dark-skinned Black American - light-skinned Black American,gpt-oss-120b,0.01286549707602337,-0.11929824561403513,0.1486842105263158,38
+premise,user,skin_color,dark-skinned Black American - light-skinned Black American,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.03552631578947368,-0.04649122807017544,0.13245614035087722,38
+premise,user,skin_color,dark-skinned Black American - light-skinned Black American,olmo-3.1-32b-instruct,0.06330409356725154,-0.05774853801169583,0.1833333333333334,38
+premise,user,skin_color,dark-skinned Black American - light-skinned Black American,qwen3.8-27b,-0.029385964912280692,-0.10643274853801164,0.051608187134502916,38
+premise,user,gender_identity,transgender man - placebo,gemma-4-31b-it,0.04312865497076015,-0.0695906432748539,0.14502923976608179,38
+premise,user,gender_identity,transgender man - placebo,gpt-oss-120b,-0.03991228070175442,-0.1773391812865498,0.06652046783625733,38
+premise,user,gender_identity,transgender man - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.03435672514619879,-0.15380116959064322,0.24985380116959063,38
+premise,user,gender_identity,transgender man - placebo,olmo-3.1-32b-instruct,0.05380116959064321,-0.06169590643274859,0.17616959064327475,38
+premise,user,gender_identity,transgender man - placebo,qwen3.8-27b,0.007163742690058501,-0.09985380116959061,0.10102339181286552,38
+premise,user,orientation,gay man - straight,gemma-4-31b-it,0.024999999999999994,-0.06578947368421055,0.11359649122807013,38
+premise,user,orientation,gay man - straight,gpt-oss-120b,-0.011842105263157876,-0.1605263157894737,0.137280701754386,38
+premise,user,orientation,gay man - straight,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.04254385964912285,-0.1776315789473685,0.08508771929824555,38
+premise,user,orientation,gay man - straight,olmo-3.1-32b-instruct,0.03581871345029239,-0.11535087719298244,0.18815789473684208,38
+premise,user,orientation,gay man - straight,qwen3.8-27b,0.09824561403508762,0.008771929824561337,0.21228070175438582,38
+premise,user,orientation,lesbian - straight,gemma-4-31b-it,0.03552631578947365,-0.05789473684210529,0.12324561403508773,38
+premise,user,orientation,lesbian - straight,gpt-oss-120b,0.03640350877192988,-0.06111111111111108,0.18406432748538015,38
+premise,user,orientation,lesbian - straight,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.15307017543859652,-0.32046783625731,0.01125730994152044,38
+premise,user,orientation,lesbian - straight,olmo-3.1-32b-instruct,-0.008918128654970787,-0.1359649122807018,0.11052631578947367,38
+premise,user,orientation,lesbian - straight,qwen3.8-27b,0.050877192982456076,-0.024561403508772006,0.1333333333333332,38
+premise,user,orientation,bisexual - straight,gemma-4-31b-it,-5.843279076974508e-17,-0.0916666666666667,0.09078947368421042,38
+premise,user,orientation,bisexual - straight,gpt-oss-120b,0.004824561403508808,-0.16301169590643275,0.13684210526315788,38
+premise,user,orientation,bisexual - straight,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.04649122807017545,-0.15701754385964914,0.05204678362573095,38
+premise,user,orientation,bisexual - straight,olmo-3.1-32b-instruct,-0.029532163742690104,-0.1730994152046784,0.10526315789473675,38
+premise,user,orientation,bisexual - straight,qwen3.8-27b,0.12456140350877186,0.02807017543859646,0.24912280701754372,38
+premise,user,religion,nonreligious - placebo,gemma-4-31b-it,0.030409356725146126,-0.0713450292397662,0.1444444444444444,38
+premise,user,religion,nonreligious - placebo,gpt-oss-120b,-0.0020467836257309926,-0.10657894736842105,0.0960526315789473,38
+premise,user,religion,nonreligious - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.10175438596491225,-0.027339181286549764,0.23333333333333334,38
+premise,user,religion,nonreligious - placebo,olmo-3.1-32b-instruct,0.024269005847953166,-0.11710526315789471,0.1846491228070175,38
+premise,user,religion,nonreligious - placebo,qwen3.8-27b,0.0010233918128654818,-0.07923976608187132,0.07792397660818703,38
+premise,user,religion,evangelical - placebo,gemma-4-31b-it,-0.016959064327485483,-0.12090643274853811,0.0764619883040935,38
+premise,user,religion,evangelical - placebo,gpt-oss-120b,-0.2834795321637427,-0.5461988304093568,-0.09926900584795322,38
+premise,user,religion,evangelical - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.017105263157894623,-0.17339181286549724,0.17309941520467823,38
+premise,user,religion,evangelical - placebo,olmo-3.1-32b-instruct,0.07733918128654961,-0.06111111111111127,0.21856725146198822,38
+premise,user,religion,evangelical - placebo,qwen3.8-27b,-0.03859649122807014,-0.12105263157894731,0.036842105263157975,38
+premise,user,religion,Black church - placebo,gemma-4-31b-it,0.03830409356725138,-0.016959064327485483,0.10906432748538009,38
+premise,user,religion,Black church - placebo,gpt-oss-120b,-0.10804093567251459,-0.2437134502923976,0.007602339181286581,38
+premise,user,religion,Black church - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.08172514619883038,-0.06666666666666671,0.2533625730994151,38
+premise,user,religion,Black church - placebo,olmo-3.1-32b-instruct,0.09999999999999992,-0.02836257309941528,0.26315789473684204,38
+premise,user,religion,Black church - placebo,qwen3.8-27b,-0.015789473684210492,-0.08157894736842097,0.05000000000000001,38
 premise,user,politics,moderate - placebo,gemma-4-31b-it,0.02032163742690043,-0.04985380116959077,0.09766081871345018,38
 premise,user,politics,moderate - placebo,gpt-oss-120b,-0.09956140350877192,-0.2456140350877193,0.025438596491228115,38
 premise,user,politics,moderate - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.11842105263157893,-0.04166666666666661,0.28245614035087724,38
@@ -39,3 +194,8 @@ premise,user,politics,"conservative - progressive, Black minus White",gpt-oss-12
 premise,user,politics,"conservative - progressive, Black minus White",llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.04517543859649131,-0.19342105263157885,0.10131578947368412,38
 premise,user,politics,"conservative - progressive, Black minus White",olmo-3.1-32b-instruct,-0.018859649122807114,-0.1498538011695906,0.12880116959064317,38
 premise,user,politics,"conservative - progressive, Black minus White",qwen3.8-27b,-0.05964912280701749,-0.181578947368421,0.0552631578947369,38
+premise,user,citizenship,noncitizen - U.S. citizen,gemma-4-31b-it,0.01447368421052637,-0.049561403508771834,0.08552631578947378,38
+premise,user,citizenship,noncitizen - U.S. citizen,gpt-oss-120b,0.012280701754385951,-0.10745614035087721,0.1732456140350877,38
+premise,user,citizenship,noncitizen - U.S. citizen,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.14502923976608187,-0.30131578947368426,-0.01637426900584793,38
+premise,user,citizenship,noncitizen - U.S. citizen,olmo-3.1-32b-instruct,0.05233918128654965,-0.08128654970760248,0.18216374269005833,38
+premise,user,citizenship,noncitizen - U.S. citizen,qwen3.8-27b,0.040058479532163814,-0.020467836257309847,0.11447368421052635,38
