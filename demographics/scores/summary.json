@@ -1,9 +1,9 @@
 {
-  "rows_read": 261225,
-  "valid_grades": 216451,
+  "rows_read": 334125,
+  "valid_grades": 276635,
   "run_id": null,
   "excluded": {
-    "provider_or_parser_error": 44774
+    "provider_or_parser_error": 57490
   },
   "stray_premise_ignored": 0,
   "judge_models": {
@@ -14,8 +14,8 @@
     "qwen3.8-27b": "Qwen/Qwen3.8-27B"
   },
   "coverage": {
-    "judged_answers": 51508,
-    "answers_missing_observed_panel": 20010,
+    "judged_answers": 65831,
+    "answers_missing_observed_panel": 25610,
     "observed_panel": [
       [
         "gemma-4-31b-it",
@@ -38,9 +38,9 @@
         0
       ]
     ],
-    "response_rows": 52245,
-    "usable_responses": 52245,
-    "unjudged_answers": 737,
+    "response_rows": 66825,
+    "usable_responses": 66825,
+    "unjudged_answers": 994,
     "failed_responses": 0,
     "answer_models": {
       "gemma-4-31b-it": "google/gemma-4-31B-it",
@@ -56,8 +56,8 @@
   "confidence": 0.95,
   "method": "Equal question means; percentile bootstrap resamples whole questions.",
   "score_policy": "Raw rubric totals, including hard fails; hard_fail is a separate rate.",
-  "judgments_sha256": "00018c8f815a25131a5660c8ffa7d28b552fdf9eef8fab46563fa73c0440820a",
-  "responses_sha256": "19a55bc2763da7e1850e348c3a0a2ebf2d64ddc74d81b6ea524aff9bb3e82270",
+  "judgments_sha256": "fcfc6bc09c92ae50376e189e475f388495539b4552f1e5102045a93ab3727503",
+  "responses_sha256": "ef6b0b87580066226c4d29347a3be800b4d30d3f40c9ce8c3d5760c030cbc7d7",
   "warnings": [
     "Unusable grades excluded; inspect exclusion counts and coverage.",
     "Incomplete observed panel or responses; comparisons may use different subsets."

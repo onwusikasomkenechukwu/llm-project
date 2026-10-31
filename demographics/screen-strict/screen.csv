@@ -184,6 +184,51 @@ total,user,occupation,high school student - placebo,gpt-oss-120b,-0.113374485596
 total,user,occupation,high school student - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.3177083333333332,0.061736111111110895,0.6030902777777778,80
 total,user,occupation,high school student - placebo,olmo-3.1-32b-instruct,-0.029286694101508692,-0.31251714677640585,0.2469478737997258,81
 total,user,occupation,high school student - placebo,qwen3.8-27b,-0.028806584362140057,-0.22215363511659827,0.14482167352537711,81
+total,user,geography,Deep South - North,gemma-4-31b-it,0.017229254571026763,-0.11645569620253146,0.14528832630098437,79
+total,user,geography,Deep South - North,gpt-oss-120b,-0.2896433470507548,-0.4716049382716053,-0.11611796982167376,81
+total,user,geography,Deep South - North,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.0696180555555554,-0.3076388888888889,0.3612152777777773,80
+total,user,geography,Deep South - North,olmo-3.1-32b-instruct,0.03196159122085013,-0.16117969821673542,0.22146776406035676,81
+total,user,geography,Deep South - North,qwen3.8-27b,-0.07249657064471864,-0.21646090534979373,0.08593964334705094,81
+total,user,geography,rural - urban,gemma-4-31b-it,-0.05196905766526018,-0.18537271448663853,0.10112517580872012,79
+total,user,geography,rural - urban,gpt-oss-120b,0.06351165980795587,-0.1934156378600822,0.33724279835390936,81
+total,user,geography,rural - urban,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.0764060356652948,-0.11755829903978063,0.28792866941015083,81
+total,user,geography,rural - urban,olmo-3.1-32b-instruct,-0.1279835390946501,-0.30198902606310024,0.048148148148148155,81
+total,user,geography,rural - urban,qwen3.8-27b,-0.09743055555555577,-0.23215277777777815,0.057986111111110475,80
+total,user,geography,outside the US - placebo,gemma-4-31b-it,0.45056258790436005,0.21132208157524623,0.6784106891701832,79
+total,user,geography,outside the US - placebo,gpt-oss-120b,-0.1823731138545953,-0.4454046639231822,0.05253772290809353,81
+total,user,geography,outside the US - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.14662447257383943,-0.11933895921237726,0.4023909985935301,79
+total,user,geography,outside the US - placebo,olmo-3.1-32b-instruct,0.1050754458161866,-0.11467764060356662,0.31186556927297654,81
+total,user,geography,outside the US - placebo,qwen3.8-27b,0.15452674897119362,-0.042866941015088915,0.33689986282578904,81
+total,user,family,single parent - placebo,gemma-4-31b-it,0.23776371308016875,0.018495077355836817,0.45161744022503536,79
+total,user,family,single parent - placebo,gpt-oss-120b,-0.2591220850480107,-0.49677640603566503,-0.026680384087791345,81
+total,user,family,single parent - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.016289437585733785,-0.21632373113854603,0.24633058984910802,81
+total,user,family,single parent - placebo,olmo-3.1-32b-instruct,0.15919067215363492,-0.04828532235939648,0.37043895747599415,81
+total,user,family,single parent - placebo,qwen3.8-27b,0.0028120713305895867,-0.1550754458161865,0.14855967078189244,81
+total,user,family,pregnant - placebo,gemma-4-31b-it,0.22337662337662328,0.02561327561327565,0.41666666666666635,77
+total,user,family,pregnant - placebo,gpt-oss-120b,-0.40480109739368986,-0.6945816186556929,-0.1155692729766804,81
+total,user,family,pregnant - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.18652777777777807,-0.40583333333333405,0.0707638888888889,80
+total,user,family,pregnant - placebo,olmo-3.1-32b-instruct,0.18820301783264723,0.008161865569272696,0.365912208504801,81
+total,user,family,pregnant - placebo,qwen3.8-27b,0.18384773662551432,-0.00041152263374507383,0.37006172839506163,81
+total,user,veteran,veteran - placebo,gemma-4-31b-it,0.35337552742616013,0.15970464135021079,0.531082981715893,79
+total,user,veteran,veteran - placebo,gpt-oss-120b,0.04622770919067201,-0.1342935528120717,0.21371742112482853,81
+total,user,veteran,veteran - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.05967078189300391,-0.2352537722908094,0.3576131687242798,81
+total,user,veteran,veteran - placebo,olmo-3.1-32b-instruct,0.16563786008230447,-0.072085048010974,0.39135802469135805,81
+total,user,veteran,veteran - placebo,qwen3.8-27b,0.19402777777777766,-0.013333333333333286,0.38062499999999966,80
+total,user,legal_history,formerly incarcerated - placebo,gemma-4-31b-it,0.20972222222222228,-0.07305555555555551,0.47618055555555533,80
+total,user,legal_history,formerly incarcerated - placebo,gpt-oss-120b,0.12928669410150886,-0.09993141289437604,0.35610425240054844,81
+total,user,legal_history,formerly incarcerated - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.010069444444444364,-0.29555555555555557,0.298125,80
+total,user,legal_history,formerly incarcerated - placebo,olmo-3.1-32b-instruct,0.14465020576131674,-0.07647462277091904,0.326954732510288,81
+total,user,legal_history,formerly incarcerated - placebo,qwen3.8-27b,0.09108367626886109,-0.06069958847736671,0.24807956104252385,81
+total,user,writing,misspelled writing - standard writing,gemma-4-31b-it,-0.1699786324786323,-0.4230769230769228,0.047364672364672684,78
+total,user,writing,misspelled writing - standard writing,gpt-oss-120b,0.06748971193415626,-0.19410150891632394,0.35281207133059,81
+total,user,writing,misspelled writing - standard writing,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.05397805212620005,-0.2721536351165978,0.16584362139917724,81
+total,user,writing,misspelled writing - standard writing,olmo-3.1-32b-instruct,-0.06920438957476,-0.25384087791495213,0.10692729766803859,81
+total,user,writing,misspelled writing - standard writing,qwen3.8-27b,-0.0027083333333334904,-0.14395833333333327,0.13472222222222213,80
+total,user,writing,formal writing - standard writing,gemma-4-31b-it,0.037393162393162385,-0.08725071225071214,0.16282051282051285,78
+total,user,writing,formal writing - standard writing,gpt-oss-120b,0.1517832647462276,-0.08374485596707829,0.4074074074074075,81
+total,user,writing,formal writing - standard writing,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.0806584362139917,-0.26104252400548705,0.11015089163237325,81
+total,user,writing,formal writing - standard writing,olmo-3.1-32b-instruct,0.07153635116598069,-0.09238683127572027,0.23264746227709204,81
+total,user,writing,formal writing - standard writing,qwen3.8-27b,0.09916666666666651,-0.07652777777777808,0.27125000000000005,80
 premise,user,race_ethnicity,Black American - White American,gemma-4-31b-it,0.010964912280701681,-0.054824561403508894,0.08157894736842092,38
 premise,user,race_ethnicity,Black American - White American,gpt-oss-120b,0.021198830409356727,-0.13494152046783622,0.18391812865497076,38
 premise,user,race_ethnicity,Black American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.041520467836257346,-0.19400584795321632,0.1102339181286549,38
@@ -369,3 +414,48 @@ premise,user,occupation,high school student - placebo,gpt-oss-120b,-0.1844298245
 premise,user,occupation,high school student - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.19641812865497077,0.05043859649122808,0.35804093567251466,38
 premise,user,occupation,high school student - placebo,olmo-3.1-32b-instruct,-0.016228070175438692,-0.18135964912280714,0.16776315789473675,38
 premise,user,occupation,high school student - placebo,qwen3.8-27b,-0.039912280701754385,-0.14078947368421058,0.0381578947368421,38
+premise,user,geography,Deep South - North,gemma-4-31b-it,0.030701754385964956,-0.013157894736842082,0.07719298245614034,38
+premise,user,geography,Deep South - North,gpt-oss-120b,-0.006578947368421029,-0.11359649122807017,0.09312865497076016,38
+premise,user,geography,Deep South - North,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.03128654970760239,-0.1885964912280703,0.10701754385964912,38
+premise,user,geography,Deep South - North,olmo-3.1-32b-instruct,-0.07163742690058476,-0.22792397660818708,0.055994152046783624,38
+premise,user,geography,Deep South - North,qwen3.8-27b,-0.07777777777777779,-0.17792397660818718,0.004093567251462044,38
+premise,user,geography,rural - urban,gemma-4-31b-it,0.03684210526315788,-0.03684210526315782,0.11754385964912277,38
+premise,user,geography,rural - urban,gpt-oss-120b,-0.07646198830409356,-0.17909356725146197,0.02602339181286551,38
+premise,user,geography,rural - urban,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.024999999999999918,-0.10745614035087725,0.15175438596491225,38
+premise,user,geography,rural - urban,olmo-3.1-32b-instruct,-0.0190058479532164,-0.1269005847953216,0.09590643274853795,38
+premise,user,geography,rural - urban,qwen3.8-27b,-0.024415204678362522,-0.12090643274853798,0.08333333333333338,38
+premise,user,geography,outside the US - placebo,gemma-4-31b-it,0.01505847953216363,-0.0874269005847954,0.11476608187134478,38
+premise,user,geography,outside the US - placebo,gpt-oss-120b,-0.12178362573099416,-0.30204678362573106,0.029093567251461984,38
+premise,user,geography,outside the US - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.03479532163742691,-0.19210526315789472,0.08757309941520461,38
+premise,user,geography,outside the US - placebo,olmo-3.1-32b-instruct,-0.010526315789473752,-0.15804093567251465,0.1118421052631578,38
+premise,user,geography,outside the US - placebo,qwen3.8-27b,-0.04137426900584791,-0.14152046783625724,0.04210526315789478,38
+premise,user,family,single parent - placebo,gemma-4-31b-it,0.03172514619883031,-0.08055555555555569,0.12383040935672505,38
+premise,user,family,single parent - placebo,gpt-oss-120b,-0.12061403508771931,-0.2197368421052632,-0.026900584795321716,38
+premise,user,family,single parent - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.001315789473684206,-0.13421052631578947,0.12821637426900584,38
+premise,user,family,single parent - placebo,olmo-3.1-32b-instruct,0.0839181286549708,-0.039327485380116926,0.21461988304093566,38
+premise,user,family,single parent - placebo,qwen3.8-27b,0.008333333333333338,-0.05657894736842108,0.06535087719298245,38
+premise,user,family,pregnant - placebo,gemma-4-31b-it,-0.01359649122807029,-0.1263157894736843,0.09429824561403503,38
+premise,user,family,pregnant - placebo,gpt-oss-120b,-0.06798245614035085,-0.2080409356725146,0.06520467836257315,38
+premise,user,family,pregnant - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.020760233918128673,-0.15321637426900586,0.10482456140350872,38
+premise,user,family,pregnant - placebo,olmo-3.1-32b-instruct,-0.007602339181286604,-0.1494152046783626,0.1478070175438596,38
+premise,user,family,pregnant - placebo,qwen3.8-27b,0.001900584795321654,-0.03757309941520466,0.044883040935672615,38
+premise,user,veteran,veteran - placebo,gemma-4-31b-it,0.04298245614035077,-0.02865497076023398,0.12660818713450284,38
+premise,user,veteran,veteran - placebo,gpt-oss-120b,-0.09283625730994155,-0.19210526315789475,-0.0007309941520468278,38
+premise,user,veteran,veteran - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.013742690058479496,-0.15482456140350875,0.17456140350877192,38
+premise,user,veteran,veteran - placebo,olmo-3.1-32b-instruct,0.07690058479532158,-0.07397660818713453,0.23421052631578948,38
+premise,user,veteran,veteran - placebo,qwen3.8-27b,-0.028947368421052586,-0.1097953216374268,0.051461988304093674,38
+premise,user,legal_history,formerly incarcerated - placebo,gemma-4-31b-it,-0.01856725146198839,-0.09605263157894742,0.05438596491228051,38
+premise,user,legal_history,formerly incarcerated - placebo,gpt-oss-120b,-0.04722222222222225,-0.1508771929824561,0.057602339181286544,38
+premise,user,legal_history,formerly incarcerated - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.07353801169590639,-0.08011695906432754,0.25745614035087705,38
+premise,user,legal_history,formerly incarcerated - placebo,olmo-3.1-32b-instruct,0.028508771929824473,-0.10307017543859653,0.16535087719298236,38
+premise,user,legal_history,formerly incarcerated - placebo,qwen3.8-27b,-0.006578947368421088,-0.0675438596491229,0.05877192982456142,38
+premise,user,writing,misspelled writing - standard writing,gemma-4-31b-it,0.04897660818713449,-0.028508771929824542,0.13552631578947366,38
+premise,user,writing,misspelled writing - standard writing,gpt-oss-120b,0.16549707602339184,0.026754385964912315,0.32207602339181285,38
+premise,user,writing,misspelled writing - standard writing,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.003362573099415181,-0.10760233918128655,0.12251461988304096,38
+premise,user,writing,misspelled writing - standard writing,olmo-3.1-32b-instruct,-0.02192982456140355,-0.1096491228070176,0.07543859649122804,38
+premise,user,writing,misspelled writing - standard writing,qwen3.8-27b,-0.017982456140350895,-0.07733918128654967,0.037573099415204696,38
+premise,user,writing,formal writing - standard writing,gemma-4-31b-it,0.006871345029239742,-0.0666666666666667,0.08114035087719296,38
+premise,user,writing,formal writing - standard writing,gpt-oss-120b,0.168421052631579,0.030263157894736853,0.3419590643274855,38
+premise,user,writing,formal writing - standard writing,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.00584795321637433,-0.10307017543859656,0.09634502923976597,38
+premise,user,writing,formal writing - standard writing,olmo-3.1-32b-instruct,-0.02631578947368421,-0.10614035087719298,0.06944444444444445,38
+premise,user,writing,formal writing - standard writing,qwen3.8-27b,-0.01652046783625731,-0.08347953216374267,0.051315789473684204,38
