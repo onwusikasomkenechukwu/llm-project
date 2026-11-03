@@ -12,6 +12,12 @@
 # 1 of the 32 subset questions, 16,800 answers. The other 68,250 take about 83
 # hours at the 21 October rate of 4.4 s per answer for five grades.
 #
+# The cues with evidence of an effect go first, as Dr. Aryal asked: the
+# education groups with the baseline and the irrelevant-detail control they are
+# read against (33 of the 105 prompts per question), analysed as soon as they
+# are graded. Race x gender, which showed nothing on the September rubric,
+# follows.
+#
 # Run inside tmux and the llm conda env, after vllm_subset.sh. Safe to rerun:
 # saved rows are skipped.
 set -uo pipefail
@@ -22,6 +28,8 @@ D=runs/cues-rubric3
 MODELS=Qwen/Qwen3.8-27B,RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16,allenai/Olmo-3.1-32B-Instruct,google/gemma-4-31B-it,openai/gpt-oss-120b
 ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning low \
     --gpu-memory-utilization 0.95 --max-num-seqs 512 --max-num-batched-tokens 32768 --chunk 10000"
+# per model and stage, from vllm_tune.py
+[ -s vllm-engine.json ] && ARGS="$ARGS --engine-config vllm-engine.json"
 mkdir -p "$D/analysis"
 
 prepare() {
@@ -51,14 +59,33 @@ EOF
     fi
 }
 
-run() {
-    echo "== grading on the 3 November rubric"
-    python vllm_offline.py judge "$D/responses.jsonl" --prompts "$PROMPTS" \
+grade() {   # grade one file of answers into the one judgments file
+    python vllm_offline.py judge "$1" --prompts "$PROMPTS" \
         --out "$D/judgments.jsonl" $ARGS 2>&1 | tee -a "$D/judge.log"
 }
 
+run() {
+    echo "== grading the cues with evidence, on the 3 November rubric"
+    python - "$D/responses.jsonl" "$D/responses-evidence.jsonl" <<'PY'
+import json, sys
+src, out = sys.argv[1:]
+keep = {"baseline", "control", "education"}
+n = 0
+with open(out, "w", encoding="utf-8") as f:
+    for line in open(src, encoding="utf-8"):
+        if line.strip() and (json.loads(line).get("block") or "baseline") in keep:
+            f.write(line if line.endswith("\n") else line + "\n")
+            n += 1
+print(f"{n} answers under the baseline, control and education cues -> {out}")
+PY
+    grade "$D/responses-evidence.jsonl"
+    evaluate "$D/responses-evidence.jsonl"
+    echo "== grading the rest (race x gender)"
+    grade "$D/responses.jsonl"
+}
+
 evaluate() {
-    local R="$D/responses.jsonl" J="$D/judgments.jsonl" A="$D/analysis"
+    local R="${1:-$D/responses.jsonl}" J="$D/judgments.jsonl" A="$D/analysis"
     echo "== analysing"
     python analyze.py $J --responses $R --prompts "$PROMPTS" --bootstrap 500 --out-dir "$A/scores-strict"
     python analyze.py $J --responses $R --prompts "$PROMPTS" --bootstrap 500 --out-dir "$A/scores-lenient" \

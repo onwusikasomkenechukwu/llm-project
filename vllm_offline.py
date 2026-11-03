@@ -659,7 +659,22 @@ def reasoning_kwargs(tokenizer, level):
     return {}
 
 
-def load_model(name, args):
+def engine_overrides(args, name, stage):
+    """Engine settings beyond the flags: --engine-config, a JSON file of tuned
+    settings per model and stage (vllm_tune.py writes it), then --engine, a JSON
+    object for every model in this call (vllm_tune.py tries settings this way).
+    Engine settings change speed, not the instrument: prompts, sampling, token
+    ceilings and reasoning stay as they are."""
+    out = {}
+    if args.engine_config:
+        with open(args.engine_config, encoding="utf-8") as f:
+            out.update(json.load(f).get(name, {}).get(stage, {}))
+    if args.engine:
+        out.update(json.loads(args.engine))
+    return out
+
+
+def load_model(name, args, stage):
     from vllm import LLM
     engine = dict(model=name, tensor_parallel_size=args.tensor_parallel_size,
                   gpu_memory_utilization=args.gpu_memory_utilization,
@@ -667,6 +682,7 @@ def load_model(name, args):
     for field in ("max_model_len", "max_num_seqs", "max_num_batched_tokens"):
         if getattr(args, field) is not None:
             engine[field] = getattr(args, field)
+    engine.update(engine_overrides(args, name, stage))
     return LLM(**engine), engine
 
 
@@ -675,7 +691,7 @@ def run_model(args, stage, prov, cells, out_path, throughput_path):
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     cfg = {"model": PROVIDERS[prov]}
     started = time.monotonic()
-    llm, engine = load_model(cfg["model"], args)
+    llm, engine = load_model(cfg["model"], args, stage)
     loaded = time.monotonic() - started
     tokenizer = llm.get_tokenizer()
     default = default_system(tokenizer) if any(c["system"] for c in cells) else ""
@@ -790,6 +806,10 @@ def main():
     p.add_argument("--max-model-len", type=int)
     p.add_argument("--max-num-seqs", type=int)
     p.add_argument("--max-num-batched-tokens", type=int)
+    p.add_argument("--engine-config", help="JSON file: {model id: {stage: {vLLM engine setting: value}}}")
+    p.add_argument("--engine", help="JSON object of vLLM engine settings for every model in this call")
+    p.add_argument("--throughput", help="where to append throughput records, "
+                                        "default throughput-<script>.jsonl")
     args = p.parse_args()
 
     if args.list_models:
@@ -823,7 +843,7 @@ def main():
     base = "responses" if args.stage == "answer" else "judgments"
     suffix = f"-shard{shard}" if shards > 1 else ""
     args.out = args.out or f"{base}-{stem}{suffix}.jsonl"
-    throughput_path = f"throughput-{stem}.jsonl"
+    throughput_path = args.throughput or f"throughput-{stem}.jsonl"
     args.sheet = int(args.sheet) if str(args.sheet).isdigit() else args.sheet
     if args.identities is not None:
         want = [x.strip() for x in args.identities.split(",") if x.strip()]

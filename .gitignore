@@ -28,3 +28,7 @@ runs/
 /*.xlsx
 /cue_prompt_templates*.csv
 /cue_templates*.csv
+
+# engine tuning on the workstation (vllm_tune.py): its trials and chosen settings
+tune/
+vllm-engine.json

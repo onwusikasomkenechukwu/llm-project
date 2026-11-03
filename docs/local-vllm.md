@@ -67,6 +67,20 @@ Read a few answers in `test-answers.jsonl`: thinking must not be left in
 
 ### 2. Tune for throughput
 
+`python vllm_tune.py` does this for every model, as judge and as answerer,
+in about five hours. Each trial is a real `vllm_offline.py` run on a fixed
+sample (October answers to grade; subset questions to answer), changing one
+engine setting from the current ones. The fastest speed-only setting that
+beats the current one by 3% without losing usable grades goes to
+`vllm-engine.json`, which `vllm_subset.sh`, `vllm_cues_rubric3.sh` and
+`vllm_demographics.sh` pass as `--engine-config`; the trials and
+`tune/report.md` stay on the workstation. FP8 KV cache is timed but never
+chosen, since it changes the arithmetic. In the 21 October run grading took
+103 of 114 hours and Qwen 54 of those, decoding about 1,250 tokens a grade,
+1,170 of them thinking; the other judges are bound by reading the prompt.
+
+By hand:
+
 Every run appends prompts/s and tokens/s to `throughput-vllm_offline.jsonl`.
 Tune on about 300 prompts (`--limit 100` with 3 replicates), changing one
 setting at a time:

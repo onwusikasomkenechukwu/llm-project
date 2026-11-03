@@ -29,6 +29,8 @@ D=runs/subset-rubric3
 MODELS=Qwen/Qwen3.8-27B,RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16,allenai/Olmo-3.1-32B-Instruct,google/gemma-4-31B-it,openai/gpt-oss-120b
 ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning low \
     --gpu-memory-utilization 0.95 --max-num-seqs 512 --max-num-batched-tokens 32768 --chunk 10000"
+# per model and stage, from vllm_tune.py
+[ -s vllm-engine.json ] && ARGS="$ARGS --engine-config vllm-engine.json"
 # where earlier runs left their answers; missing files are skipped
 SAVED="cues-responses.jsonl runs/cues-vllm-2026-10-21/cues-responses.jsonl"
 mkdir -p "$D/analysis"
