@@ -12,8 +12,8 @@ import analyze
 def grade(qid="q1", provider="a", identity="none", judge="a", run=0, score=3, **extra):
     row = dict(id=f"{qid}|pos|{identity}|{provider}|{run}", qid=qid, polarity="pos",
                identity=identity, provider=provider, judge=judge, question_type="Factual",
-               judge_model=judge + "-v1", accuracy=score, completeness=score, objectivity=score,
-               sourcing=score, total=score * 4, hard_fail=False, premise_handling=None,
+               judge_model=judge + "-v1", accuracy=score, completeness=score, context=score,
+               evidence=score, reasoning=score, framing=score, total=score * 6, hard_fail=False, premise_handling=None,
                error=None, **{"pass": 0})
     return row | extra
 
@@ -30,33 +30,33 @@ class AnalysisTests(unittest.TestCase):
 
     def test_identity_comparison_uses_matched_cells(self):
         rows = [grade("q1", score=2), grade("q1", identity="black-american", score=4),
-                grade("q2", score=4), grade("q2", identity="black-american", score=5),
+                grade("q2", score=3), grade("q2", identity="black-american", score=4),
                 grade("q3", identity="black-american", score=1)]
         result = next(r for r in analyze.paired_comparisons(rows, "identity", 100, 42)
                       if r["metric"] == "total")
-        self.assertEqual(result["mean"], 6)
+        self.assertEqual(result["mean"], 9)
         self.assertEqual(result["n_questions"], 2)
         self.assertEqual(result["unmatched_cells"], 1)
 
     def test_self_preference_matches_same_answer(self):
-        rows = [grade("q1", judge="a", score=5), grade("q1", judge="b", score=3),
+        rows = [grade("q1", judge="a", score=4), grade("q1", judge="b", score=2),
                 grade("q2", provider="b", judge="a", score=1)]
         result = analyze.self_preference(rows, 100, 42)
-        self.assertEqual(result[0]["mean"], 8)
+        self.assertEqual(result[0]["mean"], 12)
         self.assertEqual(result[0]["n_observations"], 1)
 
     def test_replicates_use_common_judges(self):
         rows = [grade(run=0, judge="a", score=2), grade(run=1, judge="a", score=4),
                 grade(run=1, judge="b", score=1)]
         result = analyze.replicate_variability(rows)[0]
-        self.assertEqual(result["mean_total"], 12)
-        self.assertAlmostEqual(result["sd_total"], 32 ** .5)
+        self.assertEqual(result["mean_total"], 18)
+        self.assertAlmostEqual(result["sd_total"], 72 ** .5)
         self.assertEqual(result["n_common_judge_passes"], 1)
 
     def test_hard_fail_is_not_silently_rescored(self):
-        rows = [grade(hard_fail=True, score=5)]
+        rows = [grade(hard_fail=True, score=4)]
         result = {r["metric"]: r["mean"] for r in analyze.group_summary(rows, ("provider",), 100, 42)}
-        self.assertEqual(result["total"], 20)
+        self.assertEqual(result["total"], 24)
         self.assertEqual(result["hard_fail"], 1)
 
     def test_invalid_duplicate_and_mixed_versions(self):
@@ -68,13 +68,13 @@ class AnalysisTests(unittest.TestCase):
             rows, report = analyze.load_grades(path)
             self.assertEqual(len(rows), 1)
             self.assertEqual(report["excluded"], {"invalid_scores": 1})
-            save([grade(), grade("q2", premise_handling=5)])
+            save([grade(), grade("q2", premise_handling=4)])
             rows, report = analyze.load_grades(path)
             self.assertEqual(report["excluded"], {"unexpected_premise_handling": 1})
             rows, report = analyze.load_grades(path, ignore_stray_premise=True)
             self.assertEqual((len(rows), report["stray_premise_ignored"]), (2, 1))
             self.assertIsNone(rows[1]["premise_handling"])
-            save([grade(), grade("q2", premise_handling=5, error=analyze.RUNNER_INVALID),
+            save([grade(), grade("q2", premise_handling=4, error=analyze.RUNNER_INVALID),
                   grade("q3", accuracy=None, error=analyze.RUNNER_INVALID)])
             rows, report = analyze.load_grades(path, ignore_stray_premise=True)
             self.assertEqual((len(rows), report["stray_premise_ignored"]), (2, 1))

@@ -29,6 +29,16 @@
 # results/demographics branch, so the laptop can read it as it lands. If not,
 # it stays on this machine.
 #
+# Grades follow the law school's rubric of 3 November (six criteria, 1-4 each)
+# and go to runs/demographics/rubric3, apart from the answers, which do not
+# depend on the rubric. Answers saved before the switch are reused and only
+# regraded; grades on the September rubric stay where they were, unread.
+#
+# Waves run in the order the September-rubric screen ranked them: the anchors,
+# then disability, income and occupation, the clearest differences, then the
+# identity dimensions, then the rest. Saved memory for the strong dimensions
+# (6-memory) comes before the first memory wave, which showed almost nothing.
+#
 # Run inside tmux and the llm conda env. Safe to rerun: saved rows are skipped.
 set -uo pipefail
 cd "$(dirname "$0")"
@@ -37,20 +47,22 @@ PROMPTS=samples/prompts-2026-10-20.xlsx
 CUES=cues-demographics.jsonl
 RUNS=3
 D=runs/demographics
+G=$D/rubric3   # grades and analysis under the 3 November rubric
 MODELS=Qwen/Qwen3.8-27B,RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16,allenai/Olmo-3.1-32B-Instruct,google/gemma-4-31B-it,openai/gpt-oss-120b
 ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning low \
     --gpu-memory-utilization 0.95 --max-num-seqs 512 --max-num-batched-tokens 32768 --chunk 10000"
 
 # name:scenario ids, from the Scenarios sheet. Hours per run at 21 October rates.
+# Names keep their September numbers, so answer files are found again.
 WAVES=(
     "1-politics:D-S00|D-S01|D-M01|D-S07"                     # anchors and politics, ~28 h
-    "2-identity:D-S02|D-S03|D-S04|D-S05|D-S06|D-S08"           # race, color, gender, orientation, religion, citizenship, ~60 h
     "3-disability:D-S09|D-S10|D-S11"                           # disability, income, occupation, ~56 h
+    "2-identity:D-S02|D-S03|D-S04|D-S05|D-S06|D-S08"           # race, color, gender, orientation, religion, citizenship, ~60 h
     "4-place:D-S12|D-S13|D-S14|D-S15|D-S16"                    # geography, family, veteran, record, writing, ~40 h
-    "5-memory:D-M02|D-M03|D-M04|D-M05|D-M06|D-M07|D-M08"       # saved memory, first half, ~76 h
     "6-memory:D-M09|D-M10|D-M11|D-M12|D-M13|D-M14|D-M15"       # saved memory, second half, ~86 h
+    "5-memory:D-M02|D-M03|D-M04|D-M05|D-M06|D-M07|D-M08"       # saved memory, first half, ~76 h
 )
-mkdir -p "$D/analysis"
+mkdir -p "$G/analysis"
 
 probes() {
     echo "== probes: what the models read into each cue, ungraded"
@@ -67,41 +79,41 @@ wave() {   # wave runs: answer and grade runs 1..runs of the wave's cues
         --out "$D/responses-$name.jsonl" $ARGS 2>&1 | tee -a "$D/answer.log"
     # one grading pass, as on 21 October
     python vllm_offline.py judge "$D/responses-$name.jsonl" --prompts "$PROMPTS" \
-        --out "$D/judgments-$name.jsonl" $ARGS 2>&1 | tee -a "$D/judge.log"
+        --out "$G/judgments-$name.jsonl" $ARGS 2>&1 | tee -a "$G/judge.log"
 }
 
 evaluate() {
     echo "== evaluating everything finished so far ($1)"
     # merge before the next wave starts writing, analyse in the background
     python merge.py responses --in-dir "$D" --out "$D/all-responses.jsonl"
-    python merge.py judgments --in-dir "$D" --out "$D/all-judgments.jsonl"
+    python merge.py judgments --in-dir "$G" --out "$G/all-judgments.jsonl"
     (
-        A="$D/analysis"
-        python cue_screen.py "$D/all-responses.jsonl" "$D/all-judgments.jsonl" \
+        A="$G/analysis"
+        python cue_screen.py "$D/all-responses.jsonl" "$G/all-judgments.jsonl" \
             --out-dir "$A/screen-strict" > /dev/null
-        python cue_screen.py "$D/all-responses.jsonl" "$D/all-judgments.jsonl" \
+        python cue_screen.py "$D/all-responses.jsonl" "$G/all-judgments.jsonl" \
             --out-dir "$A/screen-lenient" --lenient > /dev/null
         [ -s "$D/probes-responses.jsonl" ] && python cue_probes.py "$D/probes-responses.jsonl" \
             --out-dir "$A/probes"
-        python analyze.py "$D/all-judgments.jsonl" --responses "$D/all-responses.jsonl" \
+        python analyze.py "$G/all-judgments.jsonl" --responses "$D/all-responses.jsonl" \
             --prompts "$PROMPTS" --bootstrap 500 --out-dir "$A/scores"
-        python vllm_failures.py "$D/all-judgments.jsonl" > "$A/failures.txt"
+        python vllm_failures.py "$G/all-judgments.jsonl" > "$A/failures.txt"
         echo "after wave $1, $(date)" > "$A/AS_OF.txt"
         publish "$1"
-    ) >> "$D/evaluate.log" 2>&1 &
+    ) >> "$G/evaluate.log" 2>&1 &
 }
 
 publish() {
     if ! gh auth status > /dev/null 2>&1; then
-        echo "gh not signed in: analysis stays in $D/analysis"
+        echo "gh not signed in: analysis stays in $G/analysis"
         return
     fi
-    local W=../llm-project-results
-    [ -d "$W" ] || git worktree add -B results/demographics "$W" HEAD
-    rm -rf "$W/demographics" && cp -r "$D/analysis" "$W/demographics"
+    local W=../llm-project-results-rubric3
+    [ -d "$W" ] || git worktree add -B results/demographics-rubric3 "$W" HEAD
+    rm -rf "$W/demographics" && cp -r "$G/analysis" "$W/demographics"
     git -C "$W" add -f demographics
     git -C "$W" commit -qm "Demographic cue screen, after wave $1" &&
-        git -C "$W" push -q -u origin results/demographics
+        git -C "$W" push -q -u origin results/demographics-rubric3
 }
 
 case "${1:-all}" in
@@ -114,7 +126,7 @@ case "${1:-all}" in
             done
         done
         wait
-        echo "done: $D/analysis/screen-strict/report.md" ;;
+        echo "done: $G/analysis/screen-strict/report.md" ;;
     evaluate)
         evaluate manual
         wait ;;

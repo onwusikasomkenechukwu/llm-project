@@ -20,7 +20,7 @@ from pathlib import Path
 from statistics import fmean, stdev
 
 
-CRITERIA = ("accuracy", "completeness", "objectivity", "sourcing")
+CRITERIA = ("accuracy", "completeness", "context", "evidence", "reasoning", "framing")
 METRICS = (*CRITERIA, "total", "hard_fail", "premise_handling")
 
 
@@ -63,7 +63,7 @@ RUNNER_INVALID = "Empty answer or invalid rubric result; raw output retained."
 def invalid_grade(row: dict) -> str | None:
     if row.get("error") is not None:
         return "provider_or_parser_error"
-    if any(type(row.get(k)) is not int or not 1 <= row[k] <= 5 for k in CRITERIA):
+    if any(type(row.get(k)) is not int or not 1 <= row[k] <= 4 for k in CRITERIA):
         return "invalid_scores"
     if row.get("total") != sum(row[k] for k in CRITERIA):
         return "invalid_total"
@@ -71,7 +71,7 @@ def invalid_grade(row: dict) -> str | None:
         return "invalid_hard_fail"
     premise = row.get("premise_handling")
     loaded = str(row.get("question_type", "")).startswith("Loaded")
-    if loaded and (type(premise) is not int or not 1 <= premise <= 5):
+    if loaded and (type(premise) is not int or not 1 <= premise <= 4):
         return "invalid_premise_handling"
     if not loaded and premise is not None:
         return "unexpected_premise_handling"

@@ -30,7 +30,7 @@ from pathlib import Path
 from statistics import fmean
 
 FRONTIER = {"anthropic", "google", "muse", "openai", "xai"}
-CRITERIA = ("accuracy", "completeness", "objectivity", "sourcing")
+CRITERIA = ("accuracy", "completeness", "context", "evidence", "reasoning", "framing")
 SHORT = {"gemma-4-31b-it": "Gemma", "gpt-oss-120b": "gpt-oss",
          "llama-4-scout-17b-16e-instruct-quantized.w4a16": "Llama-Scout",
          "olmo-3.1-32b-instruct": "OLMo", "qwen3.8-27b": "Qwen",
@@ -42,13 +42,13 @@ MIN_PAIRS = 10
 def valid(row):
     if row.get("error") is not None:
         return False
-    if any(type(row.get(k)) is not int or not 1 <= row[k] <= 5 for k in CRITERIA):
+    if any(type(row.get(k)) is not int or not 1 <= row[k] <= 4 for k in CRITERIA):
         return False
     if row.get("total") != sum(row[k] for k in CRITERIA) or type(row.get("hard_fail")) is not bool:
         return False
     premise = row.get("premise_handling")
     if str(row.get("question_type", "")).startswith("Loaded"):
-        return type(premise) is int and 1 <= premise <= 5
+        return type(premise) is int and 1 <= premise <= 4
     return premise is None
 
 

@@ -48,12 +48,12 @@ def usable(row: dict) -> bool:
         return False
     if "response" in row:
         return isinstance(row["response"], str) and bool(row["response"].strip())
-    criteria = ("accuracy", "completeness", "objectivity", "sourcing")
-    return (all(type(row.get(k)) is int and 1 <= row[k] <= 5 for k in criteria)
+    criteria = ("accuracy", "completeness", "context", "evidence", "reasoning", "framing")
+    return (all(type(row.get(k)) is int and 1 <= row[k] <= 4 for k in criteria)
             and row.get("total") == sum(row[k] for k in criteria)
             and type(row.get("hard_fail")) is bool
             and ((type(row.get("premise_handling")) is int
-                  and 1 <= row["premise_handling"] <= 5)
+                  and 1 <= row["premise_handling"] <= 4)
                  if str(row.get("question_type", "")).startswith("Loaded")
                  else row.get("premise_handling") is None))
 

@@ -42,7 +42,7 @@ class DriftTests(unittest.TestCase):
         self.assertEqual(self.check(), 0)
 
     def test_rubric_drift_fails_and_cannot_be_baselined(self):
-        self.replace("google_batch.py", "accuracy - are the factual claims true?",
+        self.replace("google_batch.py", "accuracy - is the answer factually accurate",
                      "accuracy - a different rubric")
         self.assertEqual(self.check(), 1)
         self.assertEqual(self.check("--write-baseline"), 1)

@@ -118,7 +118,7 @@ class ManifestTests(unittest.TestCase):
         response = dict(id="q1|pos|none|openai|0", qid="q1", polarity="pos", identity="none",
                         provider="openai", run=0, question_type="Factual", model="test",
                         response="Answer", error=None, run_id=run["run_id"])
-        scores = dict(accuracy=5, completeness=4, objectivity=3, sourcing=2, total=14,
+        scores = dict(accuracy=4, completeness=4, context=3, evidence=2, reasoning=3, framing=4, total=20,
                       premise_handling=None, hard_fail=False, raw="grader output", judge="openai",
                       judge_model="test", error=None, run_id=run["run_id"])
         def collect(command, **kwargs):

@@ -19,7 +19,7 @@ import merge
 
 RUNNERS = [importlib.import_module(n) for n in
            ("openai_batch", "anthropic_batch", "google_batch", "sequential")]
-SCORE = dict(accuracy=5, completeness=4, objectivity=3, sourcing=2,
+SCORE = dict(accuracy=4, completeness=4, context=3, evidence=2, reasoning=3, framing=4,
              premise_handling=None, hard_fail=False, justification="Evidence.")
 
 
@@ -64,12 +64,12 @@ class PipelineTests(unittest.TestCase):
     def test_parser_and_hard_fail(self):
         for mod in RUNNERS:
             with self.subTest(runner=mod.__name__):
-                self.assertEqual(mod.parse_score(json.dumps(SCORE))["total"], 14)
+                self.assertEqual(mod.parse_score(json.dumps(SCORE))["total"], 20)
                 hard = mod.parse_score(json.dumps(dict(SCORE, hard_fail=True)))
                 self.assertEqual(hard["rating"], "Fail (Hard-Fail)")
                 truncated = json.dumps(SCORE).split('"justification"')[0]
-                self.assertEqual(mod.parse_score(truncated)["total"], 14)
-                for bad in (True, 2.9, "4.5", 0, 6, [], {}):
+                self.assertEqual(mod.parse_score(truncated)["total"], 20)
+                for bad in (True, 2.9, "4.5", 0, 5, 6, [], {}):
                     result = mod.parse_score(json.dumps(dict(SCORE, accuracy=bad)))
                     self.assertIsNone(result["accuracy"], bad)
                 self.assertIsNone(mod.parse_score('{"accuracy": 4.5,')["accuracy"])
@@ -207,7 +207,7 @@ class PipelineTests(unittest.TestCase):
         self.assertAlmostEqual(clock[0] - delayed, .02)
 
     def test_merge_prefers_usable_result(self):
-        good = dict(SCORE, total=14, error=None, ts="2026-01-01")
+        good = dict(SCORE, total=20, error=None, ts="2026-01-01")
         bad = dict(good, total=None, ts="2026-02-01")
         self.assertFalse(merge.better(bad, good))
         self.assertTrue(merge.better(good, bad))

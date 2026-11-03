@@ -20,7 +20,7 @@ from collections import defaultdict
 from statistics import fmean
 
 FACTORS = ("provider", "channel", "cue_type", "race", "gender", "education", "exemplar", "run")
-METRICS = ("total", "accuracy", "completeness", "objectivity", "sourcing")
+METRICS = ("total",) + ("accuracy", "completeness", "context", "evidence", "reasoning", "framing")
 # Differences are reported as second level minus first.
 ORDER = {"race": ["White", "Black"], "gender": ["man", "woman"], "channel": ["user", "memory"],
          "education": ["no diploma", "doctorate"],
@@ -75,7 +75,7 @@ def main():
             for i in answers if grades[i]]
 
     print(f"{len(rows)} graded answers\n")
-    print(f"{'contrast':<60}{'pairs':>6}{'total':>8}{'95% interval':>18}{'2nd higher':>12}{'sourcing':>10}")
+    print(f"{'contrast':<60}{'pairs':>6}{'total':>8}{'95% interval':>18}{'2nd higher':>12}{'evidence':>10}")
     for factor in FACTORS:
         others = [f for f in FACTORS if f != factor]
         cells = defaultdict(dict)
@@ -87,7 +87,7 @@ def main():
             for b in levels[i + 1:]:
                 pairs = [{"qid": key[-1], "ctx": dict(zip(others, key)),
                           "diff": c[b]["total"] - c[a]["total"],
-                          "src": c[b]["sourcing"] - c[a]["sourcing"]}
+                          "src": c[b]["evidence"] - c[a]["evidence"]}
                          for key, c in cells.items() if a in c and b in c]
                 if not pairs:
                     continue

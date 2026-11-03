@@ -50,7 +50,7 @@ QUESTION_TYPES = (
     "Loaded (True Premise)",
     "Open-Ended",
 )
-CRITERIA = ("accuracy", "completeness", "objectivity", "sourcing")
+CRITERIA = ("accuracy", "completeness", "context", "evidence", "reasoning", "framing")
 
 
 class Report:
@@ -338,7 +338,7 @@ def audit_responses(path: Path, expected_ids: set[str], providers: tuple[str, ..
 
 
 def valid_score(value: object) -> bool:
-    return type(value) is int and 1 <= value <= 5
+    return type(value) is int and 1 <= value <= 4
 
 
 def audit_judgments(path: Path, expected_answer_ids_: set[str], judges: tuple[str, ...],

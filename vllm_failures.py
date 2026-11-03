@@ -12,7 +12,7 @@ import json
 import sys
 from collections import Counter, defaultdict
 
-CRITERIA = ("accuracy", "completeness", "objectivity", "sourcing")
+CRITERIA = ("accuracy", "completeness", "context", "evidence", "reasoning", "framing")
 JUDGE_TOKENS = 3000
 
 
@@ -26,13 +26,13 @@ def reason(r):
         if (r.get("output_tokens") or 0) >= JUDGE_TOKENS:
             return "hit the token ceiling before the rubric JSON"
         return "no rubric JSON found"
-    if any(type(r.get(k)) is not int or not 1 <= r[k] <= 5 for k in CRITERIA):
-        return "criterion outside 1-5"
+    if any(type(r.get(k)) is not int or not 1 <= r[k] <= 4 for k in CRITERIA):
+        return "criterion outside 1-4"
     if r.get("total") != sum(r[k] for k in CRITERIA):
         return "total does not add up"
     if type(r.get("hard_fail")) is not bool:
         return "hard_fail missing"
-    if loaded and not (type(ph) is int and 1 <= ph <= 5):
+    if loaded and not (type(ph) is int and 1 <= ph <= 4):
         return "premise_handling missing on a Loaded question"
     if not loaded and ph is not None:
         return "premise_handling given on a non-Loaded question"

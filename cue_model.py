@@ -40,7 +40,7 @@ import pandas as pd
 import statsmodels.formula.api as smf
 from scipy.stats import norm
 
-CRITERIA = ("accuracy", "completeness", "objectivity", "sourcing")
+CRITERIA = ("accuracy", "completeness", "context", "evidence", "reasoning", "framing")
 # what every runner writes when a reply parses but breaks the rubric contract
 RUNNER_INVALID = "Empty answer or invalid rubric result; raw output retained."
 
@@ -55,13 +55,13 @@ def usable(g, lenient):
     error = g.get("error")
     if error is not None and not (lenient and error == RUNNER_INVALID):
         return None
-    if any(type(g.get(k)) is not int or not 1 <= g[k] <= 5 for k in CRITERIA):
+    if any(type(g.get(k)) is not int or not 1 <= g[k] <= 4 for k in CRITERIA):
         return None
     if g.get("total") != sum(g[k] for k in CRITERIA) or type(g.get("hard_fail")) is not bool:
         return None
     premise = g.get("premise_handling")
     if str(g.get("question_type", "")).startswith("Loaded"):
-        return g if type(premise) is int and 1 <= premise <= 5 else None
+        return g if type(premise) is int and 1 <= premise <= 4 else None
     if premise is None:
         return g if error is None else None
     return {**g, "premise_handling": None} if lenient else None
