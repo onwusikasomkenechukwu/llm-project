@@ -319,12 +319,6 @@ reference answers that belong to different questions, so they were left out.
 The rubric of 3 November does not say which totals count as Excellent, Good
 and so on. We use the old bands scaled to 24 until the law school decides.
 
-### 7. Who grades which topic
-
-Each person grades the topic they wrote answers for, plus one other at random,
-and no one grades more than two. We need the list of who wrote which topic to
-assign them.
-
 ## Cost
 
 The open-weight models cost nothing beyond the lab's machine. The frontier

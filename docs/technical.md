@@ -1748,15 +1748,12 @@ About 40% of the answers speak to the asker ("you", "as a Black woman"), which
 can hint at the cue. `key.csv` flags them in `addresses_asker`.
 
 `label_forms.gs` turns the uploaded spreadsheet into one Google Form per topic.
-Paste it into the sheet's Apps Script editor, set `RUBRIC_URL` to a view-only
-copy of the rubric, and run `buildForms`. Each form asks for the rater's email
-first. Responses land in new tabs of the same sheet, with item titles such as
-`R001 Factual accuracy` that match `key.csv`. Then fill a `Writers` tab (Name,
-Email, Topics, separated by `;`) and run `assignRaters`. Each person gets the
-topics they wrote, at most two, plus one other drawn from the topics with the
-fewest raters so far. The result goes to an `Assignments` tab with each
-form's link, along with any topic left with fewer than two raters. Nothing is
-emailed or shared.
+Paste it into the sheet's Apps Script editor and run `buildForms`. Each form
+is named for its category, links the law school's rubric sheet (`RUBRIC_URL`)
+and asks for the rater's email first. Responses land in new tabs of the same
+sheet, with item titles such as `R001 Factual accuracy` that match `key.csv`.
+The links go to a Forms tab, one per category. Who gets which link is decided
+by hand, and nothing is emailed or shared.
 
 `correlate.py` compares families rather than models within one run — see
 [Frontier against open-weight](#frontier-against-open-weight).
