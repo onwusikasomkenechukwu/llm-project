@@ -21,6 +21,9 @@ question instead goes to every model once, under a different group each time. Th
 exemplar inside a group are drawn at random. Rows come in batches of 20, each
 holding every model x type once, so a batch is a small balanced sample on its
 own. Same inputs and seed, same sample.
+
+The last column, Topic, names each answer's category, so the forms
+(label_forms.gs) can give each rater only the topics they are assigned.
 """
 
 import argparse
@@ -44,6 +47,13 @@ NO_REFERENCE = "(No reference answer for this question. Grade the answer on its 
 # answers that speak to the asker, as cue_stats.py; such an answer can reveal the cue
 ADDRESSED = re.compile(r"\b(you|your|as an? (black|white|african american|caucasian)|"
                        r"hbcu|historically black)\b", re.I)
+# the law school's category names, by question id prefix
+TOPICS = {"13A": "Slavery/13th Amendment", "VR": "Voting Rights", "JS": "Criminal Justice",
+          "EDU": "Education", "EO": "Economic Opportunity", "14A": "14th Amendment",
+          "CRE": "Civil Rights Movement: Major Events", "JC": "Jim Crow", "REC": "Reconstruction",
+          "CE": "Current Events: Post-2024 Election Civil Rights Developments",
+          "PEAH": "Pre-Enslavement Africana Heritage", "PEOH": "Pre-Enslavement Africana Heritage",
+          "EJ": "Environmental Justice"}
 MODEL_NAMES = re.compile(r"\b(gemma|qwen|llama|olmo|gpt-oss|openai|alibaba|allen ai|meta ai)\b", re.I)
 
 # The rubric as the judges were given it (vllm_offline.py JUDGE_PROMPT), for the
@@ -172,6 +182,11 @@ def prompts(path):
     return out
 
 
+def topic_name(qid):
+    prefix = qid.rsplit("-", 1)[0]
+    return TOPICS.get(prefix, prefix)
+
+
 def draw(candidates, qtype, topic, rng):
     """candidates: (qid, provider, group) -> [answer rows]. -> [(batch, answer row)]"""
     models = sorted({p for _, p, _ in candidates})
@@ -216,8 +231,8 @@ def write_sheet(path, picks, qtype, ref):
     head = ["Row ID", "Batch", "Question type", "Question", "Reference answer components", "Answer",
             "Factual accuracy (1-4)", "Completeness (1-4)", "Historical context (1-4)",
             "Source and evidence reliability (1-4)", "Nuanced reasoning (1-4)", "Linguistic framing (1-4)",
-            "Total (/24)", "Premise handling (1-4, Loaded only)", "Hard fail (TRUE/FALSE)", "Notes"]
-    widths = [8, 7, 14, 40, 50, 100, 11, 13, 12, 14, 12, 12, 9, 14, 12, 40]
+            "Total (/24)", "Premise handling (1-4, Loaded only)", "Hard fail (TRUE/FALSE)", "Notes", "Topic"]
+    widths = [8, 7, 14, 40, 50, 100, 11, 13, 12, 14, 12, 12, 9, 14, 12, 40, 24]
     ws.append(head)
     bold, grey = Font(bold=True), PatternFill("solid", fgColor="D9D9D9")
     entry = PatternFill("solid", fgColor="FFF2CC")
@@ -234,7 +249,8 @@ def write_sheet(path, picks, qtype, ref):
         loaded = qtype[a["qid"]].startswith("Loaded")
         ws.append([row_id, batch, qtype[a["qid"]], clean(a["question"]), clean(ref(a["qid"])),
                    clean(a["response"]), None, None, None, None, None, None,
-                   f'=IF(COUNT(G{i}:L{i})=6,SUM(G{i}:L{i}),"")', None if loaded else "n/a", None, None])
+                   f'=IF(COUNT(G{i}:L{i})=6,SUM(G{i}:L{i}),"")', None if loaded else "n/a", None, None,
+                   topic_name(a["qid"])])
         for c in ws[i]:
             c.alignment = Alignment(wrap_text=True, vertical="top")
         for col in "GHIJKLO" + ("N" if loaded else ""):

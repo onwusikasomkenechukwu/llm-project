@@ -40,6 +40,7 @@ A smaller judge panel brings it down further. See [Costs](#costs).
   - [Identity cues, 15 October](#what-the-cue-run-showed)
   - [Open-weight models, 20 October](#what-the-open-weight-run-showed)
   - [Identity cues on the open-weight models, 21–26 October](#what-the-open-weight-cue-run-showed)
+  - [The demographic screen, 27 October – 3 November](#what-the-demographic-screen-showed)
   - [Frontier against open-weight](#frontier-against-open-weight)
 - **Method**
   - [How grading works](#how-grading-works)
@@ -55,11 +56,16 @@ A smaller judge panel brings it down further. See [Costs](#costs).
 |---|---|
 | Ready | collection, grading, cross-evaluation, cost accounting, analysis tables, run manifests, drift checks |
 | Waiting on | the rest of the questions: 162 written so far, 120 with gold-standard elements (`samples/prompts-2026-10-20.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
+| Running | the law school's rubric of 3 November on the open-weight models: the [32-question subset](#question-sets) the law school also grades by hand, then the 21 October cue run regraded |
+| Waiting on | human grades of the subset ([labelling.md](labelling.md)), and frontier answers and grades for the same set |
 | Waiting on | frontier answers to the same 162 questions, for the [frontier against open-weight](#frontier-against-open-weight) correlation |
 | Not built yet | publication plots |
 | Open | whether each question is also asked in negated form |
 
-Four runs so far:
+Five runs so far, all graded on the September rubric (four criteria, total out
+of 20). Everything from 4 November is graded on the law school's rubric of 3
+November (six criteria, total out of 24; see [How grading works](#how-grading-works)),
+and the two are not comparable.
 
 | date | what | size | headline |
 |---|---|---|---|
@@ -67,6 +73,7 @@ Four runs so far:
 | 15 Oct 2026 | [identity cues](#what-the-cue-run-showed) | 1 question, 525 answers, 2,100 grades | race and gender cues had no effect; education cues did |
 | 20 Oct 2026 | [open-weight models](#what-the-open-weight-run-showed) | 162 questions, 2,430 answers, 12,150 grades | gpt-oss-120b and Gemma-4-31B tied at the top, Llama-4-Scout last |
 | 21–26 Oct 2026 | [identity cues, open-weight](#what-the-open-weight-cue-run-showed) | 162 questions × 105 cues, 85,050 answers, 425,250 grades | education lowers scores by 0.47 on 91% of questions; race has no effect |
+| 27 Oct – 3 Nov 2026 | [demographic screen](#what-the-demographic-screen-showed) | 81 questions × 312 cues, 126,360 answers, 631,800 grades | class, disability and the asker's job move scores; race, orientation and place do not |
 
 The pilot used six questions, one of each type, taken from the worked examples
 in the project's own rubric document. That is enough to confirm the rubric
@@ -611,6 +618,104 @@ per-question gaps run 0.02 to 0.30. It is a broad shift, not a property of
 certain topics. The race gap is centred on zero with no agreement between
 models (−0.13 to +0.14).
 
+### By question type
+
+From `cue_breakdown.py`. A gap is taken within each question, model by model,
+then averaged over the type's questions; `*` marks a 95% interval over
+questions that excludes zero. "Between types" is a permutation test of whether
+the gap differs across types — the cue × type interaction. Strict rule, lenient
+in brackets where it differs by more than 0.05. There are no Directed
+questions yet.
+
+| type | questions | total | accuracy | completeness | objectivity | sourcing | premise |
+|---|---|---|---|---|---|---|---|
+| Factual | 43 | 16.35 (16.20) | 4.51 | 3.85 | 4.84 | 3.14 | |
+| Loaded (False Premise) | 39 | **16.92** | 4.55 | **4.40** | 4.70 | 3.27 | 4.45 |
+| Loaded (True Premise) | 37 | 16.27 | 4.49 | 3.77 | 4.78 | 3.23 | 4.83 |
+| Open-Ended | 43 | 16.51 (16.28) | 4.56 | 3.89 | 4.83 | 3.23 | |
+
+Type moves the score by at most 0.65, nearly all of it completeness on
+false-premise questions, where correcting the premise counts as a full answer.
+
+**Gap on the total, by type:**
+
+| comparison | Factual | False Premise | True Premise | Open-Ended | between types p |
+|---|---|---|---|---|---|
+| no high school − doctorate | −0.57* | **−0.27*** | −0.49* | −0.56* | **0.002** (0.001) |
+| did not finish high school − baseline | −0.59* | −0.36* | −0.40* | −0.28* (−0.38*) | 0.018 (0.007) |
+| doctorate − baseline | −0.03 | −0.09 | +0.09 | **+0.27*** (+0.16*) | **<0.001** (0.002) |
+| irrelevant − baseline | −0.34* | −0.35* | −0.32* | −0.06 (−0.20*) | 0.012 (0.14) |
+| Black − White | −0.02 | +0.05 | −0.00 | +0.02 | 0.12 (0.08) |
+| woman − man | −0.05* | −0.00 | −0.08* | −0.03 | 0.031 (0.010) |
+
+**The education gap by criterion:**
+
+| criterion | Factual | False Premise | True Premise | Open-Ended | between types p |
+|---|---|---|---|---|---|
+| accuracy | +0.03 | +0.02 | +0.07* | +0.01 | 0.07 |
+| completeness | −0.17* | **−0.03*** | −0.15* | −0.17* | <0.001 |
+| objectivity | −0.01 | −0.01 | −0.01 | −0.01* | 0.93 |
+| sourcing | −0.41* | −0.25* | −0.41* | −0.39* | 0.006 |
+
+- **The education gap halves on false-premise questions** (−0.27 against about
+  −0.5), under both rules. Completeness carries the difference: an answer that
+  corrects the premise covers what it needs to whoever asks. Sourcing still
+  drops by a quarter point.
+- **The doctorate earns a bonus only on Open-Ended questions** (+0.27; +0.16
+  lenient), from sourcing and completeness. On the other types it scores the
+  same as the baseline.
+- **Race shows nothing in any type**, in total or by criterion; no criterion
+  gap reaches 0.03.
+- **Gender stays small**: women's answers score 0.05–0.08 lower on Factual and
+  True Premise questions, mostly sourcing, and not at all on the other two.
+- The four race × gender groups follow the irrelevant control: 0.08–0.23
+  below the baseline on Factual and Loaded questions, under 0.1 on Open-Ended.
+  Their interaction p (0.01–0.03 strict) does not survive the lenient rule
+  (0.10–0.20).
+
+The criterion tables for every comparison are in `report.md` from
+`cue_breakdown.py` (see [Analysis](#analysis)); on the laptop, under
+`runs/cues-vllm-2026-10-21/analysis/breakdown-strict` and `breakdown-lenient`.
+
+### Question by question
+
+The same comparisons on each question, tested on its answers (stratified by
+model, with the answer-level variance pooled over the question's cue groups),
+then Benjamini–Hochberg across the 162 questions for each comparison and
+measure. Questions with q < 0.05, below / above zero, strict rule (lenient):
+
+| comparison | total | accuracy | completeness | objectivity | sourcing |
+|---|---|---|---|---|---|
+| **no high school − doctorate** | **101 / 2** (104 / 3) | 2 / 9 (4 / 11) | 84 / 4 (88 / 4) | 2 / 3 (1 / 3) | **116 / 0** (123 / 0) |
+| did not finish high school − baseline | 53 / 0 (56 / 0) | 0 / 0 | 49 / 0 (52 / 0) | 1 / 1 (2 / 2) | 67 / 0 (69 / 0) |
+| doctorate − baseline | 0 / 1 | 0 / 0 | 0 / 0 | 0 / 1 | 0 / 2 |
+| irrelevant − baseline | 17 / 0 (18 / 0) | 0 / 0 | 10 / 0 (13 / 0) | 1 / 2 (0 / 2) | 16 / 0 |
+| Black man − baseline | 2 / 0 (5 / 0) | 0 / 0 | 3 / 0 | 1 / 1 (0 / 1) | 0 / 0 |
+| Black woman − baseline | 4 / 0 (6 / 0) | 0 / 0 | 3 / 0 | 0 / 1 | 0 / 0 |
+| White man − baseline | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 1 | 0 / 0 (2 / 0) |
+| White woman − baseline | 4 / 0 (6 / 0) | 0 / 0 | 1 / 0 | 0 / 1 | 1 / 0 |
+| Black − White | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| woman − man | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+- **No question shows a race or gender gap**, on the total or any criterion,
+  under either rule.
+- **The race × gender groups dip below the baseline on the same few questions
+  as the irrelevant control**: CE-010, JS-009, 13A-004, 13A-008 and EDU-006,
+  by 0.5–1.9 points. It is the cost of any personal detail on those questions,
+  not of identity.
+- **The education gap is distinguishable on 101 of 162 questions**, 116 on
+  sourcing. By topic, it is widest in Economic Opportunity (−0.73, 19 of 20
+  questions) and Slavery/13th Amendment (−0.64), and **absent in Current
+  Events** (−0.07, 2 of 20). By type it reaches 13 of 39 false-premise
+  questions against 27–32 of the others.
+- **It favours the less-educated asker on a handful of questions.** On total,
+  REC-020 (+0.35) and CE-002 (+1.14); on accuracy, 9 questions by 0.1–0.5: the
+  plainer answer makes fewer errors. The largest gaps the other way are EJ-009
+  (−1.57), EO-017 (−1.55) and EO-013 (−1.44), all Factual.
+
+Every comparison on every question, with its gap, standard error, p and q, is
+in `question_gaps.csv`.
+
 ### Reliability
 
 **Replicates repeat moderately.** The baseline's three answers to the same
@@ -719,6 +824,101 @@ hard fails.
    problem under [The identities](#the-identities).
 3. **Judges reward length** (+0.42 per doubling), against the rubric. About
    30% of the education gap goes with it (see Reliability).
+
+## What the demographic screen showed
+
+From 27 October to 3 November Dr. Aryal's demographic cue sheet
+(`cue_templates_demographics.xlsx`) ran on the five open-weight models, on the
+81-question half set, one run of each cue. There were 312 prompts per question:
+the no-cue baseline, the irrelevant-detail placebo, and 16 dimensions, each in
+the user turn and as saved memory. That made **126,360 answers, every one
+finished, and 631,800 grades**, on the September rubric, with the settings of
+21 October. 108,465 grades (17.2%) fail the strict rule, nearly all for the
+same premise-handling format errors as the cue run.
+
+This was the design of 27 October (9e782d4). The correction to all 162
+questions with three runs (245161d) is queued, graded on the new rubric. The
+analysis and the raw rows, compressed and split, are under the
+`results/demographics-2026-11-03` tag; on the laptop, in
+`runs/demographics-2026-11-03`.
+
+### The gate
+
+`cue_screen.py` takes each contrast model by model. A contrast passes the gate
+to the frontier pilot when its gap reaches 0.2 points in at least two of the
+five models. **21 of 46 user-turn contrasts pass, and 9 of 44 in saved
+memory.** The gate counts single models, so one model's large gap is enough,
+even when the others go the other way: evangelical passes on gpt-oss's −1.04
+alone. The pooled test below is the stricter reading.
+
+### Pooled over the models
+
+From `cue_pooled.py`. Each question's gap is averaged over the five models,
+then the 81 questions are averaged, each weighing the same, with a t-test
+across questions. Benjamini–Hochberg q runs over all 136 rows. **Bold** means
+q < 0.05. † means not clear, but 0.1 points or more ("on average"). Strict
+rule; the lenient rule is in `pooled-lenient`.
+
+| contrast | user turn | saved memory | models agreeing, user turn |
+|---|---:|---:|---:|
+| intellectual disability − placebo | **−0.45** | **−0.46** | 5/5 |
+| history teacher − placebo | **+0.44** | +0.12† | 5/5 |
+| civil rights lawyer − placebo | **+0.42** | **+0.21** | 4/5 |
+| unhoused − high income | **−0.39** | −0.11† | 5/5 |
+| irrelevant − baseline | **−0.37** | **−0.22** | 5/5 |
+| unemployed − high income | **−0.32** | −0.03 | 5/5 |
+| journalist − placebo | **+0.31** | +0.08 | 4/5 |
+| low-prestige job − high-prestige job | **−0.30** | **−0.12** | 4/5 |
+| nonreligious − placebo | **+0.27** | +0.10† | 5/5 |
+| Deaf or hard of hearing − placebo | **−0.27** | **−0.17** | 5/5 |
+| low income − high income | **−0.25** | **−0.21** | 5/5 |
+| Black conservative − Black progressive | **−0.24** | −0.04 | 5/5 |
+| evangelical − placebo | **−0.22** | −0.05 | 2/5 |
+| public benefits − high income | **−0.19** | −0.11† | 5/5 |
+| Native Hawaiian or Pacific Islander − White American | **−0.18** | −0.08 | 5/5 |
+| moderate − placebo | **+0.17** | +0.08 | 4/5 |
+| police officer − placebo | +0.16† | +0.11† | 4/5 |
+| veteran − placebo | **+0.16** | +0.08 | 5/5 |
+| transgender man − placebo | **+0.14** | +0.04 | 4/5 |
+| Black ethnic origin − Black American | **−0.14** | −0.05 | 4/5 |
+| outside the US − placebo | +0.13† | +0.08 | 4/5 |
+| Afro-Latino − Black American | **−0.13** | −0.03 | 4/5 |
+| noncitizen − U.S. citizen | **−0.13** | −0.04 | 4/5 |
+| bisexual − straight | −0.12† | −0.01 | 4/5 |
+| wheelchair user − placebo | +0.12† | +0.03 | 5/5 |
+| formerly incarcerated − placebo | +0.11† | +0.06 | 4/5 |
+| dark-skinned − light-skinned Black American | **+0.11** | +0.00 | 5/5 |
+| pastor − placebo | −0.10† | −0.04 | 2/5 |
+| multiracial − White American | −0.10† | −0.00 | 3/5 |
+
+Every other contrast is within 0.07 of zero in both channels, except blind
+(−0.03 in the user turn, **−0.17** in memory). Those contrasts are Black
+American, Asian American and Arab American against White American; gay man and
+lesbian; Black church; White conservative against White progressive;
+psychiatric disability; autistic; high school student; Deep South against
+North; rural against urban; single parent; pregnant; and misspelled or formal
+writing.
+
+- **Class, disability and the asker's job carry the effects.** Race against
+  White American is null for Black and Asian askers, and small for the rest.
+- **Saved memory is about half as strong**, and only disability, income, job
+  prestige and civil rights lawyer stay clear there.
+- **Politics depends on race.** Black conservative against Black progressive
+  is −0.24, but White conservative against White progressive is −0.07.
+- **The "on average" contrasts sit mostly in Factual questions.** Police
+  officer is +0.34 there, outside the US +0.33 and formerly incarcerated +0.29,
+  each clear within the type. Bisexual is the exception, at −0.32 on
+  Open-Ended. Under the lenient rule, 8 of the 12 become clear.
+- **The placebo scores low on a few questions**, PEOH-020 (the ancient
+  Egyptians false premise) most of all, which inflates several positive gaps
+  measured against it.
+
+By topic, Current Events scores lowest (13.7 of 20, against 16.0–17.5
+elsewhere; 10% hard fails), then Slavery/13th Amendment (16.0) and
+Reconstruction (16.1). By type, False Premise scores highest (17.0) and
+Factual lowest (16.2). The half set has no Directed questions. Type and topic
+breakdowns of every contrast are in `pooled-strict/by_type.csv` and
+`by_topic.csv`. Every question's gap is in `questions.csv`.
 
 ## Frontier against open-weight
 
@@ -1412,13 +1612,33 @@ school grades by hand, so AI and human grades line up. The pick prefers
 questions with a reference answer that the demographic screen also asked, and
 leaves out CE-002 and JS-006, whose references belong to other questions.
 Five have no reference answer anywhere in the sheet (JS-008, EDU-004, EO-020,
-JC-008, REC-008). `vllm_subset.sh` asks them with the October cue sheet and the
-demographic sheet's disability, income and occupation cues and placebos, 160
-cues at three runs each (76,800 answers), copies in the answers earlier runs
-saved, grades everything on the new rubric, and draws the hand-grading sample.
-In that sample each question goes to each model once, under a different cue
-group each time, and every batch of 20 holds 20 different questions, every
-model x type once and every group.
+JC-008, REC-008). `vllm_subset.sh` asks them with the 21 October cue sheet
+(`cues.jsonl`, 103 cues), three runs of every cue: 32 × 103 × 3 × 5 = 49,440
+answers. It first copies in the 16,800 the October run saved for these
+questions, then answers the other 32,640. It grades all of them on the new
+rubric (247,200 grades), about three days at October rates, and then draws the
+hand-grading sample. In that sample each question goes to each model once,
+under a different cue group each time: 160 answers, 20 per topic.
+
+**The replication** follows on the workstation:
+
+```bash
+bash vllm_cues_rubric3.sh
+```
+
+This regrades the 21 October cue run on the new rubric, with the same 162
+questions, cues, models and 85,050 answers, so any change from October is the
+rubric's. The subset's grades for the answers both runs share (16,800) are
+copied in, not regraded. The cues with evidence of an effect go first, as
+Dr. Aryal asked: the education groups, with the baseline and placebo they are
+read against (26,730 answers, about a day). They are analysed as soon as they
+are graded, before race × gender (about 2.5 days). Results go to
+`runs/cues-rubric3`.
+
+Both scripts, and `vllm_demographics.sh`, read the engine settings that
+`vllm_tune.py` chooses ([local-vllm.md](local-vllm.md#2-tune-for-throughput)).
+The queue on the workstation is tuning, then the subset, then the
+replication.
 
 **The FLASK sample** writes `samples/flask10.xlsx` — ten instructions sampled
 from the FLASK evaluation set, in the column layout the scripts expect. The rows
@@ -1486,6 +1706,57 @@ across the model's terms, since a cue sheet tests many contrasts at once.
 ```bash
 python cue_stats.py cues-responses.jsonl cues-judgments.jsonl --out-dir analysis/cue-stats [--lenient]
 ```
+
+`cue_pooled.py` pools each cue contrast over the answering models: a gap per
+question averaged over models, a t-test across questions and Benjamini–Hochberg
+q over every row. It labels each contrast clear (q < 0.05) or "on average"
+(not clear, but 0.1 points or more), with the gap within each question type and
+topic and the questions furthest that way. It reads the September and the new
+rubric alike, and runs on either cue sheet (see
+[Pooled over the models](#pooled-over-the-models)):
+
+```bash
+python cue_pooled.py responses.jsonl judgments.jsonl --out-dir analysis/pooled [--lenient]
+```
+
+`cue_breakdown.py` splits the cue effects by question type and by question
+(see [By question type](#by-question-type)), on the total and each criterion.
+It reads only the September rubric's four criteria. Pure Python, about two
+minutes on the full cue run:
+
+```bash
+python cue_breakdown.py cues-responses.jsonl cues-judgments.jsonl --prompts samples/prompts-2026-10-20.xlsx --out-dir analysis/breakdown [--lenient]
+```
+
+`label_sample.py` draws the answers for people to grade by hand. It takes one
+per answering model × cue group × question type (160 on the cue run), with
+topics spread evenly, in eight balanced batches of 20. On the 32-question
+subset, each question goes to each model once instead, 20 answers per topic.
+It writes `labels.xlsx`, showing only what the judges saw: the bare question
+with nothing about the asker, the reference components, the answer, empty
+cells for the new rubric, and the topic. A private `key.csv` links each row to
+its answer, model, cue, run and judge grades. The labellers' instructions are
+in [labelling.md](labelling.md). `vllm_subset.sh` runs it at the end, with the
+eight October cue groups:
+
+```bash
+python label_sample.py responses.jsonl judgments.jsonl --prompts samples/prompts-subset.xlsx --out-dir labelling \
+    --groups "baseline,irrelevant,Black man,Black woman,White man,White woman,did not finish high school,doctorate"
+```
+
+About 40% of the answers speak to the asker ("you", "as a Black woman"), which
+can hint at the cue. `key.csv` flags them in `addresses_asker`.
+
+`label_forms.gs` turns the uploaded spreadsheet into one Google Form per topic.
+Paste it into the sheet's Apps Script editor, set `RUBRIC_URL` to a view-only
+copy of the rubric, and run `buildForms`. Each form asks for the rater's email
+first. Responses land in new tabs of the same sheet, with item titles such as
+`R001 Factual accuracy` that match `key.csv`. Then fill a `Writers` tab (Name,
+Email, Topics, separated by `;`) and run `assignRaters`. Each person gets the
+topics they wrote, at most two, plus one other drawn from the topics with the
+fewest raters so far. The result goes to an `Assignments` tab with each
+form's link, along with any topic left with fewer than two raters. Nothing is
+emailed or shared.
 
 `correlate.py` compares families rather than models within one run — see
 [Frontier against open-weight](#frontier-against-open-weight).

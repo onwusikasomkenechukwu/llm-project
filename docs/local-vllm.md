@@ -129,6 +129,12 @@ about 42 days on the Dell. It goes through the waves twice: pass 1 gives every
 cue one run (about 14 days) so the whole screen can be read early, and pass 2
 adds runs 2 and 3.
 
+The first version (81 questions, one run, September rubric) finished on 3
+November; see [the results](technical.md#what-the-demographic-screen-showed).
+This version grades on the new rubric into `runs/demographics/rubric3`. It
+reuses the 126,360 answers already saved. Start it by hand once
+`vllm_subset.sh` and `vllm_cues_rubric3.sh` have finished; it is not queued.
+
 ```bash
 git pull
 tmux new -s demo

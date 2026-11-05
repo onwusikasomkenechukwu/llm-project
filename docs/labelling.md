@@ -23,10 +23,11 @@ Grade the content, as if a member of the public asked.
 
 1. **Make your own copy** of the spreadsheet (File → Make a copy) and name it
    "Labels – your name". Do not edit the original.
-2. **Grade the batch you were given.** A batch is 20 rows, about two hours.
-   Each batch is a balanced mix of models, askers and question types, and two
-   people grade each batch. Work through it in order, and do not compare notes
-   with anyone until you have both finished.
+2. **Grade the topics you were given.** You get the topic you wrote answers
+   for and one other, never more than two. A topic is 20 rows (four questions,
+   each answered by five AI models), about two hours, and the Topic column
+   names it. At least two people grade each topic. Work through it in order,
+   and do not compare notes with anyone until you have both finished.
 3. **For each row**, read the question, the reference, then the answer, and fill
    in the yellow cells:
    - **The six criteria**: a whole number from 1 to 4 each, where 4 is fully
