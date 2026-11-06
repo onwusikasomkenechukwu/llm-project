@@ -4,7 +4,9 @@
 // save, and run buildForms. Each form opens by asking for
 // the rater's email, then gives one page per answer: the question as the model
 // was asked it, with nothing about the asker; the reference answer; the
-// model's answer; and the rubric beside each score. Responses go to a new tab
+// model's answer; and the rubric beside each score. Raters pick a level by name
+// (Fully meets ... Does not meet) from a dropdown and never see a number; the
+// levels are scored 4 to 1 afterwards. Responses go to a new tab
 // of this spreadsheet. Item titles start with the row ID, so responses match
 // key.csv, which holds the model, cue and run and never reaches a rater. The
 // links are written to a Forms tab.
@@ -13,6 +15,9 @@
 // five and remembers where it was. Run it again until the log says every topic
 // is built. Nothing is emailed or shared: who gets which topic's link is
 // decided by hand.
+//
+// To rebuild forms that have no responses yet, run resetForms first: it moves
+// them to the Drive trash, deletes their response tabs and the Forms tab.
 
 const LABELS = 'Labels';
 const RUBRIC = 'Rubric';
@@ -24,6 +29,8 @@ const LIMIT = 5 * 60 * 1000; // stop before Apps Script's six-minute cut-off
 // the law school's criteria of 3 November, as named in the Labels and Rubric tabs
 const CRITERIA = ['Factual accuracy', 'Completeness', 'Historical context',
   'Source and evidence reliability', 'Nuanced reasoning', 'Linguistic framing'];
+// the rubric's levels, best first; scored 4, 3, 2, 1 in the analysis
+const LEVELS = ['Fully meets', 'Substantially meets', 'Partially meets', 'Does not meet'];
 
 function buildForms() {
   const start = Date.now();
@@ -88,8 +95,7 @@ function newForm(topic, n) {
 function addAnswer(form, r, i, n, rubric) {
   const id = r['Row ID'];
   const loaded = String(r['Premise handling (1-4, Loaded only)']).trim() !== 'n/a';
-  form.addPageBreakItem().setTitle(`${id} (${i + 1} of ${n})`)
-    .setHelpText(`Question type: ${r['Question type']}`);
+  form.addPageBreakItem().setTitle(`${id} (${i + 1} of ${n})`);
   addText(form, 'Question', r['Question']);
   addText(form, 'Reference answer components', r['Reference answer components']);
   addText(form, 'Answer', r['Answer']);
@@ -102,7 +108,8 @@ function addAnswer(form, r, i, n, rubric) {
     .setHelpText(rubric['hard fail'])
     .setChoiceValues(['No', 'Yes']).setRequired(true);
   form.addParagraphTextItem().setTitle(`${id} Notes`)
-    .setHelpText('Optional. Please add one for any 1 or 2, any hard fail, and anything you looked up.');
+    .setHelpText('Optional. Please add one for any "Partially meets" or "Does not meet", ' +
+      'any hard fail, and anything you looked up.');
 }
 
 function topicsOf(rows) {
@@ -110,8 +117,31 @@ function topicsOf(rows) {
 }
 
 function score(form, title, help) {
-  form.addScaleItem().setTitle(title).setHelpText(help || '')
-    .setBounds(1, 4).setLabels('Does not meet', 'Fully meets').setRequired(true);
+  form.addListItem().setTitle(title).setHelpText(help || '')
+    .setChoiceValues(LEVELS).setRequired(true);
+}
+
+// Moves this sheet's forms to the trash, with their response tabs and the Forms
+// tab, so buildForms can start again. Refuses if any form has a response.
+function resetForms() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const log = ss.getSheetByName(FORMS);
+  if (!log) { Logger.log('No Forms tab: nothing to reset.'); return; }
+  const forms = log.getDataRange().getValues().slice(1).filter(r => r[2])
+    .map(([topic, , edit]) => ({ topic, form: FormApp.openByUrl(edit) }));
+  for (const { topic, form } of forms) {
+    if (form.getResponses().length) throw new Error(`${topic} already has responses; nothing was removed.`);
+  }
+  const ids = forms.map(f => f.form.getId());
+  const tabs = ss.getSheets().filter(s => ids.some(id => String(s.getFormUrl() || '').includes(id)));
+  for (const { form } of forms) {
+    form.removeDestination();
+    DriveApp.getFileById(form.getId()).setTrashed(true);
+  }
+  tabs.forEach(s => ss.deleteSheet(s));
+  ss.deleteSheet(log);
+  PropertiesService.getDocumentProperties().deleteProperty('progress');
+  Logger.log(`Moved ${forms.length} forms to the trash and deleted ${tabs.length} response tabs. Run buildForms.`);
 }
 
 // A section header holds the text; long text is split at paragraph breaks.
@@ -143,13 +173,21 @@ function records(sheet) {
   return data.filter(r => r[0]).map(r => Object.fromEntries(head.map((h, i) => [h, r[i]])));
 }
 
-// The Rubric tab lists each criterion on its own row, then its levels below it.
+// The Rubric tab lists each criterion on its own row, then its levels below it,
+// each starting with its number ("4 Fully meets: ..."); raters see the name only.
 function rubricText(sheet) {
   const out = {};
   let key = null;
   for (const [crit, text] of sheet.getDataRange().getValues().slice(1)) {
     if (crit) { key = String(crit).trim().toLowerCase(); out[key] = String(text); }
-    else if (key && text) out[key] += '\n' + text;
+    else if (key && text) out[key] += '\n' + levelName(String(text));
   }
   return out;
+}
+
+function levelName(line) {
+  const m = line.match(/^([1-4]) (.*)$/);
+  if (!m) return line;
+  const name = LEVELS[4 - Number(m[1])];
+  return m[2].startsWith(name) ? m[2] : `${name}: ${m[2]}`;
 }

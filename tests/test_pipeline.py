@@ -74,6 +74,13 @@ class PipelineTests(unittest.TestCase):
                     self.assertIsNone(result["accuracy"], bad)
                 self.assertIsNone(mod.parse_score('{"accuracy": 4.5,')["accuracy"])
                 self.assertIsNone(mod.parse_score(None)["total"])
+                # the judges answer with level names, scored 4 to 1
+                names = {4: "Fully meets", 3: "substantially meets", 2: "partially  meets"}
+                named = dict(SCORE, **{k: names[v] for k, v in SCORE.items() if k in mod.CRITERIA})
+                self.assertEqual(mod.parse_score(json.dumps(named))["total"], 20)
+                cut = json.dumps(dict(named, premise_handling="does not meet")).split('"hard_fail"')[0]
+                self.assertEqual(mod.parse_score(cut)["premise_handling"], 1)
+                self.assertIsNone(mod.parse_score(json.dumps(dict(named, accuracy="meets")))["accuracy"])
 
     def test_invalid_results_are_retryable(self):
         for mod in RUNNERS:

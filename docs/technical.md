@@ -960,7 +960,10 @@ The law school's rubric of 3 November 2026 (`AI Civil Right Eval Rubric.xlsx`):
 six criteria, each on four levels, scored 4 (fully meets), 3 (substantially
 meets), 2 (partially meets) or 1 (does not meet), for a total from 6 to 24.
 Each criterion scores one thing only. The judge prompt carries the law
-school's anchors, lightly copy-edited.
+school's anchors, lightly copy-edited. Judges and human raters both answer with
+the level names, never the numbers, as Dr. Aryal asked on 5 November;
+`parse_score` turns the names into 4 to 1. Grades made before that (the speed
+trials and the start of the 32-question run) asked for numbers.
 
 | criterion | key | scores | 4 | 1 |
 |---|---|---|---|---|

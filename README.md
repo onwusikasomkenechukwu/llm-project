@@ -38,8 +38,10 @@ rubric**, without the grader being told which AI wrote the answer.
 ## How an answer is graded
 
 The rubric is the one the law school designed. Since 4 November we grade with
-its **rubric of 3 November**: six criteria, each scored from 4 (fully meets) to
-1 (does not meet), for a **total out of 24**.
+its **rubric of 3 November**: six criteria, each rated fully meets,
+substantially meets, partially meets or does not meet. People and AI graders
+both pick the level by name; we score them 4 to 1 afterwards, for a **total out
+of 24**.
 
 | criterion | what it asks |
 |---|---|

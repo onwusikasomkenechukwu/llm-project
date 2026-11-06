@@ -21,26 +21,22 @@ Grade the content, as if a member of the public asked.
 
 ## Steps
 
-1. **Make your own copy** of the spreadsheet (File → Make a copy) and name it
-   "Labels – your name". Do not edit the original.
-2. **Grade the topics you were given.** A topic is 20 rows (four questions,
-   each answered by five AI models), about two hours, and the Topic column
-   names it. At least two people grade each topic. Work through it in order,
-   and do not compare notes with anyone until you have both finished.
-3. **For each row**, read the question, the reference, then the answer, and fill
-   in the yellow cells:
-   - **The six criteria**: a whole number from 1 to 4 each, where 4 is fully
-     meets, 3 substantially meets, 2 partially meets and 1 does not meet. The
-     total, out of 24, fills itself in.
-   - **Premise handling**: Loaded questions only, 1 to 4. On other rows it reads
-     n/a; leave it.
-   - **Hard fail**: TRUE or FALSE, on every row.
-   - **Notes**: optional, one line. Please add one for any 1 or 2, any hard
-     fail, and anything you looked up.
-4. **Share your copy** with Somkene Onwusika when you are done.
+1. **Open the form for your category** and enter your email at the start.
+2. **Grade the topics you were given.** A topic is 20 answers (four questions,
+   each answered by five AI models), about two hours. At least two people
+   grade each topic. Work through it in order, and do not compare notes with
+   anyone until you have both finished.
+3. **For each answer**, read the question, the reference, then the answer, and:
+   - **The six criteria**: pick a level for each from the dropdown: fully
+     meets, substantially meets, partially meets or does not meet. There are
+     no numbers; the levels are scored afterwards.
+   - **Premise handling**: appears only on questions with a built-in premise.
+   - **Hard fail**: yes or no, on every answer.
+   - **Notes**: optional, one line. Please add one for any "partially meets"
+     or "does not meet", any hard fail, and anything you looked up.
 
-Do not sort the sheet, delete rows or move columns: the row ID is how your
-grades are matched to the AI graders'.
+Each page is headed by a row ID: that is how your grades are matched to the AI
+graders'.
 
 ## The rubric
 
