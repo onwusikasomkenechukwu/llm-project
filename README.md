@@ -56,11 +56,12 @@ The new rubric has no rating bands yet. Until the law school sets them, we
 scale the old ones: 22–24 Excellent, 18–21 Good, 15–17 Fair, 10–14 Poor, 6–9
 Unacceptable.
 
-**Every result on this page so far uses the earlier rubric of September**: four
+**Most results on this page use the earlier rubric of September**: four
 criteria (accuracy, completeness, objectivity, sourcing), 1 to 5 each, for a
-total out of 20. Scores on the two rubrics cannot be compared directly. The
-October results are being regraded on the new rubric now (see
-[What comes next](#what-comes-next)).
+total out of 20. Totals on the two rubrics cannot be compared directly, so we
+compare them as a share of the top score. The October asker run has now been
+regraded on the new rubric, and **it gives the same results** (see
+[finding 8](#8-the-new-rubric-gives-the-same-results)).
 
 Two further judgements sit outside the total:
 
@@ -99,6 +100,8 @@ Two groups of AI models have been tested:
 | 20 Oct | open-weight | all 162 questions written so far, no asker details | 2,430 answers |
 | 21–26 Oct | open-weight | all 162 questions × 105 askers | 85,050 answers |
 | 27 Oct – 3 Nov | open-weight | 81 questions × 312 askers, across 16 traits | 126,360 answers |
+| 5–9 Nov | open-weight | the 32 questions people will grade × 105 askers × 3, new rubric | 49,440 answers |
+| 10–16 Nov | open-weight | the 21–26 Oct answers, regraded on the new rubric | 85,050 answers |
 
 The 105 askers are the law school's cue sheet: Black and White men and women,
 described by a label ("I am a Black woman"), a name, or a profile with an HBCU
@@ -249,6 +252,43 @@ Claude highest — but six questions are far too few to rank them.
 - **Some reward length**, even though the rubric says length earns nothing.
   Llama-Scout most of all.
 
+### 8. The new rubric gives the same results
+
+The 85,050 answers of the October asker run were graded again, by the same five
+AI graders, on the law school's rubric of 3 November. The answers did not
+change, only the rubric, and **every finding above held**. Because the totals
+are out of 20 and 24, the gaps are given as a share of the top score:
+
+| | September rubric | new rubric |
+|---|---|---|
+| no high school against doctorate | −0.47 of 20 (−2.4%), on 91% of questions | **−0.51 of 24 (−2.1%)**, on 88% of questions |
+| the same, said in the question | −0.63 (−3.1%) | **−0.66 (−2.8%)** |
+| the same, "remembered" by the AI | −0.33 (−1.7%) | **−0.35 (−1.5%)** |
+| Black against White askers | +0.01 | **0.00** |
+| women against men | −0.04 | **−0.03** |
+| an irrelevant detail, against none | −0.32 (−1.6%) | **−0.40 (−1.7%)** |
+
+- **The models rank the same as on the September rubric for these answers.**
+  With no asker details, Gemma (87%), Qwen (87%) and gpt-oss (86%) lead, then
+  OLMo (83%), with Llama-Scout last (80%). Gemma and Qwen, half a point apart,
+  swap first and second. Every model scores one or two points higher as a
+  share of the top score.
+- **gpt-oss still has by far the most hard fails**: 12% of its grades,
+  against 1% or less for Gemma and Qwen.
+- **Premise questions score a little higher** on the new rubric (about 3
+  points of the share), and factual and open-ended questions the same.
+- **Sources are the weakest criterion** for every model (2.4 to 2.9 of 4).
+  **Framing is near the top for every model** (3.8 to 4.0), so on these
+  answers it barely tells models apart.
+- **Fewer grades are lost.** On the new rubric 3.4% of grades are unusable once
+  the premise-box slip below is allowed for. Under the strict rule it is 25%,
+  almost all of it the same slip.
+
+The 16,800 answers shared with the 32-question run were graded once, with the
+levels shown as numbers; the rest were graded with the levels by name. The
+law school's hand grades will show whether the AI graders read the new rubric
+as people do.
+
 ## How far to trust these results
 
 - **The frontier results rest on very few questions.** Six questions in the
@@ -260,9 +300,9 @@ Claude highest — but six questions are far too few to rank them.
   finishes; the instructions are in [docs/labelling.md](docs/labelling.md).
 - **The wider screen is half size**: 81 questions, each asked once per asker.
   The full version, with all 162 questions asked three times, comes later.
-- **All results so far use the September rubric.** The new rubric adds
-  historical context and framing, and asks whether sources are true, not only
-  specific. The gaps may change size when the answers are regraded.
+- **Most results use the September rubric.** The October asker run has been
+  regraded on the new rubric with the same results. The pilot, the frontier
+  asker test and the wider screen have not.
 - **About 18% of grades in the large asker run were unusable**, almost all
   because a grader filled in the premise-handling box where it should be blank,
   or left it blank where it should be filled. Results are reported both with
@@ -339,17 +379,16 @@ the main lever. The full costing is in the
 
 ## What comes next
 
-Running now, on the lab's machine, with the new rubric:
+Done on the new rubric:
 
-1. **The 32 questions people will grade**: one per topic and question type,
-   asked by the 105 askers of the October run, three times each, then graded
-   on the new rubric. About three days. The 160 answers for people to grade
+1. **The 32 questions people will grade**, asked by the 105 askers of the
+   October run three times each (5–9 Nov). The 160 answers for people to grade
    are drawn from this run, 20 per topic, with nothing about the asker shown.
-2. **The October run, regraded**: the same 85,050 answers on the new rubric,
-   so the two rubrics can be compared. The education askers go first, about a
-   day; race and gender follow, about 2.5 days.
+2. **The October run, regraded** (10–16 Nov): see
+   [finding 8](#8-the-new-rubric-gives-the-same-results).
 
-Then:
+The lab's machine lost its network connection on 17 November, so nothing new
+can run on it until that is fixed. Then:
 
 - **People grade the 160 answers**, one form per topic. We then measure how
   well people, the open-weight graders and the frontier graders agree.

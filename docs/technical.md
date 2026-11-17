@@ -41,6 +41,7 @@ A smaller judge panel brings it down further. See [Costs](#costs).
   - [Open-weight models, 20 October](#what-the-open-weight-run-showed)
   - [Identity cues on the open-weight models, 21–26 October](#what-the-open-weight-cue-run-showed)
   - [The demographic screen, 27 October – 3 November](#what-the-demographic-screen-showed)
+  - [The cue run regraded on rubric v3, 10–16 November](#what-the-rubric-v3-regrade-showed)
   - [Frontier against open-weight](#frontier-against-open-weight)
 - **Method**
   - [How grading works](#how-grading-works)
@@ -56,16 +57,18 @@ A smaller judge panel brings it down further. See [Costs](#costs).
 |---|---|
 | Ready | collection, grading, cross-evaluation, cost accounting, analysis tables, run manifests, drift checks |
 | Waiting on | the rest of the questions: 162 written so far, 120 with gold-standard elements (`samples/prompts-2026-10-20.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
-| Running | the law school's rubric of 3 November on the open-weight models: the [32-question subset](#question-sets) the law school also grades by hand, then the 21 October cue run regraded |
+| Done | the law school's rubric of 3 November on the open-weight models: the [32-question subset](#question-sets) the law school also grades by hand (5–9 Nov), then the [21 October cue run regraded](#what-the-rubric-v3-regrade-showed) (10–16 Nov) |
+| Blocked | the workstation lost its wired network on 17 Nov (link up, no DHCP lease); results came over by USB |
 | Waiting on | human grades of the subset ([labelling.md](labelling.md)), and frontier answers and grades for the same set |
 | Waiting on | frontier answers to the same 162 questions, for the [frontier against open-weight](#frontier-against-open-weight) correlation |
 | Not built yet | publication plots |
 | Open | whether each question is also asked in negated form |
 
-Five runs so far, all graded on the September rubric (four criteria, total out
-of 20). Everything from 4 November is graded on the law school's rubric of 3
-November (six criteria, total out of 24; see [How grading works](#how-grading-works)),
-and the two are not comparable.
+The first five runs were graded on the September rubric (four criteria, total
+out of 20). Everything from 4 November is graded on the law school's rubric of 3
+November (six criteria, total out of 24; see [How grading works](#how-grading-works)).
+Totals on the two are not comparable, so the regrade compares them as a share
+of the top score.
 
 | date | what | size | headline |
 |---|---|---|---|
@@ -74,6 +77,7 @@ and the two are not comparable.
 | 20 Oct 2026 | [open-weight models](#what-the-open-weight-run-showed) | 162 questions, 2,430 answers, 12,150 grades | gpt-oss-120b and Gemma-4-31B tied at the top, Llama-4-Scout last |
 | 21–26 Oct 2026 | [identity cues, open-weight](#what-the-open-weight-cue-run-showed) | 162 questions × 105 cues, 85,050 answers, 425,250 grades | education lowers scores by 0.47 on 91% of questions; race has no effect |
 | 27 Oct – 3 Nov 2026 | [demographic screen](#what-the-demographic-screen-showed) | 81 questions × 312 cues, 126,360 answers, 631,800 grades | class, disability and the asker's job move scores; race, orientation and place do not |
+| 10–16 Nov 2026 | [the 21 Oct cue run on rubric v3](#what-the-rubric-v3-regrade-showed) | the same 85,050 answers, 425,250 grades | every finding holds: education −0.51 of 24 (−2.1%), race 0.00, same model order |
 
 The pilot used six questions, one of each type, taken from the worked examples
 in the project's own rubric document. That is enough to confirm the rubric
@@ -919,6 +923,93 @@ Reconstruction (16.1). By type, False Premise scores highest (17.0) and
 Factual lowest (16.2). The half set has no Directed questions. Type and topic
 breakdowns of every contrast are in `pooled-strict/by_type.csv` and
 `by_topic.csv`. Every question's gap is in `questions.csv`.
+
+## What the rubric v3 regrade showed
+
+From 10 to 16 November `vllm_cues_rubric3.sh` regraded the 85,050 answers of the
+21 October cue run on the rubric of 3 November, with the same five judges. The
+answers are unchanged, so every difference is the rubric's. The 16,800 answers
+shared with the subset run were graded there with the numeric v3 prompt (the
+Dell had not yet pulled 0877eb5). The other 68,250 were graded with level names.
+All 425,250 cells are present. Results are in `runs/rubric3-2026-11-17/`:
+`analysis-full/scores-strict` and `scores-lenient` come from `analyze.py`, and
+`FINDINGS.md` summarises them.
+
+**Grades kept.** The strict rule keeps 319,277 (75.1%), the lenient rule 410,696
+(96.6%). Of the 105,973 strict failures, 91,419 are a premise score on a
+non-Loaded question with all six scores present. Qwen accounts for 37,932,
+Gemma 33,600, gpt-oss 13,068, Llama-Scout 3,451 and OLMo 3,368. The other
+14,554 (3.4%) are real failures:
+
+- 7,649 from gpt-oss and 3,528 from OLMo, which left premise handling out on
+  Loaded questions
+- 1,878 empty replies and 217 replies cut off at the token ceiling, from Qwen
+- 851 replies from Llama-Scout with no JSON
+
+Under the lenient rule every answer has at least one grade.
+
+**Cue gaps.** These are lenient: each answer is scored by its mean over its
+usable judges, the gap is taken against the baseline question by question, and
+the gaps are averaged over the 162 questions. The 95% intervals come from 1,000
+question bootstraps. The September column is the same calculation on the
+October grades.
+
+| contrast | September, of 20 | v3, of 24 | v3 interval |
+|---|---|---|---|
+| did not finish high school − doctorate | −0.48 (−2.4%; −0.47 in the October tables) | **−0.51 (−2.1%)** | negative on 88% of questions |
+| the same, cue in the user prompt | −0.63 (−3.1%) | **−0.66 (−2.8%)** | [−0.76, −0.58] |
+| the same, cue as memory | −0.33 (−1.7%) | **−0.35 (−1.5%)** | [−0.42, −0.28] |
+| did not finish high school − baseline | −0.45 | −0.50 | [−0.58, −0.42] |
+| doctorate − baseline | +0.03 | +0.01 | [−0.06, 0.08] |
+| placebo − baseline | −0.32 | −0.40 | [−0.48, −0.32] |
+| Black − White (race × gender pooled) | +0.01 | −0.00 | [−0.02, 0.02] |
+| women − men | −0.04 | −0.03 | [−0.05, −0.01] |
+
+For the race × gender cues against the baseline, by cue type:
+
+- label: −0.02 to −0.04, not significant
+- name: −0.14 (memory) and −0.23 (user)
+- profile: −0.20 (memory) and −0.41 (user)
+
+The September values for these were −0.05 to −0.07, −0.14 to −0.19, and −0.20
+to −0.33. For the education cues by type:
+
+- the no-high-school label is −0.47 and the profile −0.53
+- the doctorate label is +0.12 and the profile −0.11
+
+**Models.** Lenient, panel mean, as a share of the top score:
+
+| model | baseline only, Sept | baseline only, v3 | all cues, v3 | hard fail, v3 (Sept) |
+|---|---|---|---|---|
+| Gemma | 85.3% | **87.2%** | 86.1% | 0.5% (0.7%) |
+| Qwen | 85.7% | **86.7%** | 86.2% | 1.0% (1.3%) |
+| gpt-oss | 84.5% | **86.0%** | 85.3% | 12.1% (13.7%) |
+| OLMo | 81.4% | **82.7%** | 82.3% | 3.4% (3.9%) |
+| Llama-Scout | 77.8% | **79.5%** | 77.9% | 4.7% (5.7%) |
+
+The baseline columns use the cue run's three baseline replicates, not the
+20 October run, so they differ from [that section](#what-the-open-weight-run-showed).
+
+**Criteria.** Evidence is the lowest for every model, from 2.37 (Llama-Scout) to
+2.89 (gpt-oss) of 4. Framing is near the ceiling, from 3.84 to 3.98, and has
+the lowest panel α (0.12 on the education block, against 0.43 for the total).
+By type, Factual (81.0%) and Open-Ended (81.6%) are unchanged from September.
+False Premise rises from 84.6% to 87.5%, and True Premise from 81.4% to 84.7%.
+
+**Running it.** `vllm_cues_rubric3.sh` has no merge step, so the Dell's
+`analyze.py` stopped on the retried rows ("duplicate judgment … merge retries
+before analysis"), and only the 12 November cue stats of the education block
+were written there. Merge first:
+
+```bash
+mkdir merge-in && mv runs/cues-rubric3/judgments.jsonl merge-in/judgments-cues.jsonl
+python merge.py judgments --in-dir merge-in --out judgments-merged.jsonl
+python analyze.py judgments-merged.jsonl --responses runs/cues-vllm-2026-10-21/cues-responses.jsonl \
+    --prompts samples/prompts-2026-10-20.xlsx --bootstrap 500 --out-dir analysis-full/scores-lenient --ignore-stray-premise
+```
+
+The `cue_stats.py` tables for the full run still need to be built: it needs
+pandas, which the laptop's Application Control blocks.
 
 ## Frontier against open-weight
 
