@@ -1118,7 +1118,15 @@ regrading on all 162.
 
 ```bash
 python cues_shortlist.py      # 18 groups, 49 cues, 51 prompts per question per model
+bash vllm_shortlist.sh        # on the Dell, in tmux: copy saved rows, answer, grade, analyse
+bash vllm_shortlist.sh publish    # push runs/shortlist/analysis to results/shortlist, once gh is signed in
 ```
+
+`vllm_shortlist.sh` copies the saved answers from `runs/cues-rubric3` and
+`runs/demographics`, and the v3 grades from `runs/cues-rubric3/judgments.jsonl`,
+into `runs/shortlist`. It then answers and grades only what is missing, merges
+the retries, and writes `cue_pooled.py`, `cue_screen.py` and `analyze.py`
+tables, strict and lenient, to `runs/shortlist/analysis`.
 
 ## Frontier against open-weight
 
