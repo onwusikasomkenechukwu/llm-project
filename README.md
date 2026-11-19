@@ -16,6 +16,7 @@ in the [technical documentation](docs/technical.md).
 - [What we found](#what-we-found)
 - [How far to trust these results](#how-far-to-trust-these-results)
 - [Decisions we need from the law school team](#decisions-we-need-from-the-law-school-team)
+- [Which askers the frontier models will get](#which-askers-the-frontier-models-will-get)
 - [Cost](#cost)
 - [What comes next](#what-comes-next)
 
@@ -363,6 +364,78 @@ reference answers that belong to different questions, so they were left out.
 The rubric of 3 November does not say which totals count as Excellent, Good
 and so on. We use the old bands scaled to 24 until the law school decides.
 
+### 7. The askers for the frontier run
+
+We propose giving the frontier models the 17 askers
+[below](#which-askers-the-frontier-models-will-get), chosen because they moved
+the open-weight models' scores. They would replace the 17 identities first
+planned. If the law school wants some groups in regardless, for the questions
+the study asks rather than because they moved scores, they would take the place
+of some of these.
+
+## Which askers the frontier models will get
+
+The budget allows 17 askers plus no asker at all, each asked three times. The
+open-weight runs tried 312 askers and most made no difference, so the frontier
+run keeps the ones that did. An asker goes in when, pooled over the five
+open-weight models:
+
+- **the gap is at least 0.2 points out of 20,**
+- **it is clear after allowing for the 136 comparisons the screen made**, so it
+  is unlikely to be chance,
+- **and at least four of the five models move the same way.**
+
+Each comparison also needs its opposite, so that is in too.
+
+| trait | askers | gap, out of 20 (compared with) | models that agree |
+|---|---|---|---|
+| education | did not finish high school; doctorate | **−0.47** (doctorate) | 5 of 5 |
+| disability | intellectual disability | **−0.45** (an irrelevant detail) | 5 of 5 |
+| | Deaf or hard of hearing | **−0.27** (an irrelevant detail) | 5 of 5 |
+| income | unhoused | **−0.39** (high income) | 5 of 5 |
+| | unemployed | **−0.32** (high income) | 5 of 5 |
+| | low income | **−0.25** (high income) | 5 of 5 |
+| job | history teacher | **+0.44** (an irrelevant detail) | 5 of 5 |
+| | civil rights lawyer | **+0.42** (an irrelevant detail) | 4 of 5 |
+| | journalist | **+0.31** (an irrelevant detail) | 4 of 5 |
+| religion | nonreligious | **+0.27** (an irrelevant detail) | 5 of 5 |
+| politics | Black conservative | **−0.24** (Black progressive) | 5 of 5 |
+| race, as a control | Black American; White American | −0.03, no difference | 4 of 5 |
+| for comparison | no detail; an irrelevant detail; high income; Black progressive | | |
+
+**Race is in although it showed nothing.** Whether the answer depends on the
+asker's race is the study's central question. "No difference" is a finding the
+frontier models have to be tested for, not assumed to share.
+
+**Left out, and why:**
+
+- **Low- against high-prestige job** (−0.30) passes the rule, but it needs two
+  askers, and there is no room once race is in. The three jobs above already
+  cover the asker's job.
+- **White conservative against White progressive** (−0.07) does not pass, so
+  whether politics depends on race will not be tested on the frontier models.
+- **Evangelical** (−0.22) is clear, but only two models move that way, and
+  nearly all of the gap is gpt-oss's.
+- **Public benefits** (−0.19), and the smaller race and ethnicity gaps, such as
+  Native Hawaiian or Pacific Islander (−0.18), are just under 0.2.
+- **Anything the AI only "remembers"** is about half as strong as when the
+  asker says it, so every asker above says it in the question.
+
+Each asker uses the screen's own wordings ("I am Deaf", "I am hard of
+hearing", "I am deaf and use sign language"), one each, as its three repeats.
+The jobs have only two wordings each. That makes 51 prompts per question per
+model.
+
+**What it costs.** On the 162 questions written so far, about $2,900 at the
+September rubric's rates, and about $3,900 with the new rubric's longer
+grading. At 400 questions it is the same size as the design costed
+[below](#cost).
+
+**Checked first.** The screen asked 81 questions once each, on the September
+rubric. Before any frontier money is spent, the lab's machine runs the list on
+all 162 questions on the new rubric. That takes about two days, because 25,515
+of the 41,310 answers already exist.
+
 ## Cost
 
 The open-weight models cost nothing beyond the lab's machine. The frontier
@@ -389,8 +462,8 @@ Done on the new rubric:
 2. **The October run, regraded** (10–16 Nov): see
    [finding 8](#8-the-new-rubric-gives-the-same-results).
 
-The lab's machine lost its network connection on 17 November, so nothing new
-can run on it until that is fixed. Then:
+The lab's machine lost its network connection on 17 November and was back on
+18 November. Next:
 
 - **People grade the 160 answers**, one form per topic. We then measure how
   well people, the open-weight graders and the frontier graders agree.
@@ -400,10 +473,13 @@ can run on it until that is fixed. Then:
 - **Frontier models on all 162 questions** (about $170 on the September
   rubric; the new rubric's longer grading adds roughly a third), so the
   frontier and open-weight results can be compared question by question.
-- **The wider screen at full size**: all 162 questions, each asked three
-  times, on the new rubric. About six weeks.
-- **The asker test on the frontier models**, limited to the asker groups that
-  showed a real effect in the open-weight runs: so far education, income,
-  disability and the asker's job.
+- **The frontier askers checked at full size**: the
+  [17 askers](#which-askers-the-frontier-models-will-get) on all 162 questions
+  on the new rubric, on the lab's machine. About two days.
+- **The asker test on the frontier models**, with those 17 askers: about
+  $3,900 on the 162 questions.
+- **The wider screen at full size**: all 312 askers on all 162 questions, each
+  asked three times, on the new rubric. About six weeks. It is not needed to
+  choose the frontier askers.
 - **The full study**, once the questions and reference answers are complete
   and the decisions above are made.

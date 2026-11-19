@@ -42,6 +42,7 @@ A smaller judge panel brings it down further. See [Costs](#costs).
   - [Identity cues on the open-weight models, 21–26 October](#what-the-open-weight-cue-run-showed)
   - [The demographic screen, 27 October – 3 November](#what-the-demographic-screen-showed)
   - [The cue run regraded on rubric v3, 10–16 November](#what-the-rubric-v3-regrade-showed)
+  - [The frontier cue shortlist](#the-frontier-cue-shortlist)
   - [Frontier against open-weight](#frontier-against-open-weight)
 - **Method**
   - [How grading works](#how-grading-works)
@@ -58,6 +59,7 @@ A smaller judge panel brings it down further. See [Costs](#costs).
 | Ready | collection, grading, cross-evaluation, cost accounting, analysis tables, run manifests, drift checks |
 | Waiting on | the rest of the questions: 162 written so far, 120 with gold-standard elements (`samples/prompts-2026-10-20.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
 | Done | the law school's rubric of 3 November on the open-weight models: the [32-question subset](#question-sets) the law school also grades by hand (5–9 Nov), then the [21 October cue run regraded](#what-the-rubric-v3-regrade-showed) (10–16 Nov) |
+| Proposed | the [frontier cue shortlist](#the-frontier-cue-shortlist), 17 groups and the baseline, to be checked on 162 questions on the Dell first |
 | Waiting on | human grades of the subset ([labelling.md](labelling.md)), and frontier answers and grades for the same set |
 | Waiting on | frontier answers to the same 162 questions, for the [frontier against open-weight](#frontier-against-open-weight) correlation |
 | Not built yet | publication plots |
@@ -1037,6 +1039,87 @@ strict rule drops a quarter of the grades, mostly from Qwen and Gemma. The
 education gap is negative on 89% of questions (90% in September), and the race
 gap averages 0.00 per question (+0.01).
 
+## The frontier cue shortlist
+
+The budgeted design has 18 identities × 3 replicates: the baseline and 17
+groups. `cues_shortlist.py` picks the 17 from the two open-weight screens and
+writes `cues-shortlist.jsonl`, in the format every runner takes with `--cues`.
+It is a proposal until Dr. Aryal and the law school agree to it. It would
+replace the [identity list](#the-identities) of the original design.
+
+**The rule.** Each contrast is pooled over the five models (`cue_pooled.py`,
+strict, user turn, September rubric, 81 questions). A trait goes in when:
+
+- its gap is at least 0.2 of 20,
+- it is clear after Benjamini–Hochberg over the screen's 136 rows (q < 0.05),
+- and at least four of the five models have the same sign.
+
+Each contrast's reference group goes in with it.
+
+| group | cues | contrast | gap [95% CI] | q | models same sign |
+|---|---|---|---|---|---|
+| did not finish high school | S09-EDU-low-1..3 | − doctorate | −0.47 (162 questions; v3 −0.51 of 24) | | 5 |
+| doctorate | S09-EDU-high-1..3 | reference | | | |
+| intellectual disability | D-S09-D-DIS-int-1..3 | − placebo | −0.45 [−0.60, −0.30] | <0.001 | 5 |
+| Deaf or hard of hearing | D-S09-D-DIS-deaf-1..3 | − placebo | −0.27 [−0.39, −0.15] | <0.001 | 5 |
+| unhoused | D-S10-D-ECO-unh-1..3 | − high income | −0.39 [−0.50, −0.29] | <0.001 | 5 |
+| unemployed | D-S10-D-ECO-unemp-1..3 | − high income | −0.32 [−0.41, −0.22] | <0.001 | 5 |
+| low income | D-S10-D-ECO-low-1..3 | − high income | −0.25 [−0.33, −0.16] | <0.001 | 5 |
+| high income | D-S10-D-ECO-high-1..3 | reference | | | |
+| history teacher | D-S11-D-OCC-teach-1..2 | − placebo | +0.44 [+0.30, +0.58] | <0.001 | 5 |
+| civil rights lawyer | D-S11-D-OCC-law-1..2 | − placebo | +0.42 [+0.28, +0.56] | <0.001 | 4 |
+| journalist | D-S11-D-OCC-jour-1..2 | − placebo | +0.31 [+0.15, +0.46] | 0.001 | 4 |
+| nonreligious | D-S06-D-REL-none-1..3 | − placebo | +0.27 [+0.17, +0.37] | <0.001 | 5 |
+| Black conservative | D-S07-D-POL-Bcon-1..3 | − Black progressive | −0.24 [−0.37, −0.11] | 0.003 | 5 |
+| Black progressive | D-S07-D-POL-Bpro-1..3 | reference | | | |
+| Black American | D-S02-D-RE-blk-1..3 | − White American | −0.03 [−0.12, +0.07] | 0.71 | 4 |
+| White American | D-S02-D-RE-wht-1..3 | reference | | | |
+| placebo | S01-CTRL-1..3 | − baseline | −0.37 [−0.48, −0.26] | <0.001 | 5 |
+| baseline | `none`, 3 runs | | | | |
+
+- **Black and White American fail the rule and are kept anyway**, as the race
+  control. A null on race is a headline result, and the frontier models have to
+  be tested for it. The same contrast was null on 162 questions in the cue run
+  (+0.01, label, name and profile).
+- **Low- against high-prestige job** (−0.30 [−0.42, −0.18], 4 models) passes,
+  but there is no room for two more groups once race is in. The three jobs
+  already carry the occupation effect.
+- **Excluded by the rule:**
+  - evangelical (−0.22, clear, but only 2 models same sign; gpt-oss alone gives
+    −1.04);
+  - White conservative − White progressive (−0.07, q 0.28), so the
+    politics × race interaction is not on the frontier run;
+  - public benefits (−0.19);
+  - Native Hawaiian or Pacific Islander (−0.18);
+  - Black ethnic origin (−0.14) and Afro-Latino (−0.13);
+  - every saved-memory cue (about half the user-turn size).
+- **The education cue is the cue run's label (S09).** Every demographic cue
+  is a label in the user turn, so the whole list is one cue type and one
+  channel. Its profile form (S11) was slightly larger (no high school against
+  the baseline, −0.53 of 24 against −0.47 for the label), but it would be the
+  only profile on the list.
+
+The ids are copied unchanged, so `vllm_offline.py` skips any answer already
+saved under them. That makes 49 cues and 51 prompts per question per model (the
+jobs have two wordings each in Aryal's sheet).
+
+**Size and cost.**
+
+| | answers | grades | time or cost |
+|---|---|---|---|
+| open-weight, 162 questions | 41,310, of which 25,515 exist | 157,950 still to grade on v3 (the 39 demographic prompts) | about 2 h answering and 39 h grading at the 21 October rates |
+| frontier, 162 questions | 41,310 | 206,550 | about $2,900 at the measured rate ($7,577 / 108,000 answers), about $3,900 on v3 |
+| frontier, 400 questions | 102,000 | 510,000 | about $7,200, about $9,500 on v3 |
+
+The education, placebo and baseline answers (9,720) are from the 21 October
+run and already graded on v3. The demographic ones exist for 81 questions on the
+September rubric (15,795 answers), and need answering on the other 81 and
+regrading on all 162.
+
+```bash
+python cues_shortlist.py      # 18 groups, 49 cues, 51 prompts per question per model
+```
+
 ## Frontier against open-weight
 
 `correlate.py` correlates each open-weight model with each frontier model,
@@ -1163,6 +1246,10 @@ prefixed, so question types that depend on exact phrasing stay intact.
 `christian`, `muslim`, `jewish`, `conservative`, `progressive`, `libertarian`,
 `woman`, `man`, `learning-disability`, `disabled-veteran`, `immigrant`,
 `native-american`, `transgender-woman`, `non-binary`
+
+These were the original design's identities. The frontier run is proposed to
+use the [cue shortlist](#the-frontier-cue-shortlist) instead, picked from the
+open-weight screens.
 
 ### One thing to decide before reporting identity results
 
