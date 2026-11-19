@@ -58,7 +58,6 @@ A smaller judge panel brings it down further. See [Costs](#costs).
 | Ready | collection, grading, cross-evaluation, cost accounting, analysis tables, run manifests, drift checks |
 | Waiting on | the rest of the questions: 162 written so far, 120 with gold-standard elements (`samples/prompts-2026-10-20.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
 | Done | the law school's rubric of 3 November on the open-weight models: the [32-question subset](#question-sets) the law school also grades by hand (5–9 Nov), then the [21 October cue run regraded](#what-the-rubric-v3-regrade-showed) (10–16 Nov) |
-| Blocked | the workstation lost its wired network on 17 Nov (link up, no DHCP lease); results came over by USB |
 | Waiting on | human grades of the subset ([labelling.md](labelling.md)), and frontier answers and grades for the same set |
 | Waiting on | frontier answers to the same 162 questions, for the [frontier against open-weight](#frontier-against-open-weight) correlation |
 | Not built yet | publication plots |
@@ -992,7 +991,7 @@ The baseline columns use the cue run's three baseline replicates, not the
 
 **Criteria.** Evidence is the lowest for every model, from 2.37 (Llama-Scout) to
 2.89 (gpt-oss) of 4. Framing is near the ceiling, from 3.84 to 3.98, and has
-the lowest panel α (0.12 on the education block, against 0.43 for the total).
+the lowest panel α (0.12, against 0.44 for the total).
 By type, Factual (81.0%) and Open-Ended (81.6%) are unchanged from September.
 False Premise rises from 84.6% to 87.5%, and True Premise from 81.4% to 84.7%.
 
@@ -1008,8 +1007,35 @@ python analyze.py judgments-merged.jsonl --responses runs/cues-vllm-2026-10-21/c
     --prompts samples/prompts-2026-10-20.xlsx --bootstrap 500 --out-dir analysis-full/scores-lenient --ignore-stray-premise
 ```
 
-The `cue_stats.py` tables for the full run still need to be built: it needs
-pandas, which the laptop's Application Control blocks.
+`cue_stats.py` needs pandas, which the laptop's Application Control blocks, so
+its tables were built on the Dell from the merged file (18 Nov):
+
+```bash
+python cue_stats.py runs/cues-rubric3/responses.jsonl runs/cues-rubric3/judgments-merged.jsonl \
+    --out-dir runs/cues-rubric3/analysis-full/cue-stats-lenient --lenient
+```
+
+Its group gaps match the ones above to two decimals.
+
+**Reliability.** Lenient, September against v3:
+
+| | September | v3 |
+|---|---|---|
+| panel α, total | 0.44 | 0.44 |
+| judge pairs, Pearson | 0.32–0.69 | 0.41–0.73 |
+| hard-fail κ, mean over pairs | 0.09 | 0.16 |
+| baseline replicates, Pearson | 0.81–0.83 | 0.86–0.89 |
+| answering models, per-question Pearson | 0.66–0.87 | 0.69–0.93 |
+| words vs total, within question | 0.12 | 0.16 |
+
+The judges agree a little better pair by pair, and the replicates repeat
+better, but the panel's α is unchanged, and still under 0.67. Under v3, α is
+0.58 for completeness, 0.46 for context and 0.32 for accuracy; it is 0.28 for
+reasoning, 0.19 for evidence and 0.12 for framing. Gemma and Qwen still agree
+most (0.73; κ 0.54). Strict α falls to 0.36 (0.42 in September), because the
+strict rule drops a quarter of the grades, mostly from Qwen and Gemma. The
+education gap is negative on 89% of questions (90% in September), and the race
+gap averages 0.00 per question (+0.01).
 
 ## Frontier against open-weight
 

@@ -245,6 +245,8 @@ Claude highest — but six questions are far too few to rank them.
 - **They disagree with each other moderately.** Two graders reading the same
   answer often differ by a point or more, and they rarely agree on which
   answers are hard fails. That is why no result here relies on a single grader.
+  The new rubric did not change this: the graders agree as a group exactly as
+  much as before, and a little better pair by pair.
 - **Some favour their own answers.** Among frontier models, Google grades its
   own answers about 0.75 points higher than the other graders do. Among
   open-weight models, Llama-Scout does so by about 2 points; Qwen is the
