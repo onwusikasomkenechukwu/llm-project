@@ -60,6 +60,7 @@ A smaller judge panel brings it down further. See [Costs](#costs).
 | Waiting on | the rest of the questions: 162 written so far, 120 with gold-standard elements (`samples/prompts-2026-10-20.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
 | Done | the law school's rubric of 3 November on the open-weight models: the [32-question subset](#question-sets) the law school also grades by hand (5–9 Nov), then the [21 October cue run regraded](#what-the-rubric-v3-regrade-showed) (10–16 Nov) |
 | Proposed | the [frontier cue shortlist](#the-frontier-cue-shortlist), 17 groups and the baseline, to be checked on 162 questions on the Dell first |
+| Ready to run | [one prompt per criterion](#one-prompt-or-one-per-criterion) against one prompt, on the 32-question subset |
 | Waiting on | human grades of the subset ([labelling.md](labelling.md)), and frontier answers and grades for the same set |
 | Waiting on | frontier answers to the same 162 questions, for the [frontier against open-weight](#frontier-against-open-weight) correlation |
 | Not built yet | publication plots |
@@ -1225,6 +1226,43 @@ grade on one can never be read as the other.
 
 Question types: Factual, Directed, Loaded (False Premise), Loaded (True
 Premise), Open-Ended.
+
+### One prompt, or one per criterion
+
+Every grade so far is one call: the judge reads the answer once and writes all
+six ratings, premise handling and the hard-fail flag in one reply. When a model
+writes several related ratings in a row, the first can pull the rest along.
+Dr. Aryal asked on 19 November for a subset graded one criterion per prompt.
+
+`vllm_per_criterion.py` grades each criterion in its own call, plus one call
+for premise handling (loaded questions only) and one for the hard-fail check:
+7 or 8 calls per answer and judge. Each prompt is cut from `JUDGE_PROMPT`, so
+the wording is unchanged: the same header with the answer before the rubric,
+then one criterion's description and levels, then a one-field JSON reply.
+`assemble` joins the parts into ordinary judgment rows (`"mode":
+"per-criterion"`), so every analysis script reads them.
+
+`vllm_per_criterion.sh` runs it on the 32-question subset: the baseline (three
+runs), the placebo and the education cues (run 1 of each wording), on all five
+answering models, which is 1,920 answers, plus the 160 hand-graded ones when
+the labelling key is on the machine. The same answers are graded afresh in one
+prompt, since the subset's own grades asked for numbers rather than level
+names. `compare` then reports, both ways:
+
+- the mean of each criterion, and how well the two modes agree grade by grade;
+- how much the six criteria move together within a grade (mean correlation
+  over the 15 pairs, and how often all six get the same level);
+- judge agreement (Krippendorff's α per criterion);
+- the education and placebo gaps, on the total and on evidence.
+
+```bash
+bash vllm_per_criterion.sh            # on the Dell, in tmux, after any other GPU job
+bash vllm_per_criterion.sh publish    # push runs/per-criterion/analysis to results/per-criterion
+```
+
+One prompt is about 2.5 hours on the Dell. Per criterion is about 75,000 calls
+and has not been timed. The calls are short, and each answer's parts share a
+cached prefix, but expect several times as long.
 
 ## Cross-evaluation
 
