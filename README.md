@@ -474,10 +474,12 @@ The lab's machine lost its network connection on 17 November and was back on
   rubric; the new rubric's longer grading adds roughly a third), so the
   frontier and open-weight results can be compared question by question.
 - **One rating per prompt**: the judges now write all six ratings in one
-  reply, and one rating can sway the next. On the 32 questions, about 2,000
-  answers get graded both ways, one prompt for the whole rubric and one per
-  criterion, and we compare the scores, the gaps and how independent the six
-  ratings are. Probably a day or two on the lab's machine.
+  reply, and one rating can sway the next. On all 162 questions, the answers
+  under the baseline, the placebo and the Black/White and man/woman cues
+  (about 65,000) get graded again one criterion per prompt, wherever the
+  current grade is valid, and we compare the scores, the gaps and how
+  independent the six ratings are. One to two weeks on the lab's machine, in
+  three waves; the baseline and placebo come back after about a day.
 - **The frontier askers checked at full size**: the
   [17 askers](#which-askers-the-frontier-models-will-get) on all 162 questions
   on the new rubric, on the lab's machine. About two days.

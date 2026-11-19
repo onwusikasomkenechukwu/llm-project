@@ -5,11 +5,13 @@
     python vllm_per_criterion.py assemble parts.jsonl --out judgments-per-criterion.jsonl
     python vllm_per_criterion.py compare judgments-single.jsonl judgments-per-criterion.jsonl --out-dir analysis
 
-Dr. Aryal asked on 19 November for a subset graded one criterion per prompt:
+Dr. Aryal asked on 19 November for answers graded one criterion per prompt:
 when a judge writes all six ratings in one reply, the first can pull the
 others along. vllm_offline.py grades in one call per answer. Here every answer
 gets one call per criterion, one for premise handling (loaded questions only)
 and one for the hard-fail check, so 7 or 8 calls per answer and judge.
+--only-valid limits this to the answer and judge pairs that already have a
+valid one-prompt grade, so every per-criterion grade has one to compare with.
 
 Each prompt is cut from vllm_offline.py's JUDGE_PROMPT, so the wording is the
 same: the same header (question type, question, answer, reference answer),
@@ -95,6 +97,11 @@ def judge(args):
     # check wants all six criteria, so swap in this one for make_row
     vo.usable = lambda row, stage: row.get("error") is None and part_value(row) is not None
 
+    valid = None
+    if args.only_valid:
+        valid = {(r["id"], r["judge"]) for r in vo.read_jsonl(args.only_valid) if graded(r)}
+        print(f"{len(valid)} valid one-prompt grades in {args.only_valid}")
+
     models = [m.strip() for m in args.models.split(",") if m.strip()]
     failed = 0
     for model in models:
@@ -104,6 +111,8 @@ def judge(args):
                 if r.get("judge") == prov and r.get("error") is None and part_value(r) is not None}
         cells = []
         for a in answers:
+            if valid is not None and (a["id"], prov) not in valid:
+                continue
             qtype = a.get("question_type") or "Unspecified"
             ideal, comps = refs.get(a.get("qid"), ("", ""))
             reference = (vo.REFERENCE_BLOCK.format(
@@ -183,17 +192,29 @@ def assemble(args):
 # compare
 # ---------------------------------------------------------------------------
 
-EDU_LOW, EDU_HIGH = "S09-EDU-low-", "S09-EDU-high-"
+# group a minus group b, by cue id; a contrast none of the graded answers has is left out
+CONTRASTS = [
+    ("placebo − baseline", lambda i: re.match(r"S0[12]-CTRL-", i), lambda i: i == "none"),
+    ("Black − White", lambda i: re.match(r"S0[3-8]-RG-B", i), lambda i: re.match(r"S0[3-8]-RG-W", i)),
+    ("woman − man", lambda i: re.match(r"S0[3-8]-RG-.W-", i), lambda i: re.match(r"S0[3-8]-RG-.M-", i)),
+    ("no high school − doctorate", lambda i: i.startswith("S09-EDU-low-"),
+     lambda i: i.startswith("S09-EDU-high-")),
+]
 
 
-def load_grades(path):
-    """(answer id, judge) -> the last row with all six criteria and a hard-fail
-    flag. A stray premise score is ignored (the lenient rule); `strict` records
-    whether the row also passed the runner's own check."""
+def graded(r):
+    """All six criteria and a hard-fail flag: valid under the lenient rule,
+    which ignores a stray premise score."""
+    return (all(type(r.get(k)) is int and 1 <= r[k] <= 4 for k in vo.CRITERIA)
+            and type(r.get("hard_fail")) is bool)
+
+
+def load_grades(path, keys=None):
+    """(answer id, judge) -> the last valid row (see graded); `strict` records
+    whether the row also passed the runner's own check. With `keys`, only those."""
     out = {}
     for r in vo.read_jsonl(path):
-        if all(type(r.get(k)) is int and 1 <= r[k] <= 4 for k in vo.CRITERIA) \
-                and type(r.get("hard_fail")) is bool:
+        if graded(r) and (keys is None or (r["id"], r["judge"]) in keys):
             out[(r["id"], r["judge"])] = dict(r, total=sum(r[k] for k in vo.CRITERIA),
                                              strict=r.get("error") is None)
     return out
@@ -243,7 +264,11 @@ def gap(rows, a_ids, b_ids, field, draws=500, seed=1):
 
 
 def compare(args):
-    one, per = load_grades(args.single), load_grades(args.per_criterion)
+    per = load_grades(args.per_criterion)
+    if args.exclude:
+        drop = {l.strip() for l in open(args.exclude, encoding="utf-8") if l.strip()}
+        per = {k: v for k, v in per.items() if k[0] not in drop}
+    one = load_grades(args.single, set(per))
     keys = sorted(set(one) & set(per))
     if not keys:
         sys.exit("No answer is graded both ways.")
@@ -308,15 +333,13 @@ def compare(args):
     lines.append("Within question and answering model, averaged over judges, 95% bootstrap "
                  "interval over questions. Out of 24 for the total.\n")
     lines.append("| contrast | measure | one prompt | per criterion |\n|---|---|---|---|")
-    contrasts = [
-        ("no high school − doctorate", lambda i: i.startswith(EDU_LOW), lambda i: i.startswith(EDU_HIGH)),
-        ("placebo − baseline", lambda i: i.startswith("S01-CTRL-"), lambda i: i == "none"),
-    ]
-    for label, a, b in contrasts:
+    for label, a, b in CONTRASTS:
         for f in ("total", "evidence"):
+            got = [gap(rows, a, b, f) for rows in modes.values()]
+            if all(g[0] is None for g in got):
+                continue
             cells = []
-            for rows in modes.values():
-                est, lo, hi = gap(rows, a, b, f)
+            for est, lo, hi in got:
                 cells.append("" if est is None else f"{est:+.2f} [{lo:+.2f}, {hi:+.2f}]")
                 table.append({"measure": "gap", "field": f, "contrast": label, "value": est,
                               "lo": lo, "hi": hi})
@@ -345,6 +368,8 @@ def main():
     j.add_argument("--out", default="parts-per-criterion.jsonl")
     j.add_argument("--prompts", help="the prompts .xlsx, for the reference answers")
     j.add_argument("--throughput", default="throughput-per-criterion.jsonl")
+    j.add_argument("--only-valid", metavar="JUDGMENTS",
+                   help="grade only the answer and judge pairs with a valid grade here")
     j.add_argument("--dry-run", action="store_true", help="print two prompts, load nothing")
     # the same engine flags as vllm_offline.py, so the shell scripts pass $ARGS unchanged
     j.add_argument("--chunk", type=int, default=5000)
@@ -364,6 +389,7 @@ def main():
     c.add_argument("single", help="one-prompt judgments of the same answers")
     c.add_argument("per_criterion", help="assembled per-criterion judgments")
     c.add_argument("--out-dir", default="per-criterion-analysis")
+    c.add_argument("--exclude", metavar="IDS", help="a file of answer ids to leave out, one per line")
     args = p.parse_args()
     if args.cmd == "judge":
         args.shard = "0/1"

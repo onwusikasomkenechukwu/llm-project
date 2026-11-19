@@ -60,7 +60,7 @@ A smaller judge panel brings it down further. See [Costs](#costs).
 | Waiting on | the rest of the questions: 162 written so far, 120 with gold-standard elements (`samples/prompts-2026-10-20.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
 | Done | the law school's rubric of 3 November on the open-weight models: the [32-question subset](#question-sets) the law school also grades by hand (5–9 Nov), then the [21 October cue run regraded](#what-the-rubric-v3-regrade-showed) (10–16 Nov) |
 | Proposed | the [frontier cue shortlist](#the-frontier-cue-shortlist), 17 groups and the baseline, to be checked on 162 questions on the Dell first |
-| Ready to run | [one prompt per criterion](#one-prompt-or-one-per-criterion) against one prompt, on the 32-question subset |
+| Ready to run | [one prompt per criterion](#one-prompt-or-one-per-criterion) against one prompt, on the 162-question sweep: baseline, placebo, race x gender |
 | Waiting on | human grades of the subset ([labelling.md](labelling.md)), and frontier answers and grades for the same set |
 | Waiting on | frontier answers to the same 162 questions, for the [frontier against open-weight](#frontier-against-open-weight) correlation |
 | Not built yet | publication plots |
@@ -1242,27 +1242,38 @@ then one criterion's description and levels, then a one-field JSON reply.
 `assemble` joins the parts into ordinary judgment rows (`"mode":
 "per-criterion"`), so every analysis script reads them.
 
-`vllm_per_criterion.sh` runs it on the 32-question subset: the baseline (three
-runs), the placebo and the education cues (run 1 of each wording), on all five
-answering models, which is 1,920 answers, plus the 160 hand-graded ones when
-the labelling key is on the machine. The same answers are graded afresh in one
-prompt, since the subset's own grades asked for numbers rather than level
-names. `compare` then reports, both ways:
+`vllm_per_criterion.sh` runs it on the full 162-question sweep of the rubric
+v3 regrade, as Dr. Aryal asked: the baseline (three runs), the placebo in both
+channels and Black/White x man/woman (label, name and profile, user turn and
+saved memory, run 1 of each wording), on all five answering models. That is
+81 of the 105 prompts per question, 65,610 answers. The one-prompt side is the
+regrade's own grades, so only the per-criterion side is graded, and only for
+the answer and judge pairs whose regrade is valid under the lenient rule.
+`compare` then reports, both ways:
 
 - the mean of each criterion, and how well the two modes agree grade by grade;
 - how much the six criteria move together within a grade (mean correlation
   over the 15 pairs, and how often all six get the same level);
 - judge agreement (Krippendorff's α per criterion);
-- the education and placebo gaps, on the total and on evidence.
+- the placebo − baseline, Black − White and woman − man gaps, on the total and
+  on evidence.
+
+The regrade's 32 subset questions were graded with the numeric v3 prompt
+(before 0877eb5), the rest with level names, as the per-criterion prompts are.
+So the comparison is reported twice: on all 162 questions
+(`analysis/report.md`) and on the 130 graded with level names both ways
+(`analysis/level-names/report.md`).
 
 ```bash
 bash vllm_per_criterion.sh            # on the Dell, in tmux, after any other GPU job
-bash vllm_per_criterion.sh publish    # push runs/per-criterion/analysis to results/per-criterion
+bash vllm_per_criterion.sh publish    # push runs/per-criterion-sweep/analysis to results/per-criterion
 ```
 
-One prompt is about 2.5 hours on the Dell. Per criterion is about 75,000 calls
-and has not been timed. The calls are short, and each answer's parts share a
-cached prefix, but expect several times as long.
+It runs in three waves, compared as each finishes: the baseline and placebo,
+then race x gender in the user turn, then in saved memory. That is about 2.3
+million calls. Per criterion has never been timed here; each call writes one
+rating rather than a whole grade and the answer's prefix is cached, so expect
+one to two weeks, the first wave in about a day. Publish after any wave.
 
 ## Cross-evaluation
 
