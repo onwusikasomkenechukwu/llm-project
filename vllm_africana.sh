@@ -111,6 +111,8 @@ run() {
     if pgrep -f "vllm_offline.py (answer|judge)|vllm_per_criterion.py judge" > /dev/null; then
         echo "another vLLM job is running; stop it first (Ctrl-C in its tmux window)"; return 1
     fi
+    python -c "import openpyxl, vllm" 2> /dev/null ||
+        { echo "the llm env is not active: conda activate llm, then run this again"; return 1; }
     local FULL=samples/prompts-2026-11-24.xlsx SUB=samples/prompts-subset-2026-11-24.xlsx
     [ -s "$FULL" ] && [ -s "$SUB" ] || { echo "no $FULL or $SUB: git pull"; return 1; }
 

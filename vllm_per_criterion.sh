@@ -28,6 +28,9 @@
 # all 162 questions (analysis/report.md) and on the 130 graded with level names
 # both ways (analysis/level-names/report.md).
 #
+# The 18 Africana Heritage questions corrected on 24 November are left out
+# (vllm_africana.sh regrades their one-prompt grades): 59,940 answers remain.
+#
 # Run inside tmux and the llm conda env, after any other GPU job has finished.
 # Safe to rerun: saved rows are skipped.
 set -uo pipefail
@@ -42,10 +45,35 @@ ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning
 # per model and stage, from vllm_tune.py
 [ -s vllm-engine.json ] && ARGS="$ARGS --engine-config vllm-engine.json"
 WAVES="1-baseline-placebo 2-race-gender-user 3-race-gender-memory"
-# the Africana Heritage answers, regraded with corrected elements by vllm_africana.sh
-# after part of this ran: left out of grading and comparison once that has run
-AFRICANA=$SRC/africana-2026-11-24/answer-ids.txt
+# the Africana Heritage questions whose answer elements were corrected on 24
+# November (samples/fix_africana_references.py): their one-prompt grades are
+# redone by vllm_africana.sh, so they are left out of grading and comparison here
+AFRICANA=$D/africana-ids.txt
 mkdir -p "$D/analysis"
+
+check_env() {
+    python -c "import openpyxl, vllm" 2> /dev/null ||
+        { echo "the llm env is not active: conda activate llm, then run this again"; return 1; }
+}
+
+africana() {   # list the answers to the corrected questions
+    python - samples/prompts-2026-10-20.xlsx samples/prompts-2026-11-24.xlsx "$AFRICANA" "$D"/responses-*.jsonl <<'EOF'
+import json, sys
+import openpyxl
+old, new, out, *answers = sys.argv[1:]
+def refs(path):
+    rows = list(openpyxl.load_workbook(path, read_only=True).worksheets[0].iter_rows(values_only=True))
+    pid, comp = rows[0].index("Prompt ID"), rows[0].index("Ideal Answer Components")
+    return {r[pid]: (r[comp] or "").strip() for r in rows[1:] if r[pid]}
+a, b = refs(old), refs(new)
+changed = {q for q in b if b[q] != a.get(q, "")}
+ids = sorted({r["id"] for p in answers for r in map(json.loads, filter(str.strip, open(p, encoding="utf-8")))
+              if r.get("qid") in changed})
+with open(out, "w", encoding="utf-8", newline="\n") as f:
+    f.writelines(i + "\n" for i in ids)
+print(f"{len(ids)} answers to the {len(changed)} corrected Africana Heritage questions left out")
+EOF
+}
 
 prepare() {
     [ -s "$D/responses-3-race-gender-memory.jsonl" ] && return 0
@@ -89,6 +117,7 @@ run() {
     if pgrep -f "vllm_offline.py (answer|judge)|vllm_per_criterion.py judge" > /dev/null; then
         echo "another vLLM job is running; start this once it has finished"; return 1
     fi
+    check_env && africana || return 1
     local w in
     for w in $WAVES; do
         echo "== wave $w, one prompt per criterion"
@@ -106,8 +135,9 @@ run() {
 
 evaluate() {
     echo "== comparing"
-    cat "$AFRICANA" 2>/dev/null > "$D/exclude.txt"
-    cat "$D/exclude.txt" "$D/numeric-prompt-ids.txt" > "$D/exclude-numeric.txt"
+    check_env && africana || return 1
+    cp "$AFRICANA" "$D/exclude.txt"
+    cat "$AFRICANA" "$D/numeric-prompt-ids.txt" > "$D/exclude-numeric.txt"
     python vllm_per_criterion.py assemble "$D/parts.jsonl" --out "$D/judgments-per-criterion.jsonl"
     python vllm_per_criterion.py compare "$SRC/judgments.jsonl" \
         "$D/judgments-per-criterion.jsonl" --exclude "$D/exclude.txt" \
