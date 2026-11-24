@@ -42,6 +42,9 @@ ARGS="--models $MODELS --tensor-parallel-size 2 --max-model-len 8192 --reasoning
 # per model and stage, from vllm_tune.py
 [ -s vllm-engine.json ] && ARGS="$ARGS --engine-config vllm-engine.json"
 WAVES="1-baseline-placebo 2-race-gender-user 3-race-gender-memory"
+# the Africana Heritage answers, regraded with corrected elements by vllm_africana.sh
+# after part of this ran: left out of grading and comparison once that has run
+AFRICANA=$SRC/africana-2026-11-24/answer-ids.txt
 mkdir -p "$D/analysis"
 
 prepare() {
@@ -86,10 +89,15 @@ run() {
     if pgrep -f "vllm_offline.py (answer|judge)|vllm_per_criterion.py judge" > /dev/null; then
         echo "another vLLM job is running; start this once it has finished"; return 1
     fi
-    local w
+    local w in
     for w in $WAVES; do
         echo "== wave $w, one prompt per criterion"
-        python vllm_per_criterion.py judge "$D/responses-$w.jsonl" --prompts "$PROMPTS" \
+        in="$D/responses-$w.jsonl"
+        if [ -s "$AFRICANA" ]; then
+            grep -vFf <(sed 's/.*/"id": "&"/' "$AFRICANA") "$in" > "$D/to-grade-$w.jsonl"
+            in="$D/to-grade-$w.jsonl"
+        fi
+        python vllm_per_criterion.py judge "$in" --prompts "$PROMPTS" \
             --only-valid "$SRC/judgments.jsonl" --out "$D/parts.jsonl" \
             --throughput throughput-per-criterion.jsonl $ARGS 2>&1 | tee -a "$D/judge.log"
         evaluate
@@ -98,11 +106,14 @@ run() {
 
 evaluate() {
     echo "== comparing"
+    cat "$AFRICANA" 2>/dev/null > "$D/exclude.txt"
+    cat "$D/exclude.txt" "$D/numeric-prompt-ids.txt" > "$D/exclude-numeric.txt"
     python vllm_per_criterion.py assemble "$D/parts.jsonl" --out "$D/judgments-per-criterion.jsonl"
     python vllm_per_criterion.py compare "$SRC/judgments.jsonl" \
-        "$D/judgments-per-criterion.jsonl" --out-dir "$D/analysis" > /dev/null
+        "$D/judgments-per-criterion.jsonl" --exclude "$D/exclude.txt" \
+        --out-dir "$D/analysis" > /dev/null
     python vllm_per_criterion.py compare "$SRC/judgments.jsonl" \
-        "$D/judgments-per-criterion.jsonl" --exclude "$D/numeric-prompt-ids.txt" \
+        "$D/judgments-per-criterion.jsonl" --exclude "$D/exclude-numeric.txt" \
         --out-dir "$D/analysis/level-names" > /dev/null
     cp throughput-per-criterion.jsonl "$D/analysis/throughput.jsonl" 2>/dev/null
     date > "$D/analysis/AS_OF.txt"

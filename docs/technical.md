@@ -57,10 +57,11 @@ A smaller judge panel brings it down further. See [Costs](#costs).
 | | |
 |---|---|
 | Ready | collection, grading, cross-evaluation, cost accounting, analysis tables, run manifests, drift checks |
-| Waiting on | the rest of the questions: 162 written so far, 120 with gold-standard elements (`samples/prompts-2026-10-20.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
+| Waiting on | the rest of the questions: 162 written so far, 135 with gold-standard elements (`samples/prompts-2026-11-24.xlsx`), of a planned 385 — 35 per topic (10 Factual, 10 Directed, 5 of each other type) × 11 topics |
 | Done | the law school's rubric of 3 November on the open-weight models: the [32-question subset](#question-sets) the law school also grades by hand (5–9 Nov), then the [21 October cue run regraded](#what-the-rubric-v3-regrade-showed) (10–16 Nov) |
 | Proposed | the [frontier cue shortlist](#the-frontier-cue-shortlist), 17 groups and the baseline, to be checked on 162 questions on the Dell first |
 | Ready to run | [one prompt per criterion](#one-prompt-or-one-per-criterion) against one prompt, on the 162-question sweep: baseline, placebo, race x gender |
+| Ready to run | [the Africana Heritage regrade](#africana-heritage-answer-elements-corrected), with the corrected answer elements |
 | Waiting on | human grades of the subset ([labelling.md](labelling.md)), and frontier answers and grades for the same set |
 | Waiting on | frontier answers to the same 162 questions, for the [frontier against open-weight](#frontier-against-open-weight) correlation |
 | Not built yet | publication plots |
@@ -1274,6 +1275,38 @@ then race x gender in the user turn, then in saved memory. That is about 2.3
 million calls. Per criterion has never been timed here; each call writes one
 rating rather than a whole grade and the answer's prefix is cached, so expect
 one to two weeks, the first wave in about a day. Publish after any wave.
+
+### Africana Heritage answer elements, corrected
+
+On 24 November Kweli found that the Pre-Enslavement Africana Heritage
+topic's gold-standard answer elements sat on the wrong questions in the team
+sheet, and fixed the sheet. Our sheet of 20 October had elements on 5 of the
+topic's 20 questions: PEAH-001 and 009 right, PEAH-010, 011 and 012 carrying
+other questions' elements. The topic is five questions in four variants each,
+and each variant now takes its question's elements, so 18 questions change and
+the sheet has 135 with elements. The five texts themselves are unchanged.
+
+`samples/fix_africana_references.py` writes `prompts-2026-11-24.xlsx` and
+`prompts-subset-2026-11-24.xlsx`, changing only these questions, and the hand-
+grading sheet's reference column for the 15 rows it changes (PEAH-010, 011
+and 012). `vllm_africana.sh` regrades these questions' answers in the three
+rubric v3 runs (the full regrade, the subset and the shortlist), with the
+same rubric and prompt as every other grade, and swaps the new grades in. The
+old ones are moved to `<run>/africana-2026-11-24/`. Answers the runs share are
+graded once and copied. That is about 17 hours on the Dell. The per-criterion
+sweep then leaves these questions out of its grading and comparison.
+
+```bash
+bash vllm_africana.sh            # on the Dell, in tmux, with no other vLLM job running
+```
+
+In the forms, `fixReferences` in `label_forms.gs` rewrites the reference on
+the pages whose Labels row was corrected, and keeps the responses.
+
+Each gap compares one question's answers under different cues against the same
+reference, so a wrong reference should shift these questions' scores more
+than their gaps. Every analysis is redone after the regrade all the same.
+Later runs should use `prompts-2026-11-24.xlsx`.
 
 ## Cross-evaluation
 

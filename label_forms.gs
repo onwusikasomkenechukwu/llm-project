@@ -18,6 +18,9 @@
 //
 // To rebuild forms that have no responses yet, run resetForms first: it moves
 // them to the Drive trash, deletes their response tabs and the Forms tab.
+//
+// To correct a reference answer in forms that already have responses, edit it
+// in the Labels tab and run fixReferences.
 
 const LABELS = 'Labels';
 const RUBRIC = 'Rubric';
@@ -142,6 +145,44 @@ function resetForms() {
   ss.deleteSheet(log);
   PropertiesService.getDocumentProperties().deleteProperty('progress');
   Logger.log(`Moved ${forms.length} forms to the trash and deleted ${tabs.length} response tabs. Run buildForms.`);
+}
+
+// After a correction to the Labels tab's reference column, rewrite that text in
+// the forms already built, page by page, matched by row ID. Nothing else in a
+// form changes, and responses already given are kept. Safe to run again.
+function fixReferences() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const want = {};
+  for (const r of records(ss.getSheetByName(LABELS))) {
+    want[String(r['Row ID'])] = chunks(String(r['Reference answer components'] || '').trim() || '(none)');
+  }
+  const log = ss.getSheetByName(FORMS);
+  if (!log) { Logger.log('No Forms tab: no forms to fix.'); return; }
+  const fixed = [], manual = [];
+  for (const [topic, , edit] of log.getDataRange().getValues().slice(1).filter(r => r[2])) {
+    let id = null, parts = [];
+    const check = () => {
+      if (!id || !parts.length || !want[id]) return;
+      if (parts.length !== want[id].length) { manual.push(`${id} (${topic})`); return; }
+      if (parts.some((item, i) => item.getHelpText() !== want[id][i])) {
+        parts.forEach((item, i) => item.setHelpText(want[id][i]));
+        fixed.push(id);
+      }
+    };
+    for (const item of FormApp.openByUrl(edit).getItems()) {
+      if (item.getType() === FormApp.ItemType.PAGE_BREAK) {
+        check();
+        id = item.getTitle().split(' ')[0];
+        parts = [];
+      } else if (item.getType() === FormApp.ItemType.SECTION_HEADER &&
+                 item.getTitle().startsWith('Reference answer components')) {
+        parts.push(item.asSectionHeaderItem());
+      }
+    }
+    check();
+  }
+  Logger.log(`Rewrote the reference on ${fixed.length} pages: ${fixed.join(', ') || 'none'}.`);
+  if (manual.length) Logger.log(`The new text needs a different number of blocks on: ${manual.join(', ')}. Edit these by hand.`);
 }
 
 // A section header holds the text; long text is split at paragraph breaks.
