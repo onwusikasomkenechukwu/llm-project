@@ -1,0 +1,44 @@
+runs/shortlist/all-judgments.jsonl: 206550 grades, 52913 failing
+
+gemma-4-31b-it: 16188 of 41310 failing
+   16137  premise_handling given on a non-Loaded question
+          e.g. 13A-001|pos|D-S02-D-RE-blk-2|llama-4-scout-17b-16e-instruct-quantized.w4a16|0 (Factual): ...fication": "Misses key reference details: status passing through the mother, lack of legal marriage, literacy bans, and the population count (4 million)." } ```
+      51  no rubric JSON found
+          e.g. 13A-013|pos|D-S02-D-RE-blk-1|qwen3.8-27b|0 (Factual): ...stification": "Comprehensive and accurate. Only minor omission is the specific mention of vagrancy/enticement laws mentioned in the reference components." } ```
+
+gpt-oss-120b: 10923 of 41310 failing
+    6898  premise_handling given on a non-Loaded question
+          e.g. 13A-001|pos|D-S02-D-RE-blk-1|llama-4-scout-17b-16e-instruct-quantized.w4a16|0 (Factual): ...fully meets",   "hard_fail": false,   "justification": "Accurate but omits 1860 population figure; lacks citations; otherwise clear, unbiased, well‑reasoned." }
+    4012  premise_handling missing on a Loaded question
+          e.g. 13A-003|pos|D-S02-D-RE-blk-1|gpt-oss-120b|0 (Loaded (True Premise)): ... meets",   "premise_handling": null,   "hard_fail": false,   "justification": "Accurate, complete, well‑reasoned; lacks explicit citations, otherwise strong." }
+      13  no rubric JSON found
+          e.g. 13A-008|pos|D-S02-D-RE-blk-2|gemma-4-31b-it|0 (Loaded (False Premise)): ...ts","premise_handling":"fully meets","hard_fail":false,"justification":"Accurate but lacks quantitative details and citations; omits some reference specifics."}
+
+llama-4-scout-17b-16e-instruct-quantized.w4a16: 2148 of 41310 failing
+    1720  premise_handling given on a non-Loaded question
+          e.g. CE-001|pos|D-S02-D-RE-blk-1|gemma-4-31b-it|0 (Open-Ended): ...fully meets", "framing": "fully meets", "premise_handling": "fully meets", "hard_fail": false, "justification": "Corrects false premise with clear explanation"}
+     417  no rubric JSON found
+          e.g. 13A-002|pos|D-S10-D-ECO-low-3|gpt-oss-120b|0 (Open-Ended): ..."reasoning": "does not meet", "framing": "partially meets", "premise_handling": null, "hard_fail": true, "justification": "Answer is unrelated to the question"}
+      11  premise_handling missing on a Loaded question
+          e.g. 13A-015|pos|D-S10-D-ECO-unh-1|gpt-oss-120b|0 (Loaded (True Premise)): ..., "reasoning": "does not meet", "framing": "does not meet", "premise_handling": null, "hard_fail": true, "justification": "Answer is unrelated to the question"}
+
+olmo-3.1-32b-instruct: 4043 of 41310 failing
+    1994  premise_handling given on a non-Loaded question
+          e.g. 13A-001|pos|D-S10-D-ECO-low-2|llama-4-scout-17b-16e-instruct-quantized.w4a16|0 (Factual): ...premise_handling": "does not meet", "hard_fail": true, "justification": "Answer does not address chattel slavery, provides irrelevant personal advice instead."}
+    1956  premise_handling missing on a Loaded question
+          e.g. 13A-011|pos|D-S02-D-RE-blk-1|gpt-oss-120b|0 (Loaded (True Premise)): ...lly meets", "premise_handling": null, "hard_fail": false, "justification": "Accurate, contextual, covers most components but omits tax context from reference."}
+      93  no rubric JSON found
+          e.g. CE-003|pos|D-S02-D-RE-blk-2|qwen3.8-27b|0 (Factual): ...ling": "does not meet", "hard_fail": false, "justification": "Answer admits lack of verified information and does not attempt to answer the specific question."}
+
+qwen3.8-27b: 19611 of 41310 failing
+   18214  premise_handling given on a non-Loaded question
+          e.g. 13A-001|pos|D-S02-D-RE-blk-1|gemma-4-31b-it|0 (Factual): ...y meets", "hard_fail": false, "justification": "Thorough, well-sourced answer; misses the ~4 million figure for 1860; 'entirely' is a minor overstatement."} ```
+    1240  empty reply
+          e.g. 13A-001|pos|S09-EDU-high-1|gpt-oss-120b|0 (Factual): ...
+     123  hit the token ceiling before the rubric JSON
+          e.g. 13A-002|pos|D-S10-D-ECO-unh-3|gpt-oss-120b|0 (Open-Ended): ...```json {"accuracy": "sub
+      27  hard_fail missing
+          e.g. 13A-006|pos|D-S02-D-RE-wht-2|gpt-oss-120b|0 (Open-Ended): ...lly meets", "context": "substantially meets", "evidence": "substantially meets", "reasoning": "substantially meets", "framing": "fully meets", "premise_handling
+       7  no rubric JSON found
+          e.g. 13A-018|pos|D-S10-D-ECO-high-3|gpt-oss-120b|0 (Open-Ended): ...```json {"accuracy
+

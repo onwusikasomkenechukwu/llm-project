@@ -1,0 +1,111 @@
+metric,channel,dimension,contrast,model,gap,low,high,n_questions
+total,user,race_ethnicity,Black American - White American,gemma-4-31b-it,0.01902133922001494,-0.09484915378955076,0.13473142016188422,151
+total,user,race_ethnicity,Black American - White American,gpt-oss-120b,0.20771604938271587,-0.02222222222222288,0.46735253772290763,162
+total,user,race_ethnicity,Black American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.008138711960368096,-0.18025477707006368,0.22377919320594458,157
+total,user,race_ethnicity,Black American - White American,olmo-3.1-32b-instruct,0.004554865424430692,-0.13723257418909543,0.15873015873015886,161
+total,user,race_ethnicity,Black American - White American,qwen3.8-27b,0.0706908831908829,-0.11506410256410277,0.28069800569800535,156
+total,user,religion,nonreligious - placebo,gemma-4-31b-it,0.5975349521707141,0.3885945548197211,0.8162251655629144,151
+total,user,religion,nonreligious - placebo,gpt-oss-120b,0.394718792866941,0.17376543209876547,0.6265432098765434,162
+total,user,religion,nonreligious - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.9288461538461541,0.7070512820512823,1.1645655270655273,156
+total,user,religion,nonreligious - placebo,olmo-3.1-32b-instruct,0.49824016563147017,0.3324706694271911,0.6714630779848174,161
+total,user,religion,nonreligious - placebo,qwen3.8-27b,0.1697763801537387,-0.03504542278127154,0.4044723969252271,159
+total,user,politics,Black conservative - Black progressive,gemma-4-31b-it,-0.3312636165577342,-0.5602759622367467,-0.09912854030501086,153
+total,user,politics,Black conservative - Black progressive,gpt-oss-120b,-0.4562414266117969,-0.696879286694101,-0.24753086419753104,162
+total,user,politics,Black conservative - Black progressive,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.7141774891774889,-0.8734487734487731,-0.5417027417027414,154
+total,user,politics,Black conservative - Black progressive,olmo-3.1-32b-instruct,-0.18816425120772964,-0.35914423740510765,-0.027674258109040905,161
+total,user,politics,Black conservative - Black progressive,qwen3.8-27b,-0.13917748917748915,-0.31814574314574323,0.025829725829725692,154
+total,user,disability,intellectual disability - placebo,gemma-4-31b-it,-1.3817512877115525,-1.6442972774098596,-1.0969462840323765,151
+total,user,disability,intellectual disability - placebo,gpt-oss-120b,-0.44708504801097404,-0.6812757201646092,-0.2189643347050757,162
+total,user,disability,intellectual disability - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.016093189964157734,-0.23114695340501754,0.2236917562724016,155
+total,user,disability,intellectual disability - placebo,olmo-3.1-32b-instruct,-0.10864583333333303,-0.31402777777777746,0.099166666666667,160
+total,user,disability,intellectual disability - placebo,qwen3.8-27b,-0.7808368495077358,-0.9816807313642757,-0.5864627285513363,158
+total,user,disability,Deaf or hard of hearing - placebo,gemma-4-31b-it,0.06317616959064329,-0.16937134502923978,0.2722953216374268,152
+total,user,disability,Deaf or hard of hearing - placebo,gpt-oss-120b,-0.024142661179698186,-0.2689643347050755,0.22349108367626894,162
+total,user,disability,Deaf or hard of hearing - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.5389592123769338,-0.8070675105485234,-0.2695147679324894,158
+total,user,disability,Deaf or hard of hearing - placebo,olmo-3.1-32b-instruct,-0.07081618655692704,-0.2710562414266118,0.13244170096021984,162
+total,user,disability,Deaf or hard of hearing - placebo,qwen3.8-27b,-0.12917562724014345,-0.29247311827956984,0.043154121863799084,155
+total,user,economic,low income - high income,gemma-4-31b-it,-0.22533333333333327,-0.3518148148148144,-0.10666666666666659,150
+total,user,economic,low income - high income,gpt-oss-120b,-0.5704732510288067,-0.8469135802469139,-0.323456790123457,162
+total,user,economic,low income - high income,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.5115770609319,-0.7046236559139789,-0.2948028673835129,155
+total,user,economic,low income - high income,olmo-3.1-32b-instruct,-0.35569272976680394,-0.5052126200274352,-0.19773662551440355,162
+total,user,economic,low income - high income,qwen3.8-27b,-0.11734767025089625,-0.2841218637992834,0.07612903225806397,155
+total,user,economic,unhoused - high income,gemma-4-31b-it,-0.1658756438557761,-0.33933038999264153,0.012803532008829988,151
+total,user,economic,unhoused - high income,gpt-oss-120b,-1.0185185185185186,-1.2624142661179703,-0.7630658436213995,162
+total,user,economic,unhoused - high income,llama-4-scout-17b-16e-instruct-quantized.w4a16,-1.2594729344729347,-1.494978632478633,-1.0418803418803422,156
+total,user,economic,unhoused - high income,olmo-3.1-32b-instruct,-0.37949245541838145,-0.543072702331962,-0.21807270233196127,162
+total,user,economic,unhoused - high income,qwen3.8-27b,-0.38336940836940864,-0.5830086580086581,-0.2065295815295815,154
+total,user,economic,unemployed - high income,gemma-4-31b-it,-0.3706401766004415,-0.6321192052980131,-0.15172921265636474,151
+total,user,economic,unemployed - high income,gpt-oss-120b,-0.6504115226337449,-0.9124485596707816,-0.3817901234567902,162
+total,user,economic,unemployed - high income,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.4724025974025976,-0.7112554112554114,-0.2367965367965369,154
+total,user,economic,unemployed - high income,olmo-3.1-32b-instruct,-0.21456176673567962,-0.3971704623878538,-0.02826086956521701,161
+total,user,economic,unemployed - high income,qwen3.8-27b,-0.321753246753247,-0.4993506493506495,-0.12705627705627712,154
+total,user,occupation,history teacher - placebo,gemma-4-31b-it,0.7228844738778513,0.5027409860191318,0.9406732891832226,151
+total,user,occupation,history teacher - placebo,gpt-oss-120b,0.5096879286694099,0.23062414266117945,0.7861968449931411,162
+total,user,occupation,history teacher - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,1.1117025089605737,0.858709677419355,1.361505376344086,155
+total,user,occupation,history teacher - placebo,olmo-3.1-32b-instruct,0.6572048611111113,0.4773263888888891,0.8166493055555559,160
+total,user,occupation,history teacher - placebo,qwen3.8-27b,0.3214646464646462,0.10961399711399687,0.5265151515151512,154
+total,user,occupation,civil rights lawyer - placebo,gemma-4-31b-it,0.7563413742690057,0.5243421052631577,0.9968750000000001,152
+total,user,occupation,civil rights lawyer - placebo,gpt-oss-120b,-0.07143347050754467,-0.33684842249657077,0.2230624142661178,162
+total,user,occupation,civil rights lawyer - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,1.0583511396011398,0.8425569800569803,1.2984330484330486,156
+total,user,occupation,civil rights lawyer - placebo,olmo-3.1-32b-instruct,0.7280538302277435,0.5327812284334024,0.9249482401656316,161
+total,user,occupation,civil rights lawyer - placebo,qwen3.8-27b,0.43667728237791914,0.20755484784147202,0.6516631280962488,157
+total,user,occupation,journalist - placebo,gemma-4-31b-it,0.5301900584795323,0.3109466374269009,0.7393823099415201,152
+total,user,occupation,journalist - placebo,gpt-oss-120b,0.048885459533607546,-0.21078532235939645,0.3413751714677635,162
+total,user,occupation,journalist - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.9783403656821379,0.7060126582278482,1.248769338959212,158
+total,user,occupation,journalist - placebo,olmo-3.1-32b-instruct,0.45786749482401684,0.25876466528640474,0.6742236024844723,161
+total,user,occupation,journalist - placebo,qwen3.8-27b,0.37077991452991454,0.19848646723646746,0.5509971509971506,156
+premise,user,race_ethnicity,Black American - White American,gemma-4-31b-it,0.0030701754385964743,-0.039912280701754434,0.04473684210526315,76
+premise,user,race_ethnicity,Black American - White American,gpt-oss-120b,0.041520467836257305,-0.04861111111111116,0.16264619883040937,76
+premise,user,race_ethnicity,Black American - White American,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.0044590643274853995,-0.08516081871345027,0.0755116959064327,76
+premise,user,race_ethnicity,Black American - White American,olmo-3.1-32b-instruct,-0.02741228070175436,-0.0964181286549707,0.037792397660818725,76
+premise,user,race_ethnicity,Black American - White American,qwen3.8-27b,-0.010891812865497102,-0.06242690058479531,0.03289473684210521,76
+premise,user,religion,nonreligious - placebo,gemma-4-31b-it,0.012500000000000025,-0.05679824561403503,0.08947368421052634,76
+premise,user,religion,nonreligious - placebo,gpt-oss-120b,0.07105263157894741,-0.0030701754385964305,0.15519005847953227,76
+premise,user,religion,nonreligious - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.10774853801169586,0.042324561403508765,0.18070175438596484,76
+premise,user,religion,nonreligious - placebo,olmo-3.1-32b-instruct,0.06323099415204678,-0.002631578947368435,0.13567251461988306,76
+premise,user,religion,nonreligious - placebo,qwen3.8-27b,-0.011184210526315791,-0.05526315789473689,0.03618421052631575,76
+premise,user,politics,Black conservative - Black progressive,gemma-4-31b-it,-0.14173976608187136,-0.23494152046783623,-0.06505847953216377,76
+premise,user,politics,Black conservative - Black progressive,gpt-oss-120b,-0.08837719298245614,-0.18903508771929828,0.000365497076023411,76
+premise,user,politics,Black conservative - Black progressive,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.11257309941520473,-0.18728070175438596,-0.03691520467836268,76
+premise,user,politics,Black conservative - Black progressive,olmo-3.1-32b-instruct,-0.03545321637426902,-0.09539473684210525,0.026388888888888854,76
+premise,user,politics,Black conservative - Black progressive,qwen3.8-27b,-0.07127192982456144,-0.14320175438596494,-0.0052631578947368645,76
+premise,user,disability,intellectual disability - placebo,gemma-4-31b-it,0.006652046783625754,-0.06293859649122806,0.07704678362573097,76
+premise,user,disability,intellectual disability - placebo,gpt-oss-120b,0.020540935672514627,-0.0426169590643275,0.08326023391812865,76
+premise,user,disability,intellectual disability - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.07105263157894734,-0.008187134502923977,0.14831871345029235,76
+premise,user,disability,intellectual disability - placebo,olmo-3.1-32b-instruct,0.051973684210526304,-0.02931286549707603,0.14100877192982453,76
+premise,user,disability,intellectual disability - placebo,qwen3.8-27b,0.021491228070175426,-0.02478070175438596,0.07631578947368425,76
+premise,user,disability,Deaf or hard of hearing - placebo,gemma-4-31b-it,0.034868421052631604,-0.019956140350877175,0.10570175438596494,76
+premise,user,disability,Deaf or hard of hearing - placebo,gpt-oss-120b,0.01929824561403511,-0.07814327485380114,0.11315789473684212,76
+premise,user,disability,Deaf or hard of hearing - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.035380116959064345,-0.12214912280701755,0.0482456140350877,76
+premise,user,disability,Deaf or hard of hearing - placebo,olmo-3.1-32b-instruct,0.11213450292397659,0.044298245614035066,0.18691520467836256,76
+premise,user,disability,Deaf or hard of hearing - placebo,qwen3.8-27b,0.024780701754386004,-0.019517543859649107,0.06337719298245621,76
+premise,user,economic,low income - high income,gemma-4-31b-it,-0.0006578947368420971,-0.03947368421052628,0.04035087719298247,76
+premise,user,economic,low income - high income,gpt-oss-120b,-0.07507309941520468,-0.16600877192982458,-0.004459064327485382,76
+premise,user,economic,low income - high income,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.03559941520467833,-0.11739766081871343,0.053801169590643294,76
+premise,user,economic,low income - high income,olmo-3.1-32b-instruct,-0.002923976608187159,-0.05519005847953219,0.049415204678362544,76
+premise,user,economic,low income - high income,qwen3.8-27b,0.008552631578947437,-0.026754385964912232,0.04671052631578951,76
+premise,user,economic,unhoused - high income,gemma-4-31b-it,-0.003947368421052618,-0.050219298245614004,0.041228070175438614,76
+premise,user,economic,unhoused - high income,gpt-oss-120b,-0.07448830409356723,-0.13114035087719297,-0.020394736842105226,76
+premise,user,economic,unhoused - high income,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.1316520467836257,-0.19707602339181277,-0.0660087719298245,76
+premise,user,economic,unhoused - high income,olmo-3.1-32b-instruct,0.016812865497076057,-0.050438596491228005,0.09480994152046789,76
+premise,user,economic,unhoused - high income,qwen3.8-27b,0.010087719298245637,-0.04342105263157897,0.06074561403508775,76
+premise,user,economic,unemployed - high income,gemma-4-31b-it,-0.013596491228070162,-0.0609649122807017,0.03574561403508771,76
+premise,user,economic,unemployed - high income,gpt-oss-120b,-0.08786549707602337,-0.15321637426900583,-0.018640350877193,76
+premise,user,economic,unemployed - high income,llama-4-scout-17b-16e-instruct-quantized.w4a16,-0.09429824561403509,-0.15029239766081873,-0.03713450292397662,76
+premise,user,economic,unemployed - high income,olmo-3.1-32b-instruct,0.04773391812865499,-0.0016081871345028948,0.1057748538011696,76
+premise,user,economic,unemployed - high income,qwen3.8-27b,-0.03267543859649119,-0.09320175438596487,0.016008771929824594,76
+premise,user,occupation,history teacher - placebo,gemma-4-31b-it,-0.004385964912280709,-0.061622807017543885,0.05756578947368421,76
+premise,user,occupation,history teacher - placebo,gpt-oss-120b,0.08775584795321638,0.005738304093567246,0.1767909356725146,76
+premise,user,occupation,history teacher - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.07986111111111105,-0.02353801169590648,0.1766447368421052,76
+premise,user,occupation,history teacher - placebo,olmo-3.1-32b-instruct,0.10197368421052629,0.03706140350877192,0.17499999999999996,76
+premise,user,occupation,history teacher - placebo,qwen3.8-27b,-0.02872807017543859,-0.07664473684210524,0.014802631578947375,76
+premise,user,occupation,civil rights lawyer - placebo,gemma-4-31b-it,0.030811403508771925,-0.04199561403508774,0.1130482456140351,76
+premise,user,occupation,civil rights lawyer - placebo,gpt-oss-120b,0.019992690058479524,-0.046527777777777765,0.09561403508771932,76
+premise,user,occupation,civil rights lawyer - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.13380847953216368,0.04484649122807007,0.22423245614035084,76
+premise,user,occupation,civil rights lawyer - placebo,olmo-3.1-32b-instruct,0.09835526315789472,0.02741228070175438,0.18399122807017543,76
+premise,user,occupation,civil rights lawyer - placebo,qwen3.8-27b,0.001535087719298246,-0.0574561403508772,0.057456140350877226,76
+premise,user,occupation,journalist - placebo,gemma-4-31b-it,0.0018640350877193034,-0.06447368421052631,0.07785087719298248,76
+premise,user,occupation,journalist - placebo,gpt-oss-120b,0.05255847953216373,-0.030519005847953237,0.1476973684210526,76
+premise,user,occupation,journalist - placebo,llama-4-scout-17b-16e-instruct-quantized.w4a16,0.09115497076023386,-0.022807017543859703,0.19290935672514617,76
+premise,user,occupation,journalist - placebo,olmo-3.1-32b-instruct,0.07401315789473682,-0.01260964912280703,0.16206140350877193,76
+premise,user,occupation,journalist - placebo,qwen3.8-27b,-0.00043859649122806276,-0.05932017543859651,0.06019736842105263,76

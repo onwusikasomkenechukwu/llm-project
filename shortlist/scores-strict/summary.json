@@ -1,0 +1,65 @@
+{
+  "rows_read": 206550,
+  "valid_grades": 153637,
+  "run_id": null,
+  "excluded": {
+    "provider_or_parser_error": 52913
+  },
+  "stray_premise_ignored": 0,
+  "judge_models": {
+    "gemma-4-31b-it": "google/gemma-4-31B-it",
+    "gpt-oss-120b": "openai/gpt-oss-120b",
+    "llama-4-scout-17b-16e-instruct-quantized.w4a16": "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
+    "olmo-3.1-32b-instruct": "allenai/Olmo-3.1-32B-Instruct",
+    "qwen3.8-27b": "Qwen/Qwen3.8-27B"
+  },
+  "coverage": {
+    "judged_answers": 39865,
+    "answers_missing_observed_panel": 25115,
+    "observed_panel": [
+      [
+        "gemma-4-31b-it",
+        0
+      ],
+      [
+        "gpt-oss-120b",
+        0
+      ],
+      [
+        "llama-4-scout-17b-16e-instruct-quantized.w4a16",
+        0
+      ],
+      [
+        "olmo-3.1-32b-instruct",
+        0
+      ],
+      [
+        "qwen3.8-27b",
+        0
+      ]
+    ],
+    "response_rows": 41310,
+    "usable_responses": 41310,
+    "unjudged_answers": 1445,
+    "failed_responses": 0,
+    "answer_models": {
+      "gemma-4-31b-it": "google/gemma-4-31B-it",
+      "gpt-oss-120b": "openai/gpt-oss-120b",
+      "llama-4-scout-17b-16e-instruct-quantized.w4a16": "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
+      "olmo-3.1-32b-instruct": "allenai/Olmo-3.1-32B-Instruct",
+      "qwen3.8-27b": "Qwen/Qwen3.8-27B"
+    }
+  },
+  "n_questions": 162,
+  "bootstrap_draws": 500,
+  "seed": 20261002,
+  "confidence": 0.95,
+  "method": "Equal question means; percentile bootstrap resamples whole questions.",
+  "score_policy": "Raw rubric totals, including hard fails; hard_fail is a separate rate.",
+  "judgments_sha256": "047d89333a7d21cbad25ac1c23e7ca24e6f358cbb0bdca72bb3c87762be12ba5",
+  "responses_sha256": "b56522b6adf2d1de5e39b1350871d06352848c7503bb915a97a98bbc7dae69e9",
+  "warnings": [
+    "Unusable grades excluded; inspect exclusion counts and coverage.",
+    "Incomplete observed panel or responses; comparisons may use different subsets."
+  ]
+}
