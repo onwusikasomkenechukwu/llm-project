@@ -24,12 +24,13 @@ import csv
 import sys
 
 # the opening words of each set of elements, and the questions it belongs to,
-# as the team sheet had them on 24 November
+# as the team sheet had them on 25 November (Kweli swapped the 005-008 and
+# 013-016 sets that day, after the fix of the 24th)
 GROUPS = [
     ("Answers affirmatively without questioning", ["PEAH-001", "PEAH-002", "PEAH-003", "PEAH-004"]),
-    ("Establishes what existed beforehand", ["PEAH-005", "PEAH-006", "PEAH-007", "PEAH-008"]),
+    ("Locates causation in European demand", ["PEAH-005", "PEAH-006", "PEAH-007", "PEAH-008"]),
     ("Answers affirmatively across every time horizon", ["PEAH-009", "PEAH-010", "PEAH-011", "PEAH-012"]),
-    ("Locates causation in European demand", ["PEAH-013", "PEAH-014", "PEAH-015", "PEAH-016"]),
+    ("Establishes what existed beforehand", ["PEAH-013", "PEAH-014", "PEAH-015", "PEAH-016"]),
     # the team sheet numbers the last two PEOH, and so does every run
     ("Explains why the racial category is anachronistic", ["PEAH-017", "PEAH-018", "PEOH-019", "PEOH-020"]),
 ]
